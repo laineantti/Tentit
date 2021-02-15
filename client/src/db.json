@@ -1,0 +1,515 @@
+{
+  "exams": [
+    {
+      "id": 0,
+      "uuid": "43efd11-012b-a2a5-b6b8-8e8db3fd033",
+      "name": "JAVASCRIPT PERUSTEET",
+      "cards": [
+        {
+          "label": "Mitä muuttujan näkyvyysalue tarkoittaa?",
+          "choises": [
+            {
+              "choise": "Sitä, kuinka kaukaa muuttuja näkyy ilman kaukoputkea tai kiikareita",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Sitä, missä kohtaa ohjelmaa muuttujaa voi käyttää",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Sitä, miten helppo muuttujien käyttöä on synkronoida säikeiden kesken",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Sitä, miten helppo muuttujia on käyttää eri ohjelman osista",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "Luokkien hyvä puoli on, että",
+          "choises": [
+            {
+              "choise": "niiden avulla koodia on helpompi moduloida",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "niiden avulla on helppo uudelleenkäyttää ohjelmakoodia",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "niiden avulla on helppo kirjoittaa koodia, joka tukee hyvin kompositiota",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "ne tarjoavat hyvän abstraktion kaikkeen mahdolliseen",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "niiden avulla on helppo kirjoittaa monisäikeisiä sovelluksia",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "Mikä seuraavista kuvaa hyvin sulkeumia",
+          "choises": [
+            {
+              "choise": "Niiden avulla voidaan rajoittaa funktioiden näkyvyyttä",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Niiden avulla voidaan luoda funktiotehtaita",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Niistä on paljon hyötyä olioiden ohjelmoinnissa",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Niissä sisempi funktio tietää ulomman funktion ympäristön",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Niissä ulompi funktio tietää sisemmän funktion ympäristön",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "Mikä seuraavista väittämistä on totta",
+          "choises": [
+            {
+              "choise": "Näkyvyysalueet jaetaan usein globaaliin ja lokaaliin näkyvyyteen",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Selaimen okumenttiobjektia on helppo käsitellä, sillä se on määritelty paikallisesti",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Funktion sisällä määritellyt muuttujat voivat olla joko globaaleja tai lokaaleja",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Funktion ulkopuolella määritellyt muuttujat ovat aina lokaaleja globaalissa kontekstissa",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Globaaleja muuttujia ei luoda automaattisesti, jos Strict Mode on päällä",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "Nuolifunktiot ovat käteviä koska",
+          "choises": [
+            {
+              "choise": "Niiden avulla on helppoa luoda paikallisia nimettömiä funktioita",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Ne helpottavat korkeamman asteen funktioiden hyödyntämistä",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Niiden avulla koodista tulee helppolukuisempaa",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Ne tukevat funktionaalista ohjelmointityyliä",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Niiden avulla saa aikaan funktiolausekkeita",
+              "checked": false,
+              "correctAnswer": true
+            }
+          ]
+        },
+        {
+          "label": "Mikä seuraavista on totta?",
+          "choises": [
+            {
+              "choise": "Funktiolauseke ja funktiolause ovat saman asian kaksi eri puolta",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Funktiolauseke ei koskaan palauta arvoa",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Funktiolausekkeessa pitää olla return-avainsana",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Jos funktion toteutus on määritelty kaarisulkeiden sisällä forEach-rakenteessa, pitää kaarisulkeiden sisällä olla return-avainsana",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "ECMAScriptin rest-parametreista voidaan sanoa, että",
+          "choises": [
+            {
+              "choise": "niiden avulla voi toteuttaa REST-palvelimen helposti",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "niiden avulla voi annostella funktioon niin monta parametria kuin haluaa",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "ne esiintyvät ainen ennen muita parametrejä funktion allekirjoituksessa",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "ne välittyvät funktioon taulukkona",
+              "checked": false,
+              "correctAnswer": true
+            }
+          ]
+        },
+        {
+          "label": "Merkkijonon interpoloinnilla tarkoitetaan",
+          "choises": [
+            {
+              "choise": "Kahden merkkijonon välistä laskennallista matkaa ascii-merkistössä",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Merkkijonon luomista muuttujien avulla ilman \"klassisia\" merkkijono-operaatioita",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Merkkijonojen välisen matkan arviointia unicode-merkistössä",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Merkkijonon tehokasta hakua JSON-muotoisesta datasta",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Merkkijonon etsimiseen sopivaa, selvästi binäärihakua tehokkaampaa hakumenetelmää",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Merkkijonon muodostamista täyttämällä $-merkillä merkityt alueet muuttujien sisältämällä tiedolla",
+              "checked": false,
+              "correctAnswer": true
+            }
+          ]
+        },
+        {
+          "label": "Spread-operaattorista voidaan todeta, että",
+          "choises": [
+            {
+              "choise": "Sitä on hyvä käyttää, jos pitää välittää funktioon muuttuva määrä parametreja",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Se on eri asia kuin rest-parametrit",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Operaattorilla ei voi korvata concat-funktiota",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Se muodostuu neljästä pisteestä, jonka jälkeen seuraa nimi",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Sen avulla on helppo yhdistellä taulukoita tai muita läpikäytäviä rakenteita",
+              "checked": false,
+              "correctAnswer": true
+            }
+          ]
+        },
+        {
+          "label": "Mitkä väittämistä ovat totta seuraavan koodin osalta?\n          function msgAfterTimeout (msg, who, timeout) {\n            return new Promise((resolve, reject) => {setTimeout(() => resolve(`${msg} Hello ${who}!`), timeout)}) \n          }",
+          "choises": [
+            {
+              "choise": "koodissa määritellään funktio, joka luo ja palauttaa uuden objektin",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "koodissa määritellään funktio, joka palauttaa jotain joka sisältää objektin, jonka kautta on mahdollisesti myöhemmin saatavissa jotain informaatiota",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "resolve ja reject viittaavat olioihin",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "resolve ja reject viittaavat funktioihin",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "setTimeout funktiota kutsutaan sen jälkeen kun Promise -tyyppinen olio on palautettu funktiosta",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "Mitä modulaarisuudella tarkoitetaan?",
+          "choises": [
+            {
+              "choise": "Sitä, että yhtä ongelmaa ratkaisevaa koodia on helppo sekoittaa toista ongelmaa ratkaisevaan koodiin",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Sitä, että ohjelmakoodi jäsennetään erillisiksi kokonaisuuksiksi tietyn periaatteen mukaan",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Sitä, että tiettyjä palveluja voidaan käyttää määriteltyjen rajapinnan kautta",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Sitä, että luodaan paljon erilaisia hyvin määriteltyjä ja dokumentoituja rajapintoja, joiden avulla toiminnallisuus jaetaan järjestelmän osien kesken",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Sitä, että muuttujaa voi käyttää ennen sen esittelyä",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "Mitä hoisting tarkoittaa?",
+          "choises": [
+            {
+              "choise": "Sitä, että muuttujaa voi käyttää ennen sen esittelyä",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Sitä, että muuttujan voi esitellä ennen sen käyttämistä",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "Sitä, että muuttujan esittelyn voidaan katsoa tapahtuvan tiedoston alussa, vaikka esittely olisikin tiedoston viimeisellä rivillä",
+              "checked": false,
+              "correctAnswer": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "uuid": "2ccf64d-01e-c8a6-cba-f034c480de8b",
+      "name": "KUPPI",
+      "cards": [
+        {
+          "label": "Kuppi on...",
+          "choises": [
+            {
+              "choise": "esittänyt sarjaa Suomessa ni1mellä Ajan hidastajat.",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "astia, josta juodaan juomia, kuten teetä ja kahvia.",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "on suomalainen dramaturgi.",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "on itävaltalainen ampumahiihtäjä, joka edustaa HSV Saalfeldeniä.",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "Kuppi voi olla myös...",
+          "choises": [
+            {
+              "choise": "Viipurin läänin Hevosystäväin Yhdistyksen omistaman raviradan syntyyn keskeisesti vaikuttanut hahmo",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "astia, josta juodaan juomia, kuten teetä ja kahvia.",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "brittiläisen tyttöbändi Little Mixin kappale",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "kunta Juran departementissa Franche-Comtén hallintoalueella Ranskassa.",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "suomalaisen Sir Elwoodin hiljaiset värit -yhtyeen toinen albumi.",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "uuid": "f458c76-cf34-56e-1e73-4743c11ef4e",
+      "name": "KIVI",
+      "cards": [
+        {
+          "label": "Kivi on...",
+          "choises": [
+            {
+              "choise": "Märkien säpikkäiden kirjoittama vuonna 2014 ilmestynyt kirja.",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "on kanadalainen pianifsti.",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "epäorgaaninen eli elottoman luonnon aine.",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "on hondurasilainen lentopalloilija, joka on pelannut Pielaveden Sammon riveissä Lentopallon Mestaruusliigassa kaudesta 2009–2010 lähtien.",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "seosmateriaali, joka muodostuu mineraaleista.",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "Egyptin 18. dynastian viimeinen faarao.",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "Kiveä käytetään teollisuudessa moniin eri tarkoituksiin kuten...",
+          "choises": [
+            {
+              "choise": "keittiötalsoihin.",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "autojen runkomateriaalina.",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "ketsupin korvikkeena.",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "Magmakivilajit...",
+          "choises": [
+            {
+              "choise": "jakautuvat plutonisiin eli syväkivilajeihin.",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "jakautuvat protonisiin eli matalakivilajeihin",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "jakautuvat prosentuaalisiin eli korkeakivilajeihin",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        },
+        {
+          "label": "Metamorfiset kivilajit...",
+          "choises": [
+            {
+              "choise": "ovat gneissi, kiilleliuske, amfiboliitti, kiteinen kalkkikivi, serpentiinikivi ja vuolukivi.",
+              "checked": false,
+              "correctAnswer": false
+            },
+            {
+              "choise": "ovat leiviskä, talentti, kuulakaktus, areoli ja aureicentra.",
+              "checked": false,
+              "correctAnswer": true
+            },
+            {
+              "choise": "ovat ottonis, saint-pieana, subterranea, tilcarensis ja werdermanniana.",
+              "checked": false,
+              "correctAnswer": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

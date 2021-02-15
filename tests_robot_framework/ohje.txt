@@ -1,0 +1,42 @@
+1. Lataa Python, jos ei ole ennestään: https://www.python.org/downloads/
+
+2. pip install robotframework
+
+3. pip install robotframework–selenium2library
+
+4. Asenna Python for VSCode
+
+5. Asenna Robot Framework Intellisense
+
+6. Lataa Chrome Webdriveristä sama versio kuin mitä Chrome on: 
+https://sites.google.com/a/chromium.org/chromedriver/downloads
+ja laita exe-tiedosto samaan kansioon avaa_tentti.robot tiedoston kanssa
+
+7. Lisää nämä rivit .gitignore-tiedostoon
+client/tests_robot_framework/chromedriver.exe
+client/tests_robot_framework/log.html
+client/tests_robot_framework/output.xml
+client/tests_robot_framework/report.html
+client/tests_robot_framework/selenium-screenshot-*
+
+8. Aja testi komennolla python -m robot avaa_tentti.robot
+
+9. Raportin saa näkyviin komennolla .\report.html (tai avaamalla manuaalisesti tuon tiedoston kansiosta)
+
+==========================================================================
+
+Materiaalia aiheesta:
+https://www.slideshare.net/pekkaklarck/robot-framework-introduction
+https://www.youtube.com/watch?v=H9YVlFKdOeM
+
+==========================================================================
+
+RIDE ohje:
+---------------------------
+
+1. Poista kaikki Python-versiot (poista kansiot varmuuden vuoksi)
+2. Asenna Python 3.7 https://www.python.org/downloads/release/python-370/
+3. pip install robotframework-ride
+4. pip install robotframework
+5. pip install robotframework–selenium2library
+6. ride.py
