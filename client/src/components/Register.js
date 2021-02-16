@@ -11,6 +11,7 @@ import FormControl from '@material-ui/core/FormControl'
 import FormLabel from '@material-ui/core/FormLabel'
 import axios from 'axios'
 import { strings } from './Locale'
+import {tarkistaSahkoposti,tarkistaSalasana} from './inputchecks.js';
 
 var path = null
 var default_error = new Error("Environment not properly set!")
@@ -43,22 +44,30 @@ const Register = () => {
     }
 
     const addUser = async () => {
-        try {
-            let result = await axios.post(path+"lisaa_kayttaja", {
-                etunimi: tempEtunimi,
-                sukunimi: tempSukunimi,
-                sahkoposti: tempSahkoposti,
-                salasana_hash: tempSalasana,
-                rooli: tempRooli
-            })
-            if (result.lenght === 0){
-                console.log("?????")
-                return
+        if (tarkistaSahkoposti(tempSahkoposti)) {
+            if (tarkistaSalasana(tempSalasana)) {
+                try {
+                    let result = await axios.post(path+"lisaa_kayttaja", {
+                        etunimi: tempEtunimi,
+                        sukunimi: tempSukunimi,
+                        sahkoposti: tempSahkoposti,
+                        salasana_hash: tempSalasana,
+                        rooli: tempRooli
+                    })
+                    if (result.lenght === 0){
+                        console.log("?????")
+                        return
+                    }
+                    console.log(result)
+                    alert("Käyttäjä lisätty onnistuneesti!")
+                } catch (ex) {
+                    console.log(ex.message)
+                }
+            } else {
+                console.log("Salasana ei ole turvallinen!")
             }
-            console.log(result)
-            alert("Käyttäjä lisätty onnistuneesti!")
-        } catch (ex) {
-            console.log(ex.message)
+        } else {
+            console.log("Sähköposti ei kelpaa!")
         }
     }
 
