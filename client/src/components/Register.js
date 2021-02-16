@@ -51,6 +51,10 @@ const Register = () => {
                 salasana_hash: tempSalasana,
                 rooli: tempRooli
             })
+            if (result.lenght === 0){
+                console.log("?????")
+                return
+            }
             console.log(result)
             alert("Käyttäjä lisätty onnistuneesti!")
         } catch (ex) {
@@ -100,6 +104,7 @@ const Register = () => {
                             id="outlined-adornment-password"
                             labelWidth={70}
                             value={tempSalasana}
+                            type="password"
                             onChange={(event) => setTempSalasana(event.target.value)}
                         />
                     </FormControl>

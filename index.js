@@ -21,38 +21,49 @@ let cors_origin = null
 let default_error = new Error("Environment not properly set!")
 let environment = process.env.NODE_ENV || 'development'
 
-// tarkistetaan onko noden ympäristö production, development vai test
-switch (environment) {
-  case 'production':
-    path_domain = 'tentti-fullstack.herokuapp.com'
-    // protocol erikseen, koska con_string vaatii tcp-version siitä
-    path_protocol = 'https://'
-    // herokussa oleva postgress tietokannan osoite herokun config-muuttujasta
-    const heroku_database_url = process.env.DATABASE_URL
-    // karsitaan edellämainitusta 11 ekaa merkkiä eli protokolla pois
-    const modified_version = heroku_database_url.slice(11)
-    // lisätään tilalle tcp-alku
-    con_string = 'tcp://' + modified_version
-    // asetetaan cors origin
-    cors_origin = path_protocol + path_domain
-    break
-  case 'development':
-    // localhostissa käytetään alkuperäistä tapaa muodostaa con_string
-    path_protocol = 'http://'
-    path_domain = 'localhost'
-    con_string = 'tcp://postgres:postgres@' + path_domain + '/Tenttikanta'
-    // asetetaan cors origin, client on portissa 3000 (mihin on tarkoitus luottaa) ja serveri 4000
-    cors_origin = path_protocol + path_domain + ':3000'
-    break
-  case 'test':
-    path_protocol = 'http://'
-    path_domain = 'localhost'
-    con_string = 'tcp://postgres:postgres@' + path_domain + '/Tenttikanta'
-    cors_origin = path_protocol + path_domain + ':3000'
-    break
-  default:
-    throw default_error
+if (!process.env.HEROKU) {
+  con_string = `tcp://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`
+  appOrigin = 'http://localhost:3000'
+  console.log("front:",appOrigin)
+
+} else {
+  con_string = process.env.DATABASE_URL
+  appOrigin = 'https://tentti-fullstack.herokuapp.com/'
+  console.log("front:",appOrigin)
 }
+
+// // tarkistetaan onko noden ympäristö production, development vai test
+// switch (environment) {
+//   case 'production':
+//     path_domain = 'tentti-fullstack.herokuapp.com'
+//     // protocol erikseen, koska con_string vaatii tcp-version siitä
+//     path_protocol = 'https://'
+//     // herokussa oleva postgress tietokannan osoite herokun config-muuttujasta
+//     const heroku_database_url = process.env.DATABASE_URL
+//     // karsitaan edellämainitusta 11 ekaa merkkiä eli protokolla pois
+//     const modified_version = heroku_database_url.slice(11)
+//     // lisätään tilalle tcp-alku
+//     con_string = 'tcp://' + modified_version
+//     // asetetaan cors origin
+//     cors_origin = path_protocol + path_domain
+//     break
+//   case 'development':
+//     // localhostissa käytetään alkuperäistä tapaa muodostaa con_string
+//     path_protocol = 'http://'
+//     path_domain = 'localhost'
+//     con_string = 'tcp://'+process.env.DB_USERNAME+':'+process.env.DB_PASSWORD+'@'+path_domain+'/'+process.env.DB_NAME
+//     // asetetaan cors origin, client on portissa 3000 (mihin on tarkoitus luottaa) ja serveri 4000
+//     cors_origin = path_protocol + path_domain + ':3000'
+//     break
+//   case 'test':
+//     path_protocol = 'http://'
+//     path_domain = 'localhost'
+//     con_string = `tcp://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${path_domain}/${process.env.DB_NAME}`
+//     cors_origin = path_protocol + path_domain + ':3000'
+//     break
+//   default:
+//     throw default_error
+// }
 
 /* ======================================================================================== */
 
@@ -72,7 +83,8 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(morgan('dev'))
 // asetetaan node.js osoite, vakio-portti sekä cors (clientin portti 3000)
-app.options(path_protocol + path_domain + ':3000/', cors())
+// app.options(path_protocol + path_domain + ':3000/', cors())
+app.options(appOrigin, cors())
 app.use(cors())
 
 /* WEBSOCKET NOTIFICAATIO-SERVERI MUUTOKSILLE TIETOKANNASSA.
@@ -83,7 +95,7 @@ eri protokollaa (ws://) */
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
   cors: {
-    origin: [cors_origin],
+    origin: appOrigin,
     methods: ["GET", "POST"]
   }
 })
@@ -91,6 +103,7 @@ const io = require('socket.io')(http, {
 const pg = require('pg');
 const pg_client = new pg.Client(con_string);
 pg_client.connect()
+
 
 // addedrecord edustaa kaikkia muutoksia (insert/delete tentti/kurssi)
 const query = pg_client.query('LISTEN addedrecord');
@@ -125,14 +138,18 @@ app.get('/onko_admin/:id', (req, response, next) => {
 
 // lisätään käyttäjä + salasana_hash
 app.post('/lisaa_kayttaja', (req, response, next) => {
+  const body = req.body
+  if(!(body.sahkoposti && body.salasana && body.rooli)){
+    return response.status(400).json({error: 'Tallennettava tieto puuttuu!' })
+  }
   try {
-    bcrypt.hash(req.body.salasana_hash, 12, (err, bcrypt_hashatty_salasana) => {
+    bcrypt.hash(body.salasana_hash, 12, (err, bcrypt_hashatty_salasana) => {
       db.query("INSERT INTO kayttaja (etunimi, sukunimi, sahkoposti, salasana_hash, rooli) values ($1,$2,$3,$4,$5) RETURNING id",
-        [req.body.etunimi, req.body.sukunimi, req.body.sahkoposti,
-          bcrypt_hashatty_salasana, req.body.rooli],
+        [body.etunimi, body.sukunimi, body.sahkoposti,
+          bcrypt_hashatty_salasana, body.rooli],
         (err, res) => {
-          if (res.rows[0].id != undefined) {
-            response.status(200).send("Käyttäjä lisätty onnistuneesti!")
+          if (res.rows.lenght > 0) {
+            res.status(200).send("Käyttäjä lisätty onnistuneesti!")
           } else {
             res.send("Rekisteröityminen ei onnistunut.")
           }
