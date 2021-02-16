@@ -72,6 +72,7 @@ const Login = () => {
                             id="outlined-adornment-password"
                             labelWidth={70}
                             value={tempSalasana}
+                            type="password"
                             onChange={(event) => setTempSalasana(event.target.value)}
                         />
                     </FormControl>
