@@ -54,10 +54,10 @@ const Register = () => {
                         salasana_hash: tempSalasana,
                         rooli: tempRooli
                     })
-                    if (result.lenght === 0){
-                        console.log("?????")
-                        return
-                    }
+                    // if (result.lenght === 0){
+                    //     console.log("?????")
+                    //     return
+                    // }
                     console.log(result)
                     alert("Käyttäjä lisätty onnistuneesti!")
                 } catch (ex) {

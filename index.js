@@ -4,7 +4,7 @@ const fileUpload = require('express-fileupload')
 const cors = require("cors")
 const path = require('path')
 const bodyParser = require("body-parser")
-
+const port = process.env.PORT
 const morgan = require('morgan')
 const _ = require('lodash')
 const bcrypt = require('bcrypt')
@@ -16,6 +16,7 @@ app.use(express.static('./client/build'))
 /* ======================================================================================== */
 let path_domain = null
 let path_protocol = null
+let appOrigin = null
 let con_string = null
 let cors_origin = null
 let default_error = new Error("Environment not properly set!")
@@ -77,7 +78,7 @@ app.use(fileUpload({
 
 module.exports = app
 // serverin portti on joko herokun asettama tai 4000
-const port = process.env.PORT || 4000
+// const port = process.env.PORT || 4000
 const db = require('./db')
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -92,16 +93,18 @@ app.use(cors())
 Socket.io toimii nyt (localhostissa ja Herokussa odotetusti) samassa portissa kuin express, mutta se ei haittaa, koska socket.io käyttää
 eri protokollaa (ws://) */
 /* ======================================================================================== */
-const http = require('http').Server(app);
-const io = require('socket.io')(http, {
+// const http = require('http').Server(app);
+const httpServer = require('http').createServer(app);
+var io = require('socket.io')(httpServer, {
   cors: {
     origin: appOrigin,
     methods: ["GET", "POST"]
   }
 })
 
-const pg = require('pg');
-const pg_client = new pg.Client(con_string);
+var pg = require('pg');
+const { result } = require('lodash')
+var pg_client = new pg.Client(con_string);
 pg_client.connect()
 
 
@@ -124,40 +127,33 @@ io.sockets.on('connection', function (socket) {
 /* TÄSTÄ ALKAA NODE.JS/EXPRESS REST API -PYYNNÖT */
 /* ======================================================================================== */
 
-// tarkistetaan onko käyttäjä admin
-app.get('/onko_admin/:id', (req, response, next) => {
-  db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.id], (err, res) => {
-    console.log(res.rows[0].rooli)
-    if (res.rows[0].rooli === 'admin') {
-      next()
-    } else {
-      return res.send(401)
-    }
-  })
-})
-
 // lisätään käyttäjä + salasana_hash
 app.post('/lisaa_kayttaja', (req, response, next) => {
   const body = req.body
-  if(!(body.sahkoposti && body.salasana && body.rooli)){
+  if(!(body.sahkoposti && body.salasana_hash && body.rooli)){
     return response.status(400).json({error: 'Tallennettava tieto puuttuu!' })
   }
   try {
-    bcrypt.hash(body.salasana_hash, 12, (err, bcrypt_hashatty_salasana) => {
-      db.query("INSERT INTO kayttaja (etunimi, sukunimi, sahkoposti, salasana_hash, rooli) values ($1,$2,$3,$4,$5) RETURNING id",
-        [body.etunimi, body.sukunimi, body.sahkoposti,
-          bcrypt_hashatty_salasana, body.rooli],
-        (err, res) => {
-          if (res.rows.lenght > 0) {
-            res.status(200).send("Käyttäjä lisätty onnistuneesti!")
-          } else {
-            res.send("Rekisteröityminen ei onnistunut.")
-          }
-
-          if (err) {
-            return next(err)
-          }
+    db.query('SELECT * FROM kayttaja WHERE sahkoposti = $1',[body.sahkoposti], (err, result)=>{
+      if (err) {
+        return next(err)
+      }
+      if (result.rows.length > 0){
+        return response.status(401).json({ error: 'Rekisteröintivirhe' })
+      } else {
+        bcrypt.hash(body.salasana_hash, 12, (err, bcrypt_hashatty_salasana) => {
+        db.query("INSERT INTO kayttaja (etunimi, sukunimi, sahkoposti, salasana_hash, rooli) values ($1,$2,$3,$4,$5) RETURNING id",
+          [body.etunimi, body.sukunimi, body.sahkoposti, bcrypt_hashatty_salasana, body.rooli],
+          (err, res) => {
+            if (res.rows[0].id != undefined) {
+              response.status(200).send("Käyttäjä lisätty onnistuneesti!")
+            }
+            if (err) {
+              return next(err)
+            }
+          })
         })
+      }
     })
   } catch (ex) {
     console.log(ex.message)
@@ -203,6 +199,18 @@ app.post('/kirjaudu', (req, res, next) => {
 
     // lähetetään token clientille
     res.status(200).send({ token })
+  })
+})
+
+// tarkistetaan onko käyttäjä admin
+app.get('/onko_admin/:id', (req, response, next) => {
+  db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.id], (err, res) => {
+    console.log(res.rows[0].rooli)
+    if (res.rows[0].rooli === 'admin') {
+      next()
+    } else {
+      return res.send(401)
+    }
   })
 })
 
@@ -426,6 +434,7 @@ app.get('*', (req, res) => {
 })
 
 // MÄÄRITELTY TIEDOSTOSSA YLEMPÄNÄ: const port = process.env.PORT || 4000
-const server = http.listen(port, () => {
+// const server = http.listen(port, () => {
+  httpServer.listen(port, () =>{
   console.log('Palvelin käynnistyi portissa:' + port);
 });
