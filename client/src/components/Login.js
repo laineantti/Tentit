@@ -26,7 +26,7 @@ switch (environment) {
         throw default_error
 }
 
-const Login = () => {
+const Login = ({setLoggedIn}) => {
     const [tempSahkoposti, setTempSahkoposti] = useState("")
     const [tempSalasana, setTempSalasana] = useState("")
     /* const [tempSalasanaUudestaan, setTempSalasanaUudestaan] = useState("") */
@@ -41,7 +41,8 @@ const Login = () => {
             await axios.post(path + "kirjaudu/", body).then(response => {
                 // tehdään post josta saadaan onnistuneessa kirjautumisessa response
                 // mistä tallennetaan datasta saatava token localStorageen
-                window.localStorage.setItem('jwtToken', response.data.token);
+                localStorage.setItem('jwtToken', response.data.token);
+                setLoggedIn(true)
                 alert("Kirjautuminen onnistui, tervetuloa "+response.data.sahkoposti+"!")
             })
         } catch (e) {

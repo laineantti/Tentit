@@ -10,19 +10,35 @@ import { NavBar } from './NavBar'
 import { Route, Switch, Redirect } from 'react-router-dom'
 
 export const Routes = () => {
+
+    // tarkistetaanko kirjautumisen tila tokenista ja asetetaan tähän arvoksi?
+    const [loggedIn, setLoggedIn] = useState(false)
+
     return (
         <div>
-            <NavBar />
+            <NavBar loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>
             <Switch>
-                <Route exact path="/User" component={User} />
-                <Route exact path="/">
-                    <Redirect to="/User" />
+                <Route exact path="/user">
+                    {loggedIn ? <User/> : <Redirect to='/login' />}
                 </Route>
-                {/* <Route exact path="/Admin" component={Admin} /> */}
-                <Route exact path="/Stats" component={Stats} />
-                {/* <Route exact path="/Upload" component={Upload} /> */}
-                <Route exact path="/Register" component={Register} />
-                <Route exact path="/Login" component={Login} />
+                <Route exact path="/">
+                    {loggedIn ? <User/> : <Redirect to='/login' />}
+                </Route>
+                <Route exact path="/admin">
+                    {loggedIn ? <Admin/> : <Redirect to='/login' />}
+                </Route>
+                <Route exact path="/stats">
+                    {loggedIn ? <Stats/> : <Redirect to='/login' />}
+                </Route>
+                <Route exact path="/upload">
+                    {loggedIn ? <Upload/> : <Redirect to='/login' />}
+                </Route>
+                <Route exact path="/register">
+                    {loggedIn ? <Redirect to='/user' /> : <Register/>}
+                </Route>
+                <Route exact path="/login">
+                    {loggedIn ? <Redirect to='/' /> : <Login setLoggedIn={setLoggedIn}/>}
+                </Route>
             </Switch>
         </div>
     )
