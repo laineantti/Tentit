@@ -41,7 +41,7 @@ const Login = () => {
             await axios.post(path + "kirjaudu/", body).then(response => {
                 // tehdään post josta saadaan onnistuneessa kirjautumisessa response
                 // mistä tallennetaan datasta saatava token localStorageen
-                localStorage.setItem('jwtToken', response.data.token);
+                window.localStorage.setItem('jwtToken', response.data.token);
                 alert("Kirjautuminen onnistui, tervetuloa "+response.data.sahkoposti+"!")
             })
         } catch (e) {
