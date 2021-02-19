@@ -7,7 +7,7 @@ import Upload from './Upload'
 import Register from './Register'
 import Login from './Login'
 import { NavBar } from './NavBar'
-import { Route, Switch, Redirect } from 'react-router-dom'
+import { Route, Switch/* , Redirect */ } from 'react-router-dom'
 
 export const Routes = () => {
 
@@ -16,30 +16,35 @@ export const Routes = () => {
 
     return (
         <div>
-            <NavBar loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>
-            <Switch>
-                <Route exact path="/user">
-                    {loggedIn ? <User/> : <Redirect to='/login' />}
-                </Route>
-                <Route exact path="/">
-                    {loggedIn ? <User/> : <Redirect to='/login' />}
-                </Route>
-                <Route exact path="/admin">
-                    {loggedIn ? <Admin/> : <Redirect to='/login' />}
-                </Route>
-                <Route exact path="/stats">
-                    {loggedIn ? <Stats/> : <Redirect to='/login' />}
-                </Route>
-                <Route exact path="/upload">
-                    {loggedIn ? <Upload/> : <Redirect to='/login' />}
-                </Route>
-                <Route exact path="/register">
-                    {loggedIn ? <Redirect to='/user' /> : <Register/>}
-                </Route>
-                <Route exact path="/login">
-                    {loggedIn ? <Redirect to='/' /> : <Login setLoggedIn={setLoggedIn}/>}
-                </Route>
-            </Switch>
+            <NavBar loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
+            {loggedIn ?
+                <Switch>
+                    <Route exact path="/user">
+                        <User />
+                    </Route>
+                    <Route exact path="/">
+                        <User />
+                    </Route>
+                    <Route exact path="/admin">
+                        <Admin />
+                    </Route>
+                    <Route exact path="/stats">
+                        <Stats />
+                    </Route>
+                    <Route exact path="/upload">
+                        <Upload />
+                    </Route>
+                </Switch>
+                :
+                <Switch>
+                    <Route exact path="/register">
+                        <Register />
+                    </Route>
+                    <Route exact path="/login">
+                        <Login setLoggedIn={setLoggedIn} />
+                    </Route>
+                </Switch>
+            }
         </div>
     )
 }

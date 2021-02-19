@@ -23,14 +23,14 @@ let default_error = new Error("Environment not properly set!")
 let environment = process.env.NODE_ENV || 'development'
 
 if (!process.env.HEROKU) {
-  con_string = `tcp://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`
+  con_string = `postgres://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`
   appOrigin = 'http://localhost:3000'
-  console.log("front:",appOrigin)
+  console.log("front:", appOrigin)
 
 } else {
   con_string = process.env.DATABASE_URL
   appOrigin = 'https://tentti-fullstack.herokuapp.com/'
-  console.log("front:",appOrigin)
+  console.log("front:", appOrigin)
 }
 
 // // tarkistetaan onko noden ympäristö production, development vai test
@@ -111,9 +111,16 @@ var io = require('socket.io')(httpServer, {
 var pg = require('pg');
 const { result } = require('lodash')
 var pg_client = new pg.Client(con_string);
-pg_client.connect()
+/* pg_client.connect() */
+pg_client.connect(err => {
+  if (err) {
+    console.error('connection error', err.stack)
+  } else {
+    console.log('connected')
+  }
+})
 
-
+/*
 // addedrecord edustaa kaikkia muutoksia (insert/delete tentti/kurssi)
 const query = pg_client.query('LISTEN addedrecord');
 
@@ -126,7 +133,7 @@ io.sockets.on('connection', function (socket) {
       socket.emit('update', { message: title });
     });
   });
-});
+}); */
 
 /* ======================================================================================== */
 
@@ -136,28 +143,28 @@ io.sockets.on('connection', function (socket) {
 // lisätään käyttäjä + salasana_hash
 app.post('/lisaa_kayttaja', (req, response, next) => {
   const body = req.body
-  if(!(body.sahkoposti && body.salasana_hash && body.rooli)){
-    return response.status(400).json({error: 'Tallennettava tieto puuttuu!' })
+  if (!(body.sahkoposti && body.salasana_hash && body.rooli)) {
+    return response.status(400).json({ error: 'Tallennettava tieto puuttuu!' })
   }
   try {
-    db.query('SELECT * FROM kayttaja WHERE sahkoposti = $1',[body.sahkoposti], (err, result)=>{
+    db.query('SELECT * FROM kayttaja WHERE sahkoposti = $1', [body.sahkoposti], (err, result) => {
       if (err) {
         return next(err)
       }
-      if (result.rows.length > 0){
+      if (result.rows.length > 0) {
         return response.status(401).json({ error: 'Rekisteröintivirhe' })
       } else {
         bcrypt.hash(body.salasana_hash, 12, (err, bcrypt_hashatty_salasana) => {
-        db.query("INSERT INTO kayttaja (etunimi, sukunimi, sahkoposti, salasana_hash, rooli) values ($1,$2,$3,$4,$5) RETURNING id",
-          [body.etunimi, body.sukunimi, body.sahkoposti, bcrypt_hashatty_salasana, body.rooli],
-          (err, res) => {
-            if (res.rows[0].id != undefined) {
-              response.status(200).send("Käyttäjä lisätty onnistuneesti!")
-            }
-            if (err) {
-              return next(err)
-            }
-          })
+          db.query("INSERT INTO kayttaja (etunimi, sukunimi, sahkoposti, salasana_hash, rooli) values ($1,$2,$3,$4,$5) RETURNING id",
+            [body.etunimi, body.sukunimi, body.sahkoposti, bcrypt_hashatty_salasana, body.rooli],
+            (err, res) => {
+              if (res.rows[0].id != undefined) {
+                response.status(200).send("Käyttäjä lisätty onnistuneesti!")
+              }
+              if (err) {
+                return next(err)
+              }
+            })
         })
       }
     })
@@ -287,6 +294,29 @@ app.put('/paivita_kayttaja/:id/:etunimi/:sukunimi/:sahkoposti/:salasana_hash/:ro
         return next(err)
       }
       response.send("Käyttäjän tiedot päivitetty onnistuneesti!")
+    })
+})
+
+// päivitetään tentin oikea_valinta-ruudun muutos tietokantaan
+app.put('/paivita_oikea_valinta/:vaihtoehto_id/:oikea_vastaus', (req, response, next) => {
+  db.query("SELECT * FROM vaihtoehto WHERE id = $1",
+    [req.params.vaihtoehto_id],
+    (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      if (res.rows[0] !== undefined) {
+        db.query("UPDATE vaihtoehto SET oikea_vastaus = $2 WHERE id = $1",
+          [req.params.vaihtoehto_id, req.params.oikea_vastaus],
+          (err, res) => {
+            if (err) {
+              return next(err)
+            }
+            response.send("Tentin oikea vastaus päivitetty onnistuneesti!")
+          })
+      } else {
+        response.send("Muutosta ei tallennettu, koska tällä id:llä ei ole oikeaa vastausta!")
+      }
     })
 })
 
@@ -431,6 +461,21 @@ app.get('/tentti/:id', (req, response, next) => {
   })
 })
 
+// päivitetään tentin nimi
+app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
+  try {
+    db.query('UPDATE tentti SET nimi = $2 WHERE id = $1', [req.params.id], [req.params.nimi], (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.status(201).send("Tentin nimi päivitetty!")
+    })
+  }
+  catch (err) {
+    response.send(err)
+  }
+}) 
+
 // palautetaan vaihtoehdot
 app.get('/vaihtoehto', (req, response, next) => {
   db.query('SELECT * FROM vaihtoehto', (err, res) => {
@@ -448,6 +493,6 @@ app.get('*', (req, res) => {
 
 // MÄÄRITELTY TIEDOSTOSSA YLEMPÄNÄ: const port = process.env.PORT || 4000
 // const server = http.listen(port, () => {
-  httpServer.listen(port, () =>{
+httpServer.listen(port, () => {
   console.log('Palvelin käynnistyi portissa:' + port);
 });
