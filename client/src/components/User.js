@@ -50,13 +50,36 @@ function App() {
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
     const [state, dispatch] = useReducer(reducer, [])
+    const [authToken, setAuthToken] = useState("")
     const classes = useStyles()
     const currentKurssiIndex = 1
     const currentUserIndex = 1
 
+    // const userHook = () => {
+    //     const loggedUserJSON = window.localStorage.getItem('jwtToken')
+    //     if (loggedUserJSON) {
+    //       let kayttaja = JSON.parse(loggedUserJSON)
+    //       console.log(kayttaja)
+    //       setAuthToken(kayttaja.token)
+    //     }
+    // }
+      
+    // useEffect(userHook, [])
+
+    // let headers = {
+    //     headers: { Authorization: `bearer ${authToken}` },
+    //   }
+
+    // const hook = () => {
+    //     userHook();
+    // }
+
+    // useEffect(hook,[authToken])
+
     useEffect(() => {
 
         const fetchData = async () => {
+            if (currentUserIndex!==null){
             try {
                 let tentit_data = await axios.get(path + "kayttajan_tentit/" + currentUserIndex)
                 let tentit = tentit_data.data
@@ -98,10 +121,15 @@ function App() {
             catch (exception) {
                 console.log(exception)
             }
+        
+        } else {
+            console.log("Käyttäjä?")
+        }
         }
         fetchData()
     }, [])
 
+    
     const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex, exam_id) => {
         try {
             // /paivita_valinta/:kayttaja_id/:vaihtoehto_id/:tentti_id/:kurssi_id/:vastaus

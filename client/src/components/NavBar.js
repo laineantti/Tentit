@@ -1,15 +1,17 @@
 import { AppBar, Toolbar, Typography } from '@material-ui/core'
 import { useStyles, MenuButton } from './Style'
 import { strings } from './Locale'
+import { autentikoitu } from './autentikoitu'
+import { useEffect } from 'react'
 
-export function NavBar({loggedIn,setLoggedIn}) {
+export function NavBar({kirjautunut,setKirjautunut}) {
     const classes = useStyles()
 
     strings.setLanguage(strings.getInterfaceLanguage())
     console.log("Browser language in Settings: " + strings.getInterfaceLanguage())
     console.log("React App language: " + strings.getLanguage())
 
-    if (loggedIn) {
+    if (kirjautunut) {
         return (
             <>
                 <AppBar position="fixed">
@@ -25,7 +27,7 @@ export function NavBar({loggedIn,setLoggedIn}) {
                         <MenuButton name="user" href="/user" style={{ backgroundColor: "white", color: "blue", marginRight: "10px" }}>{strings.kayttaja}</MenuButton>
                         <MenuButton name="admin" href="/admin" style={{ backgroundColor: "white", color: "red" }}>{strings.yllapitaja}</MenuButton>
                         {/* <MenuButton name="kieli" onClick={() => vaihdetaanKieli()}>{strings.kieli + "(" + strings.getLanguage() + ")"}</MenuButton> */}
-                        <MenuButton name="poistu" onClick={()=>{setLoggedIn(false)}}>{strings.poistu}</MenuButton>
+                        <MenuButton name="poistu" onClick={()=>{window.localStorage.removeItem('jwtToken');setKirjautunut(false)}}>{strings.poistu}</MenuButton>
                     </Toolbar>
                 </AppBar>
             </>

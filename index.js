@@ -85,9 +85,15 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(morgan('dev'))
 // asetetaan node.js osoite, vakio-portti sekä cors (clientin portti 3000)
 // app.options(path_protocol + path_domain + ':3000/', cors())
-app.options(appOrigin, cors())
-app.use(cors())
+// app.options(appOrigin, cors())
+// app.use(cors())
 
+var corsOptions = {  // tietoturva: määritellään mistä originista sallitaan http-pyynnöt
+  origin: appOrigin,
+  optionsSuccessStatus: 200, // For legacy browser support
+  methods: "GET,PUT,POST,DELETE"
+}
+app.use(cors(corsOptions))
 /* WEBSOCKET NOTIFICAATIO-SERVERI MUUTOKSILLE TIETOKANNASSA.
 -----------------------------------------------------------------
 Socket.io toimii nyt (localhostissa ja Herokussa odotetusti) samassa portissa kuin express, mutta se ei haittaa, koska socket.io käyttää
@@ -208,6 +214,53 @@ app.post('/kirjaudu', (req, res, next) => {
     res.status(200).send({ token })
   })
 })
+
+// lataa useita tiedostoja serverille
+app.post('/upload', async (req, res) => {
+  try {
+    if (!req.files) {
+      res.send({
+        status: false,
+        message: 'No file uploaded'
+      });
+    } else {
+      let data = [];
+
+      // käydään kaikki tiedostot läpi
+      _.forEach(_.keysIn(req.files.photos), (key) => {
+        let photo = req.files.photos[key];
+
+        // siirretään tiedosto uploads-kansioon
+        photo.mv('./uploads/' + photo.name);
+
+        //työnnetään kaikki informaatio
+        data.push({
+          name: photo.name,
+          mimetype: photo.mimetype,
+          size: photo.size
+        });
+      });
+
+      // palautetaan response
+      res.send({
+        status: true,
+        message: 'Files are uploaded',
+        data: data
+      });
+    }
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+// tehdään uploads-sijainnista staattinen
+app.use(express.static('uploads'));
+
+// //----------------------------------------------------------------------------------------------
+// // autentikointi
+// const isAuthenticated = require('./authentication')
+// app.use(isAuthenticated)
+// //----------------------------------------------------------------------------------------------
 
 // tarkistetaan onko käyttäjä admin
 app.get('/onko_admin/:id', (req, response, next) => {
@@ -433,46 +486,6 @@ app.get('/vaihtoehto', (req, response, next) => {
   })
 })
 
-// lataa useita tiedostoja serverille
-app.post('/upload', async (req, res) => {
-  try {
-    if (!req.files) {
-      res.send({
-        status: false,
-        message: 'No file uploaded'
-      });
-    } else {
-      let data = [];
-
-      // käydään kaikki tiedostot läpi
-      _.forEach(_.keysIn(req.files.photos), (key) => {
-        let photo = req.files.photos[key];
-
-        // siirretään tiedosto uploads-kansioon
-        photo.mv('./uploads/' + photo.name);
-
-        //työnnetään kaikki informaatio
-        data.push({
-          name: photo.name,
-          mimetype: photo.mimetype,
-          size: photo.size
-        });
-      });
-
-      // palautetaan response
-      res.send({
-        status: true,
-        message: 'Files are uploaded',
-        data: data
-      });
-    }
-  } catch (err) {
-    res.status(500).send(err);
-  }
-});
-
-// tehdään uploads-sijainnista staattinen
-app.use(express.static('uploads'));
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/client/build/index.html'))

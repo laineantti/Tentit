@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import User from './User'
 /* import Admin from './Admin' */
 import Stats from './Stats'
@@ -8,17 +8,25 @@ import Register from './Register'
 import Login from './Login'
 import { NavBar } from './NavBar'
 import { Route, Switch/* , Redirect */ } from 'react-router-dom'
+import {autentikoitu} from './autentikoitu'
 
 export const Routes = () => {
+    const [kirjautunut, setKirjautunut] = useState(false)
 
+    useEffect(() => {
+        setKirjautunut(autentikoitu()) 
+    },[])
+     
     // tarkistetaanko kirjautumisen tila tokenista ja asetetaan tähän arvoksi?
-    const [loggedIn, setLoggedIn] = useState(true)
 
     return (
         <div>
-            <NavBar loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
-            {loggedIn ?
+            <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>          
+            {kirjautunut ?
                 <Switch>
+                    <Route exact path="/login">
+                        <User />
+                    </Route>
                     <Route exact path="/user">
                         <User />
                     </Route>
@@ -41,7 +49,10 @@ export const Routes = () => {
                         <Register />
                     </Route>
                     <Route exact path="/login">
-                        <Login setLoggedIn={setLoggedIn} />
+                        <Login kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>
+                    </Route>
+                    <Route exact path="/">
+                        <Login />
                     </Route>
                 </Switch>
             }
