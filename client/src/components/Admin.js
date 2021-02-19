@@ -1,10 +1,10 @@
 import { React, useState, useEffect, useReducer } from 'react'
 import uuid from 'react-uuid'
-import { useStyles, /* GreenCheckbox, */ ExamButton } from './Style'
+import { useStyles, GreenCheckbox, ExamButton } from './Style'
 import axios from 'axios'
 import {
-    Card, CardContent, CardMedia, Container, Button,
-    List, ListItem, Box, /* Checkbox, */ Icon, IconButton, 
+    Card, CardContent, /* CardMedia, */ Container, Button,
+    List, ListItem, Box, /* Checkbox, */ Icon, IconButton,
     CssBaseline, Dialog, DialogTitle, DialogContent,
     TextField
 } from '@material-ui/core'
@@ -50,7 +50,7 @@ function reducer(state, action) {
             return tempCopy
 
         case "card_label_changed":
-            tempCopy[action.data.examIndex].cards[action.data.cardIndex].label =
+            tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex].lause =
                 action.data.newCardLabel
             return tempCopy
 
@@ -78,9 +78,9 @@ function reducer(state, action) {
             tempCopy.push(newExam)
             return tempCopy
 
-        case "checked_changed":
+        case "correct_checked_changed":
             tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
-                .vaihtoehdot[action.data.listItemIndex].vastaus = action.data.checkedValue
+                .vaihtoehdot[action.data.listItemIndex].oikea_vastaus = action.data.checkedValue
             return tempCopy
 
         case "choise_changed":
@@ -109,14 +109,14 @@ function reducer(state, action) {
 }
 
 function App() {
-    const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
+    /* const [showCorrectAnswers, setShowCorrectAnswers] = useState(false) */
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
     const [state, dispatch] = useReducer(reducer, [])
     const [examName, setExamName] = useState("")
     const [open, setOpen] = useState(false)
     const classes = useStyles()
     /* const currentKurssiIndex = 1 */
-    const currentUserIndex = 1
+    /* const currentUserIndex = 1 */
 
     useEffect(() => {
 
@@ -132,7 +132,7 @@ function App() {
 
         const fetchData = async () => {
             try {
-                let tentit_data = await axios.get(path+"kayttajan_tentit/" + currentUserIndex)
+                let tentit_data = await axios.get(path + "tentti")
                 let tentit = tentit_data.data
                 /* console.log("Käyttäjä " + currentUserIndex + " kirjautuneena.") */
 
@@ -141,28 +141,28 @@ function App() {
                     for (var i = 0; i < tentit.length; i++) {
                         // haetaan tentin kysymykset
                         tentit[i].kysymykset = []
-                        let kysymykset_taulu = await axios.get(path+"tentin_kysymykset/" + tentit[i].id)
+                        let kysymykset_taulu = await axios.get(path + "tentin_kysymykset/" + tentit[i].id)
                         tentit[i].kysymykset = kysymykset_taulu.data
                         // haetaan kayttajan_vastaukset
-                        let kayttajan_vastaukset =
+                        /* let kayttajan_vastaukset =
                             await axios.get(path+"kayttajan_vastaukset/"
-                                + currentUserIndex + "/" + tentit[i].id)
+                                + currentUserIndex + "/" + tentit[i].id) */
                         // käydään tentin kysymykset läpi
                         for (var j = 0; j < tentit[i].kysymykset.length; j++) {
                             // haetaan kysymyksen vaihtoehdot
                             tentit[i].kysymykset[j].vaihtoehdot = []
                             let vaihtoehdot_taulu =
-                                await axios.get(path+"kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id)
+                                await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id)
                             tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
                             // käydään kayttajan_vastaukset läpi
-                            for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
+                            /* for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
                                 for (var l = 0; l < kayttajan_vastaukset.data.length; l++) {
                                     if (tentit[i].kysymykset[j].vaihtoehdot[k].id === kayttajan_vastaukset.data[l].vaihtoehto_id) {
                                         tentit[i].kysymykset[j].vaihtoehdot[k]
                                             .vastaus = kayttajan_vastaukset.data[l].vastaus
                                     }
                                 }
-                            }
+                            } */
                         }
                     }
                     dispatch({ type: "INIT_DATA", data: tentit })
@@ -178,23 +178,23 @@ function App() {
         fetchData()
     }, [])
 
-   /*  useEffect(() => {
-
-        const updateData = async () => {
-            try {
-                await axios.put(path+"tentit", state)
-            } catch (exception) {
-                console.log("Datan päivitäminen ei onnistunut.")
-            }
-            finally {
-
-            }
-        }
-
-        if (dataInitialized) {
-            updateData()
-        }
-    }, [state, dataInitialized]) */
+     /* useEffect(() => {
+ 
+         const updateData = async () => {
+             try {
+                 await axios.put(path+"tentti"+tentti_id+"/"+uusi_tentti_nimi, state)
+             } catch (exception) {
+                 console.log("Datan päivitäminen ei onnistunut.")
+             }
+             finally {
+ 
+             }
+         }
+ 
+         if (dataInitialized) {
+             updateData()
+         }
+     }, [state, dataInitialized]) */
 
     const handleClickOpen = () => {
         setOpen(true)
@@ -204,21 +204,33 @@ function App() {
         setOpen(false)
     }
 
-    /* const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex, exam_id) => {
+    const kysymyksenNimiMuuttui = async (newCardLabel, CardIndex) => {
         try {
-            // /paivita_valinta/:kayttaja_id/:vaihtoehto_id/:tentti_id/:kurssi_id/:vastaus
-            console.log(vaihtoehto_id)
-            await axios.put(path+"paivita_valinta/"
-                + currentUserIndex + "/"
+            await axios.put(path + "/paivita_tentti/"
+                + currentExamIndex + "/"
+                + newCardLabel)
+        } catch (exception) {
+            console.log("Datan päivitäminen ei onnistunut.")
+        }
+        dispatch({
+            type: "correct_checked_changed",
+            data: {
+                examIndex: currentExamIndex,
+                newCardLabel: newCardLabel
+            }
+        })
+    }
+
+    const oikeaValintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex) => {
+        try {
+            await axios.put(path + "paivita_oikea_valinta/"
                 + vaihtoehto_id + "/"
-                + exam_id + "/"
-                + currentKurssiIndex + "/"
                 + checkedValue)
         } catch (exception) {
             console.log("Datan päivitäminen ei onnistunut.")
         }
         dispatch({
-            type: "checked_changed",
+            type: "correct_checked_changed",
             data: {
                 examIndex: currentExamIndex,
                 cardIndex: kysymys_id,
@@ -226,20 +238,20 @@ function App() {
                 checkedValue: checkedValue
             }
         })
-    } */
+    }
 
     const currentExamIndexChanged = (value) => {
         /* console.log(value) */
         setCurrentExamIndex(value)
-        setShowCorrectAnswers(false)
+        /* setShowCorrectAnswers(false) */
     }
 
-    const allCorrect = (cardChoisesArray) => {
-        /* console.log(cardChoisesArray.filter(choise => choise.vastaus
-            === choise.oikea_vastaus).length, cardChoisesArray.length) */
+    /* const allCorrect = (cardChoisesArray) => {
+        console.log(cardChoisesArray.filter(choise => choise.vastaus
+            === choise.oikea_vastaus).length, cardChoisesArray.length)
         return (cardChoisesArray.filter(choise => choise.vastaus
             === choise.oikea_vastaus).length === cardChoisesArray.length)
-    }
+    } */
 
     return (
         <Box>
@@ -290,8 +302,8 @@ function App() {
                 {currentExamIndex >= 0 &&
                     (
                         <>
-                            <h2>{state[currentExamIndex].nimi + " (exam.id = " + state[currentExamIndex].id + ")"}</h2>
-                            {Object.values(state[currentExamIndex].kysymykset)
+                            <h2>{state[currentExamIndex].nimi/*  + " (exam.id = " + state[currentExamIndex].id + ")" */}</h2>
+                            {state[currentExamIndex].kysymykset
                                 .map((card, cardIndex) =>
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
@@ -311,7 +323,7 @@ function App() {
                                                             cardIndex: cardIndex
                                                         }
                                                     })}
-                                                    value={card.label} />
+                                                    value={card.lause} />
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
                                                     color="primary" onClick={() => dispatch(
                                                         {
@@ -323,12 +335,16 @@ function App() {
                                                     )}>
                                                     <DeleteIcon />
                                                 </IconButton >
-                                                {Object.values(card.vaihtoehdot).map((listItem, listItemIndex) => (
+                                                {card.vaihtoehdot.map((listItem, listItemIndex) => (
                                                     <ListItem key={uuid()}> {/* (listItem.vastaus === undefined)?false: */}
+                                                        <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
+                                                            onChange={(event) => {
+                                                                oikeaValintaMuuttui(cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
+                                                            }} />
                                                         <TextField key={uuid()} style={{
                                                             minWidth: "600px", overflow: "hidden",
                                                             textOverflow: "ellipsis"
-                                                        }} value={listItem.choise}
+                                                        }} value={listItem.vaihtoehto}
                                                             onChange={(event) => dispatch(
                                                                 {
                                                                     type: "choise_changed", data: {
@@ -353,11 +369,10 @@ function App() {
                                                         {/* {console.log(listItem)} */}
                                                         {/* <Checkbox checked={listItem.vastaus} disabled={showCorrectAnswers}
                                                             onChange={(event) => {
-                                                                valintaMuuttui(cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
+                                                                oikeaValintaMuuttui(cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
                                                             }}
-                                                        />
-                                                        {showCorrectAnswers && <GreenCheckbox disabled checked={listItem.oikea_vastaus} color="primary" />}
-                                                        <p style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                                                        /> */}
+                                                        {/* <p style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
                                                             {listItem.vaihtoehto}
                                                         </p> */}
                                                     </ListItem>
@@ -370,12 +385,12 @@ function App() {
                                                 </IconButton>
                                             </List>
                                         </CardContent>
-                                        {(showCorrectAnswers && (allCorrect(Object.values(card.vaihtoehdot))) ? (
+                                        {/* {(showCorrectAnswers && (allCorrect(Object.values(card.vaihtoehdot))) ? (
                                             <CardMedia className={classes.cover}>
                                                 <img className="image" src="/images/selma.png"
                                                     height="30px" width="30px" alt="Selma" />
                                             </CardMedia>
-                                        ) : (null))}
+                                        ) : (null))} */}
                                     </Card>
                                 )
                             }
@@ -383,10 +398,10 @@ function App() {
                                 onClick={() => dispatch({ type: "add_card" })}>
                                 <Icon>add_circle</Icon>
                             </IconButton>
-                            <Button style={{ marginTop: "10px", marginRight: "10px" }} name="vastaukset" variant="contained" color="primary"
+                            {/* <Button style={{ marginTop: "10px", marginRight: "10px" }} name="vastaukset" variant="contained" color="primary"
                                 onClick={() => (
                                     (showCorrectAnswers ? setShowCorrectAnswers(false) : setShowCorrectAnswers(true))
-                                )}>Näytä vastaukset</Button>
+                                )}>Näytä vastaukset</Button> */}
                         </>
                     )
                 }
