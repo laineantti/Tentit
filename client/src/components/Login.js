@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid'
 import Typography from '@material-ui/core/Typography'
 import FormControl from '@material-ui/core/FormControl'
 import { strings } from './Locale'
+import {autentikoitu} from './autentikoitu'
 import axios from 'axios'
 
 var path = null
@@ -26,7 +27,7 @@ switch (environment) {
         throw default_error
 }
 
-const Login = ({setLoggedIn}) => {
+const Login = ({kirjautunut,setKirjautunut}) => {
     const [tempSahkoposti, setTempSahkoposti] = useState("")
     const [tempSalasana, setTempSalasana] = useState("")
     /* const [tempSalasanaUudestaan, setTempSalasanaUudestaan] = useState("") */
@@ -42,8 +43,8 @@ const Login = ({setLoggedIn}) => {
                 // tehdään post josta saadaan onnistuneessa kirjautumisessa response
                 // mistä tallennetaan datasta saatava token localStorageen
                 localStorage.setItem('jwtToken', response.data.token);
-                setLoggedIn(true)
-                alert("Kirjautuminen onnistui, tervetuloa "+response.data.sahkoposti+"!")
+                // alert("Kirjautuminen onnistui, tervetuloa "+response.data.sahkoposti+"!")
+                setKirjautunut(true)
             })
         } catch (e) {
             console.log("login error", e)

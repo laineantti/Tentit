@@ -256,11 +256,11 @@ app.post('/upload', async (req, res) => {
 // tehdään uploads-sijainnista staattinen
 app.use(express.static('uploads'));
 
-//----------------------------------------------------------------------------------------------
-// autentikointi
-const isAuthenticated = require('./authentication')
-app.use(isAuthenticated)
-//----------------------------------------------------------------------------------------------
+// //----------------------------------------------------------------------------------------------
+// // autentikointi
+// const isAuthenticated = require('./authentication')
+// app.use(isAuthenticated)
+// //----------------------------------------------------------------------------------------------
 
 // tarkistetaan onko käyttäjä admin
 app.get('/onko_admin/:id', (req, response, next) => {

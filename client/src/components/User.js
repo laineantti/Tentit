@@ -53,36 +53,35 @@ function App() {
     const [authToken, setAuthToken] = useState("")
     const classes = useStyles()
     const currentKurssiIndex = 1
-    const [currentUserIndex, setCurrentUserIndex] = useState(null)
+    const currentUserIndex = 1
 
-    const userHook = () => {
-        const loggedUserJSON = window.localStorage.getItem('jwtToken')
-        if (loggedUserJSON) {
-          let kayttaja = JSON.parse(loggedUserJSON)
-          console.log(kayttaja)
-          setAuthToken(kayttaja.token)
-          setCurrentUserIndex(28)
-        }
-    }
+    // const userHook = () => {
+    //     const loggedUserJSON = window.localStorage.getItem('jwtToken')
+    //     if (loggedUserJSON) {
+    //       let kayttaja = JSON.parse(loggedUserJSON)
+    //       console.log(kayttaja)
+    //       setAuthToken(kayttaja.token)
+    //     }
+    // }
       
-    useEffect(userHook, [])
+    // useEffect(userHook, [])
 
-    let headers = {
-        headers: { Authorization: `bearer ${authToken}` },
-      }
+    // let headers = {
+    //     headers: { Authorization: `bearer ${authToken}` },
+    //   }
 
-    const hook = () => {
-        userHook();
-    }
+    // const hook = () => {
+    //     userHook();
+    // }
 
-    useEffect(hook,[authToken])
+    // useEffect(hook,[authToken])
 
     useEffect(() => {
 
-        const fetchData = async (currentUserIndex, headers) => {
+        const fetchData = async () => {
             if (currentUserIndex!==null){
             try {
-                let tentit_data = await axios.get(path + "kayttajan_tentit/" + currentUserIndex,headers)
+                let tentit_data = await axios.get(path + "kayttajan_tentit/" + currentUserIndex)
                 let tentit = tentit_data.data
 
                 if (tentit.length > 0) {
@@ -90,18 +89,18 @@ function App() {
                     for (var i = 0; i < tentit.length; i++) {
                         // haetaan tentin kysymykset
                         tentit[i].kysymykset = []
-                        let kysymykset_taulu = await axios.get(path + "tentin_kysymykset/" + tentit[i].id,headers)
+                        let kysymykset_taulu = await axios.get(path + "tentin_kysymykset/" + tentit[i].id)
                         tentit[i].kysymykset = kysymykset_taulu.data
                         // haetaan kayttajan_vastaukset
                         let kayttajan_vastaukset =
                             await axios.get(path + "kayttajan_vastaukset/"
-                                + currentUserIndex + "/" + tentit[i].id,headers)
+                                + currentUserIndex + "/" + tentit[i].id)
                         // käydään tentin kysymykset läpi
                         for (var j = 0; j < tentit[i].kysymykset.length; j++) {
                             // haetaan kysymyksen vaihtoehdot
                             tentit[i].kysymykset[j].vaihtoehdot = []
                             let vaihtoehdot_taulu =
-                                await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id,headers)
+                                await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id)
                             tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
                             // käydään kayttajan_vastaukset läpi
                             for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
@@ -139,7 +138,7 @@ function App() {
                 + vaihtoehto_id + "/"
                 + exam_id + "/"
                 + currentKurssiIndex + "/"
-                + checkedValue,headers)
+                + checkedValue)
         } catch (exception) {
             console.log("Datan päivitäminen ei onnistunut.")
         }
