@@ -1,7 +1,7 @@
 
 import { useState } from 'react'
 import User from './User'
-import Admin from './Admin'
+/* import Admin from './Admin' */
 import Stats from './Stats'
 import Upload from './Upload'
 import Register from './Register'
@@ -12,7 +12,7 @@ import { Route, Switch/* , Redirect */ } from 'react-router-dom'
 export const Routes = () => {
 
     // tarkistetaanko kirjautumisen tila tokenista ja asetetaan tähän arvoksi?
-    const [loggedIn, setLoggedIn] = useState(false)
+    const [loggedIn, setLoggedIn] = useState(true)
 
     return (
         <div>
@@ -25,9 +25,9 @@ export const Routes = () => {
                     <Route exact path="/">
                         <User />
                     </Route>
-                    <Route exact path="/admin">
+                    {/* <Route exact path="/admin">
                         <Admin />
-                    </Route>
+                    </Route> */}
                     <Route exact path="/stats">
                         <Stats />
                     </Route>
