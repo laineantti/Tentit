@@ -5,6 +5,7 @@ import { BrowserRouter as Router } from 'react-router-dom'
 import { Routes } from './components/Routes' // where we are going to specify our routes
 import io from 'socket.io-client'
 import Swal from 'sweetalert2'
+import { StateProvider } from './components/store.js';
 
 // null
 var path = null
@@ -12,18 +13,18 @@ var default_error = new Error("Environment not properly set!")
 let environment = process.env.NODE_ENV || 'development'
 
 switch (environment) {
-    case 'production':
-        path = 'https://tentti-fullstack.herokuapp.com'
-        break
-    case 'development':
-        // kuunnellaan serveriä portissa 4000
-        path = 'http://localhost:4000'
-        break
-    case 'test':
-        path = 'http://localhost:4000'
-        break
-    default:
-        throw default_error
+  case 'production':
+    path = 'https://tentti-fullstack.herokuapp.com'
+    break
+  case 'development':
+    // kuunnellaan serveriä portissa 4000
+    path = 'http://localhost:4000'
+    break
+  case 'test':
+    path = 'http://localhost:4000'
+    break
+  default:
+    throw default_error
 }
 
 console.log("WebSocket kuuntelee ilmoituksia")
@@ -112,8 +113,10 @@ socket.on('update', function (data) {
 })
 
 ReactDOM.render(
-  <Router>
-    <Routes />
-  </Router>,
+  <StateProvider>
+    <Router>
+      <Routes />
+    </Router>
+  </StateProvider>,
   document.getElementById('root')
 )
