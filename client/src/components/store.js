@@ -23,7 +23,14 @@ const StateProvider = ({ children }) => {
 
             case "add_card":
                 let newCard = {
-                    lause: "Uusi kysymys", vaihtoehdot: [{ vaihtoehto: "Uusi vaihtoehto", vastaus: false, oikea_vastaus: false }]
+                    lause: "Uusi kysymys",
+                    vaihtoehdot: [
+                        {
+                            vaihtoehto: "Uusi vaihtoehto",
+                            vastaus: false,
+                            oikea_vastaus: false
+                        }
+                    ]
                 }
                 tempCopy[action.data.examIndex].kysymykset.push(newCard)
                 return tempCopy
@@ -41,17 +48,10 @@ const StateProvider = ({ children }) => {
             case "add_exam":
                 let newExam = {
                     aloitus: "",
-                    kysymykset: [
-                        {
-                            label: "",
-                            choises: [
-                                { choise: "", checked: false, correctAnswer: false }
-                            ]
-                        }
-                    ],
+                    kysymykset: [],
                     lopetus: "",
                     minimipisteraja: "",
-                    nimi: action.data.examName,
+                    nimi: "Uusi tentti",
                     suoritettu: false,
 
                 }
@@ -61,6 +61,7 @@ const StateProvider = ({ children }) => {
             case "correct_checked_changed":
                 tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
                     .vaihtoehdot[action.data.listItemIndex].oikea_vastaus = action.data.checkedValue
+                console.log(tempCopy)
                 return tempCopy
 
             case "choise_changed":

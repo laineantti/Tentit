@@ -32,8 +32,9 @@ function App() {
     const { state } = storeContext
     const { dispatch } = storeContext
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
+    const [currentDatabaseExamIdChanged, setCurrentDatabaseExamIdChanged] = useState(-1)
     const classes = useStyles()
-
+    
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -70,8 +71,8 @@ function App() {
 
     const lisaaKysymys = async () => {
         try {
-            console.log(path + "lisaa_kysymys/" + currentExamIndex)
-            await axios.post(path + "lisaa_kysymys/" + currentExamIndex)
+            console.log(path + "lisaa_kysymys/" + currentDatabaseExamIdChanged)
+            await axios.post(path + "lisaa_kysymys/" + currentDatabaseExamIdChanged)
         } catch (exception) {
             console.log("Datan päivitäminen ei onnistunut.")
         }
@@ -99,13 +100,11 @@ function App() {
 
     const lisaaTentti = async () => {
         try {
-            await axios.put(path + "lisaa_tentti/")
+            await axios.post(path + "lisaa_tentti/")
         } catch (exception) {
             console.log("Datan päivitäminen ei onnistunut.")
         }
-        dispatch({
-            type: "add_exam", data: { examName: "Uusi tentti" }
-        })
+        dispatch({ type: "add_exam" })
     }
 
     const currentExamIndexChanged = (value) => {
@@ -118,7 +117,10 @@ function App() {
             <Container key="container1_admin" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
                 component="main">
                 {Object.values(state).map((exam, examIndex) =>
-                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => currentExamIndexChanged(examIndex)}>
+                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
+                        currentExamIndexChanged(examIndex)
+                        setCurrentDatabaseExamIdChanged(exam.id)
+                    }}>
                         {exam.nimi}
                     </ExamButton>
                 )}
