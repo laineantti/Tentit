@@ -79,6 +79,16 @@ function App() {
         dispatch({ type: "add_card", data: { examIndex: currentExamIndex } })
     }
 
+    const lisaaVaihtoehto = async (cardIndex, kysymys_id) => {
+        try {
+            console.log(path + "lisaa_vaihtoehto/" + kysymys_id)
+            await axios.post(path + "lisaa_vaihtoehto/" + kysymys_id)
+        } catch (exception) {
+            console.log("Datan päivitäminen ei onnistunut.")
+        }
+        dispatch({ type: "add_choise", data: { cardIndex: cardIndex, examIndex: currentExamIndex } })
+    }
+
     const oikeaValintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex) => {
         try {
             await axios.put(path + "paivita_oikea_valinta/"
@@ -193,10 +203,7 @@ function App() {
                                                             <DeleteIcon /></IconButton >
                                                     </ListItem>
                                                 ))}
-                                                <IconButton onClick={() => dispatch({
-                                                    type: "add_choise",
-                                                    data: { cardIndex: cardIndex }
-                                                })}>
+                                                <IconButton onClick={() => lisaaVaihtoehto(cardIndex, card.id)}>
                                                     <Icon>add_circle</Icon>
                                                 </IconButton>
                                             </List>

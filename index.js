@@ -434,6 +434,30 @@ app.get('/kysymyksen_vaihtoehdot/:kysymys_id', (req, response, next) => {
     })
 })
 
+// lisää tyhjä vaihtoehto ja liitä se kysymykseen
+app.post('/lisaa_vaihtoehto/:kysymys_id', (req, response, next) => {
+  try {
+    db.query("INSERT INTO vaihtoehto (vaihtoehto) values ('Uusi vaihtoehto') RETURNING id",
+      (err, res) => {
+        if (err) {
+          return next(err)
+        }
+        db.query("INSERT INTO kysymyksen_vaihtoehdot (vaihtoehto_id,kysymys_id) values (" + res.rows[0].id + ",$1)",
+          [req.params.kysymys_id],
+          (err) => {
+            if (err) {
+              return next(err)
+            }
+          })
+        response.status(201).send("Uusi vaihtoehto lisätty ja liitetty kysymykseen onnistuneesti!")
+      })
+
+  }
+  catch (err) {
+    response.send(err)
+  }
+})
+
 // tulostetaan kaikki kysymykset
 app.get('/kysymys', (req, response, next) => {
   db.query('SELECT * FROM kysymys', (err, res) => {

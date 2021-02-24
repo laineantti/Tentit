@@ -16,8 +16,11 @@ const StateProvider = ({ children }) => {
         switch (action.type) {
 
             case "add_choise":
-                let newChoise = { choise: "", checked: false, correctAnswer: false }
-                tempCopy[action.data.examIndex].cards[action.data.cardIndex].choises
+                let newChoise = {
+                    oikea_vastaus: false,
+                    vaihtoehto: "Uusi vaihtoehto"
+                }
+                tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex].vaihtoehdot
                     .push(newChoise)
                 return tempCopy
 
