@@ -10,7 +10,7 @@ import {
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import DialogActions from '@material-ui/core/DialogActions'
-import StateContext from './StateContext'
+import { store } from './store.js'
 
 var path = null
 var default_error = new Error("Environment not properly set!")
@@ -31,27 +31,18 @@ switch (environment) {
 }
 
 function App() {
+    const storeContext = useContext(store)
+    const { state } = storeContext
+    const { dispatch } = storeContext
     /* const [showCorrectAnswers, setShowCorrectAnswers] = useState(false) */
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
     const [examName, setExamName] = useState("")
     const [open, setOpen] = useState(false)
-    const { state, dispatch } = useContext(StateContext)
     const classes = useStyles()
     /* const currentKurssiIndex = 1 */
     /* const currentUserIndex = 1 */
 
     useEffect(() => {
-
-        /* const createData = async () => {
-            try {
-                await axios.post(path+"tentit", initialData)
-                dispatch({ type: "INIT_DATA", data: initialData })
-                setdataInitialized(true)
-            } catch (exception) {
-                console.log("Tietokannan alustaminen epäonnistui.")
-            }
-        } */
-
         const fetchData = async () => {
             try {
                 let tentit_data = await axios.get(path + "tentti")
@@ -98,25 +89,7 @@ function App() {
             }
         }
         fetchData()
-    }) /* }, []) */
-
-    /* useEffect(() => {
- 
-        const updateData = async () => {
-            try {
-                await axios.put(path+"tentti"+tentti_id+"/"+uusi_tentti_nimi, state)
-            } catch (exception) {
-                console.log("Datan päivitäminen ei onnistunut.")
-            }
-            finally {
- 
-            }
-        }
- 
-        if (dataInitialized) {
-            updateData()
-        }
-    }, [state, dataInitialized]) */
+    }, [])
 
     const handleClickOpen = () => {
         setOpen(true)
@@ -162,6 +135,23 @@ function App() {
         })
     }
 
+    // serveriin pitää lisätä/tehdä "lisaa_tentti"
+    // eli tuo alla oleva axios-pyyntö ei toimi vielä
+    const lisaaTentti = async (examName) => {
+        try {
+            await axios.put(path + "lisaa_tentti/"
+                + examName)
+        } catch (exception) {
+            console.log("Datan päivitäminen ei onnistunut.")
+        }
+        dispatch({
+            type: "add_exam", data: {
+                examName: examName,
+                handle_close: handleClose
+            }
+        })
+    }
+
     const currentExamIndexChanged = (value) => {
         /* console.log(value) */
         setCurrentExamIndex(value)
@@ -176,163 +166,153 @@ function App() {
     } */
 
     return (
-        <StateContext.Provider value={{ state, dispatch }}>
-
-            <Box>
-                <CssBaseline />
-                <Container key="container1_admin" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
-                    component="main">
-                    {Object.values(state).map((exam, examIndex) =>
-                        <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => currentExamIndexChanged(examIndex)}>
-                            {/* {exam.nimi + "(exam.id=" + exam.id + ", examIndex=" + examIndex + ")"} */}
-                            {exam.nimi}
-                        </ExamButton>
-                    )}
-                    <IconButton onClick={handleClickOpen}>
-                        <Icon>add_circle</Icon>
-                    </IconButton>
-                    <Dialog open={open} onClose={handleClose}
-                        aria-labelledby="form-dialog-title">
-                        <DialogTitle id="form-dialog-title">Lisää uusi tentti</DialogTitle>
-                        <DialogContent>
-                            {/* TextField, defaultValue, onBlur = toimii */}
-                            <TextField
-                                autoFocus
-                                margin="dense"
-                                id="examName"
-                                label="Tentin nimi"
-                                type="exam"
-                                fullWidth
-                                value={examName}
-                                onChange={(event) => setExamName(event.target.value)}
-                            />
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={handleClose} color="primary">
-                                Peruuta
+        <Box>
+            <CssBaseline />
+            <Container key="container1_admin" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
+                component="main">
+                {Object.values(state).map((exam, examIndex) =>
+                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => currentExamIndexChanged(examIndex)}>
+                        {/* {exam.nimi + "(exam.id=" + exam.id + ", examIndex=" + examIndex + ")"} */}
+                        {exam.nimi}
+                    </ExamButton>
+                )}
+                <IconButton onClick={handleClickOpen}>
+                    <Icon>add_circle</Icon>
+                </IconButton>
+                <Dialog open={open} onClose={handleClose}
+                    aria-labelledby="form-dialog-title">
+                    <DialogTitle id="form-dialog-title">Lisää uusi tentti</DialogTitle>
+                    <DialogContent>
+                        {/* TextField, defaultValue, onChange = toimii */}
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="examName"
+                            label="Tentin nimi"
+                            type="exam"
+                            fullWidth
+                            value={examName}
+                            onChange={(event) => setExamName(event.target.value)}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose} color="primary">
+                            Peruuta
                       </Button>
-                            <Button style={{ marginTop: "10px" }} onClick={() => dispatch(
-                                {
-                                    type: "add_exam", data: {
-                                        examName: examName,
-                                        handle_close: handleClose
-                                    }
-                                }
-                            )} color="primary">
-                                Lisää tentti
+                        <Button style={{ marginTop: "10px" }} onClick={(event) => lisaaTentti(event)} color="primary">
+                            Lisää tentti
                       </Button>
-                        </DialogActions>
-                    </Dialog>
-                    {currentExamIndex >= 0 &&
-                        (
-                            <>
-                                <h2>{state[currentExamIndex].nimi/*  + " (exam.id = " + state[currentExamIndex].id + ")" */}</h2>
-                                {state[currentExamIndex].kysymykset
-                                    .map((card, cardIndex) =>
-                                        <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
-                                            <CardContent style={{ width: "100%" }} className={classes.content}>
-                                                <List>
-                                                    {/* <p className="label" style={{ whiteSpace: "pre-wrap" }}>
+                    </DialogActions>
+                </Dialog>
+                {currentExamIndex >= 0 &&
+                    (
+                        <>
+                            <h2>{state[currentExamIndex].nimi/*  + " (exam.id = " + state[currentExamIndex].id + ")" */}</h2>
+                            {state[currentExamIndex].kysymykset
+                                .map((card, cardIndex) =>
+                                    <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
+                                        <CardContent style={{ width: "100%" }} className={classes.content}>
+                                            <List>
+                                                {/* <p className="label" style={{ whiteSpace: "pre-wrap" }}>
                                                     {card.lause + " (exam.id = " + state[currentExamIndex].id + ")"}
                                                 </p> */}
-                                                    <TextField key={uuid()} style={{
-                                                        overflow: "hidden",
-                                                        textOverflow: "ellipsis"
-                                                    }}
-                                                        onChange={(event) => dispatch({
-                                                            type: "card_label_changed",
-                                                            data: {
-                                                                newCardLabel: event.target.value,
+                                                <TextField key={uuid()} style={{
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis"
+                                                }}
+                                                    onChange={(event) => dispatch({
+                                                        type: "card_label_changed",
+                                                        data: {
+                                                            newCardLabel: event.target.value,
+                                                            examIndex: currentExamIndex,
+                                                            cardIndex: cardIndex
+                                                        }
+                                                    })}
+                                                    value={card.lause} />
+                                                <IconButton key={uuid()} style={{ float: "right" }} label="delete"
+                                                    color="primary" onClick={() => dispatch(
+                                                        {
+                                                            type: "card_deleted", data: {
                                                                 examIndex: currentExamIndex,
                                                                 cardIndex: cardIndex
                                                             }
-                                                        })}
-                                                        value={card.lause} />
-                                                    <IconButton key={uuid()} style={{ float: "right" }} label="delete"
-                                                        color="primary" onClick={() => dispatch(
-                                                            {
-                                                                type: "card_deleted", data: {
-                                                                    examIndex: currentExamIndex,
-                                                                    cardIndex: cardIndex
+                                                        }
+                                                    )}>
+                                                    <DeleteIcon />
+                                                </IconButton >
+                                                {card.vaihtoehdot.map((listItem, listItemIndex) => (
+                                                    <ListItem key={uuid()}> {/* (listItem.vastaus === undefined)?false: */}
+                                                        <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
+                                                            onChange={(event) => {
+                                                                oikeaValintaMuuttui(cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
+                                                            }} />
+                                                        <TextField key={uuid()} style={{
+                                                            minWidth: "600px", overflow: "hidden",
+                                                            textOverflow: "ellipsis"
+                                                        }} value={listItem.vaihtoehto}
+                                                            onChange={(event) => dispatch(
+                                                                {
+                                                                    type: "choise_changed", data: {
+                                                                        examIndex: currentExamIndex,
+                                                                        cardIndex: cardIndex,
+                                                                        listItemIndex: listItemIndex,
+                                                                        newChoise: event.target.value
+                                                                    }
                                                                 }
-                                                            }
-                                                        )}>
-                                                        <DeleteIcon />
-                                                    </IconButton >
-                                                    {card.vaihtoehdot.map((listItem, listItemIndex) => (
-                                                        <ListItem key={uuid()}> {/* (listItem.vastaus === undefined)?false: */}
-                                                            <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
-                                                                onChange={(event) => {
-                                                                    oikeaValintaMuuttui(cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
-                                                                }} />
-                                                            <TextField key={uuid()} style={{
-                                                                minWidth: "600px", overflow: "hidden",
-                                                                textOverflow: "ellipsis"
-                                                            }} value={listItem.vaihtoehto}
-                                                                onChange={(event) => dispatch(
-                                                                    {
-                                                                        type: "choise_changed", data: {
-                                                                            examIndex: currentExamIndex,
-                                                                            cardIndex: cardIndex,
-                                                                            listItemIndex: listItemIndex,
-                                                                            newChoise: event.target.value
-                                                                        }
+                                                            )} />
+                                                        <IconButton style={{ float: "right" }} label="delete" color="primary"
+                                                            onClick={() => dispatch(
+                                                                {
+                                                                    type: "choise_deleted", data: {
+                                                                        examIndex: currentExamIndex,
+                                                                        cardIndex: cardIndex,
+                                                                        listItemIndex: listItemIndex
                                                                     }
-                                                                )} />
-                                                            <IconButton style={{ float: "right" }} label="delete" color="primary"
-                                                                onClick={() => dispatch(
-                                                                    {
-                                                                        type: "choise_deleted", data: {
-                                                                            examIndex: currentExamIndex,
-                                                                            cardIndex: cardIndex,
-                                                                            listItemIndex: listItemIndex
-                                                                        }
-                                                                    }
-                                                                )}>
-                                                                <DeleteIcon /></IconButton >
-                                                            {/* {console.log(listItem)} */}
-                                                            {/* <Checkbox checked={listItem.vastaus} disabled={showCorrectAnswers}
+                                                                }
+                                                            )}>
+                                                            <DeleteIcon /></IconButton >
+                                                        {/* {console.log(listItem)} */}
+                                                        {/* <Checkbox checked={listItem.vastaus} disabled={showCorrectAnswers}
                                                             onChange={(event) => {
                                                                 oikeaValintaMuuttui(cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
                                                             }}
                                                         /> */}
-                                                            {/* <p style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                                                        {/* <p style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
                                                             {listItem.vaihtoehto}
                                                         </p> */}
-                                                        </ListItem>
-                                                    ))}
-                                                    <IconButton onClick={() => dispatch({
-                                                        type: "add_choise",
-                                                        data: { cardIndex: cardIndex }
-                                                    })}>
-                                                        <Icon>add_circle</Icon>
-                                                    </IconButton>
-                                                </List>
-                                            </CardContent>
-                                            {/* {(showCorrectAnswers && (allCorrect(Object.values(card.vaihtoehdot))) ? (
+                                                    </ListItem>
+                                                ))}
+                                                <IconButton onClick={() => dispatch({
+                                                    type: "add_choise",
+                                                    data: { cardIndex: cardIndex }
+                                                })}>
+                                                    <Icon>add_circle</Icon>
+                                                </IconButton>
+                                            </List>
+                                        </CardContent>
+                                        {/* {(showCorrectAnswers && (allCorrect(Object.values(card.vaihtoehdot))) ? (
                                             <CardMedia className={classes.cover}>
                                                 <img className="image" src="/images/selma.png"
                                                     height="30px" width="30px" alt="Selma" />
                                             </CardMedia>
                                         ) : (null))} */}
-                                        </Card>
-                                    )
-                                }
-                                < IconButton style={{ float: "right" }}
-                                    onClick={() => dispatch({ type: "add_card" })}>
-                                    <Icon>add_circle</Icon>
-                                </IconButton>
-                                {/* <Button style={{ marginTop: "10px", marginRight: "10px" }} name="vastaukset" variant="contained" color="primary"
+                                    </Card>
+                                )
+                            }
+                            < IconButton style={{ float: "right" }}
+                                onClick={() => dispatch({ type: "add_card" })}>
+                                <Icon>add_circle</Icon>
+                            </IconButton>
+                            {/* <Button style={{ marginTop: "10px", marginRight: "10px" }} name="vastaukset" variant="contained" color="primary"
                                 onClick={() => (
                                     (showCorrectAnswers ? setShowCorrectAnswers(false) : setShowCorrectAnswers(true))
                                 )}>Näytä vastaukset</Button> */}
-                            </>
-                        )
-                    }
-                </Container>
-            </Box>
-        </StateContext.Provider>
+                        </>
+                    )
+                }
+            </Container>
+        </Box>
     )
 }
 
-export default { App, StateContext }
+export default App

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react'
 import User from './User'
-/* import Admin from './Admin' */
+import Admin from './Admin'
 import Stats from './Stats'
 import Upload from './Upload'
 import Register from './Register'
@@ -33,9 +33,9 @@ export const Routes = () => {
                     <Route exact path="/">
                         <User />
                     </Route>
-                    {/* <Route exact path="/admin">
+                    <Route exact path="/admin">
                         <Admin />
-                    </Route> */}
+                    </Route>
                     <Route exact path="/stats">
                         <Stats />
                     </Route>
