@@ -23,10 +23,9 @@ const StateProvider = ({ children }) => {
 
             case "add_card":
                 let newCard = {
-                    label: "", choises: [{ choise: "", checked: false, correctAnswer: false }]
+                    lause: "Uusi kysymys", vaihtoehdot: [{ vaihtoehto: "Uusi vaihtoehto", vastaus: false, oikea_vastaus: false }]
                 }
-                tempCopy[action.data.examIndex].cards[action.data.cardIndex].cards
-                    .push(newCard)
+                tempCopy[action.data.examIndex].kysymykset.push(newCard)
                 return tempCopy
 
             case "card_label_changed":

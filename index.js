@@ -389,6 +389,30 @@ app.get('/kayttajan_vastaukset/:kayttaja_id/:tentti_id', (req, response, next) =
     })
 })
 
+// lisää tyhjä kysymys ja liitä se tenttiin
+app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
+  try {
+    db.query("INSERT INTO kysymys (lause) values ('Uusi kysymys') RETURNING id",
+      (err, res) => {
+        if (err) {
+          return next(err)
+        }
+        db.query("INSERT INTO tentin_kysymykset (kysymys_id,tentti_id) values (" + res.rows[0].id + ",$1)",
+          [req.params.tentti_id],
+          (err) => {
+            if (err) {
+              return next(err)
+            }
+          })
+        response.status(201).send("Uusi kysymys lisätty ja liitetty tenttiin onnistuneesti!")
+      })
+
+  }
+  catch (err) {
+    response.send(err)
+  }
+})
+
 // tulostetaan kaikkien kysymysten vaihtoehdot
 app.get('/kysymyksen_vaihtoehdot', (req, response, next) => {
   db.query('SELECT * FROM kysymyksen_vaihtoehdot', (err, res) => {
@@ -461,6 +485,22 @@ app.get('/tentti/:id', (req, response, next) => {
   })
 })
 
+// lisää tyhjä tentti
+app.post('/lisaa_tentti', (req, res, next) => {
+  try {
+    db.query("INSERT INTO tentti (nimi, suoritettu, aloitus, lopetus, minimipisteraja) values ('Uusi tentti',false,now(),now(),'65')",
+      (err) => {
+        if (err) {
+          return next(err)
+        }
+        res.status(201).send("Uusi tentti lisätty onnistuneesti!")
+      })
+  }
+  catch (err) {
+    res.send(err)
+  }
+})
+
 // päivitetään tentin nimi
 app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
   try {
@@ -474,7 +514,7 @@ app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
   catch (err) {
     response.send(err)
   }
-}) 
+})
 
 // palautetaan vaihtoehdot
 app.get('/vaihtoehto', (req, response, next) => {

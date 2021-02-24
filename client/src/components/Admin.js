@@ -68,21 +68,14 @@ function App() {
         fetchData()
     }, [])
 
-    const kysymyksenNimiMuuttui = async (newCardLabel, CardIndex) => {
+    const lisaaKysymys = async () => {
         try {
-            await axios.put(path + "/paivita_tentti/"
-                + currentExamIndex + "/"
-                + newCardLabel)
+            console.log(path + "lisaa_kysymys/" + currentExamIndex)
+            await axios.post(path + "lisaa_kysymys/" + currentExamIndex)
         } catch (exception) {
             console.log("Datan päivitäminen ei onnistunut.")
         }
-        dispatch({
-            type: "correct_checked_changed",
-            data: {
-                examIndex: currentExamIndex,
-                newCardLabel: newCardLabel
-            }
-        })
+        dispatch({ type: "add_card", data: { examIndex: currentExamIndex } })
     }
 
     const oikeaValintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex) => {
@@ -104,8 +97,6 @@ function App() {
         })
     }
 
-    // serveriin pitää lisätä/tehdä "lisaa_tentti"
-    // eli tuo alla oleva axios-pyyntö ei toimi vielä
     const lisaaTentti = async () => {
         try {
             await axios.put(path + "lisaa_tentti/")
@@ -113,7 +104,7 @@ function App() {
             console.log("Datan päivitäminen ei onnistunut.")
         }
         dispatch({
-            type: "add_exam", data: {examName: "Uusi tentti"}
+            type: "add_exam", data: { examName: "Uusi tentti" }
         })
     }
 
@@ -131,7 +122,7 @@ function App() {
                         {exam.nimi}
                     </ExamButton>
                 )}
-                <IconButton onClick={()=>{lisaaTentti()}}>
+                <IconButton onClick={() => { lisaaTentti() }}>
                     <Icon>add_circle</Icon>
                 </IconButton>
                 {currentExamIndex >= 0 &&
@@ -212,7 +203,7 @@ function App() {
                                 )
                             }
                             <IconButton style={{ float: "right" }}
-                                onClick={() => dispatch({ type: "add_card" })}>
+                                onClick={() => lisaaKysymys()}>
                                 <Icon>add_circle</Icon>
                             </IconButton>
                         </>
