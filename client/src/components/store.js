@@ -56,7 +56,6 @@ const StateProvider = ({ children }) => {
                     suoritettu: false,
 
                 }
-                action.data.handle_close()
                 tempCopy.push(newExam)
                 return tempCopy
 

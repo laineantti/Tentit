@@ -3,13 +3,10 @@ import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 import axios from 'axios'
 import {
-    Card, CardContent, /* CardMedia, */ Container, Button,
-    List, ListItem, Box, /* Checkbox, */ Icon, IconButton,
-    CssBaseline, Dialog, DialogTitle, DialogContent,
-    TextField
+    Card, CardContent, Container, List, ListItem, Box, Icon,
+    IconButton, CssBaseline, TextField
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
-import DialogActions from '@material-ui/core/DialogActions'
 import { store } from './store.js'
 
 var path = null
@@ -34,20 +31,14 @@ function App() {
     const storeContext = useContext(store)
     const { state } = storeContext
     const { dispatch } = storeContext
-    /* const [showCorrectAnswers, setShowCorrectAnswers] = useState(false) */
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
-    const [examName, setExamName] = useState("")
-    const [open, setOpen] = useState(false)
     const classes = useStyles()
-    /* const currentKurssiIndex = 1 */
-    /* const currentUserIndex = 1 */
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 let tentit_data = await axios.get(path + "tentti")
                 let tentit = tentit_data.data
-                /* console.log("Käyttäjä " + currentUserIndex + " kirjautuneena.") */
 
                 if (tentit.length > 0) {
                     // käydään tentit läpi
@@ -56,10 +47,6 @@ function App() {
                         tentit[i].kysymykset = []
                         let kysymykset_taulu = await axios.get(path + "tentin_kysymykset/" + tentit[i].id)
                         tentit[i].kysymykset = kysymykset_taulu.data
-                        // haetaan kayttajan_vastaukset
-                        /* let kayttajan_vastaukset =
-                            await axios.get(path+"kayttajan_vastaukset/"
-                                + currentUserIndex + "/" + tentit[i].id) */
                         // käydään tentin kysymykset läpi
                         for (var j = 0; j < tentit[i].kysymykset.length; j++) {
                             // haetaan kysymyksen vaihtoehdot
@@ -67,19 +54,9 @@ function App() {
                             let vaihtoehdot_taulu =
                                 await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id)
                             tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
-                            // käydään kayttajan_vastaukset läpi
-                            /* for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
-                                for (var l = 0; l < kayttajan_vastaukset.data.length; l++) {
-                                    if (tentit[i].kysymykset[j].vaihtoehdot[k].id === kayttajan_vastaukset.data[l].vaihtoehto_id) {
-                                        tentit[i].kysymykset[j].vaihtoehdot[k]
-                                            .vastaus = kayttajan_vastaukset.data[l].vastaus
-                                    }
-                                }
-                            } */
                         }
                     }
                     dispatch({ type: "INIT_DATA", data: tentit })
-                    /* console.log(tentit) */
                 } else {
                     throw console.log("Dataa ei saatu palvelimelta.")
                 }
@@ -90,14 +67,6 @@ function App() {
         }
         fetchData()
     }, [])
-
-    const handleClickOpen = () => {
-        setOpen(true)
-    }
-
-    const handleClose = () => {
-        setOpen(false)
-    }
 
     const kysymyksenNimiMuuttui = async (newCardLabel, CardIndex) => {
         try {
@@ -137,33 +106,20 @@ function App() {
 
     // serveriin pitää lisätä/tehdä "lisaa_tentti"
     // eli tuo alla oleva axios-pyyntö ei toimi vielä
-    const lisaaTentti = async (examName) => {
+    const lisaaTentti = async () => {
         try {
-            await axios.put(path + "lisaa_tentti/"
-                + examName)
+            await axios.put(path + "lisaa_tentti/")
         } catch (exception) {
             console.log("Datan päivitäminen ei onnistunut.")
         }
         dispatch({
-            type: "add_exam", data: {
-                examName: examName,
-                handle_close: handleClose
-            }
+            type: "add_exam", data: {examName: "Uusi tentti"}
         })
     }
 
     const currentExamIndexChanged = (value) => {
-        /* console.log(value) */
         setCurrentExamIndex(value)
-        /* setShowCorrectAnswers(false) */
     }
-
-    /* const allCorrect = (cardChoisesArray) => {
-        console.log(cardChoisesArray.filter(choise => choise.vastaus
-            === choise.oikea_vastaus).length, cardChoisesArray.length)
-        return (cardChoisesArray.filter(choise => choise.vastaus
-            === choise.oikea_vastaus).length === cardChoisesArray.length)
-    } */
 
     return (
         <Box>
@@ -172,50 +128,21 @@ function App() {
                 component="main">
                 {Object.values(state).map((exam, examIndex) =>
                     <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => currentExamIndexChanged(examIndex)}>
-                        {/* {exam.nimi + "(exam.id=" + exam.id + ", examIndex=" + examIndex + ")"} */}
                         {exam.nimi}
                     </ExamButton>
                 )}
-                <IconButton onClick={handleClickOpen}>
+                <IconButton onClick={()=>{lisaaTentti()}}>
                     <Icon>add_circle</Icon>
                 </IconButton>
-                <Dialog open={open} onClose={handleClose}
-                    aria-labelledby="form-dialog-title">
-                    <DialogTitle id="form-dialog-title">Lisää uusi tentti</DialogTitle>
-                    <DialogContent>
-                        {/* TextField, defaultValue, onChange = toimii */}
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            id="examName"
-                            label="Tentin nimi"
-                            type="exam"
-                            fullWidth
-                            value={examName}
-                            onChange={(event) => setExamName(event.target.value)}
-                        />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleClose} color="primary">
-                            Peruuta
-                      </Button>
-                        <Button style={{ marginTop: "10px" }} onClick={(event) => lisaaTentti(event)} color="primary">
-                            Lisää tentti
-                      </Button>
-                    </DialogActions>
-                </Dialog>
                 {currentExamIndex >= 0 &&
                     (
                         <>
-                            <h2>{state[currentExamIndex].nimi/*  + " (exam.id = " + state[currentExamIndex].id + ")" */}</h2>
+                            <h2>{state[currentExamIndex].nimi}</h2>
                             {state[currentExamIndex].kysymykset
                                 .map((card, cardIndex) =>
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                {/* <p className="label" style={{ whiteSpace: "pre-wrap" }}>
-                                                    {card.lause + " (exam.id = " + state[currentExamIndex].id + ")"}
-                                                </p> */}
                                                 <TextField key={uuid()} style={{
                                                     overflow: "hidden",
                                                     textOverflow: "ellipsis"
@@ -241,7 +168,7 @@ function App() {
                                                     <DeleteIcon />
                                                 </IconButton >
                                                 {card.vaihtoehdot.map((listItem, listItemIndex) => (
-                                                    <ListItem key={uuid()}> {/* (listItem.vastaus === undefined)?false: */}
+                                                    <ListItem key={uuid()}>
                                                         <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
                                                             onChange={(event) => {
                                                                 oikeaValintaMuuttui(cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
@@ -271,15 +198,6 @@ function App() {
                                                                 }
                                                             )}>
                                                             <DeleteIcon /></IconButton >
-                                                        {/* {console.log(listItem)} */}
-                                                        {/* <Checkbox checked={listItem.vastaus} disabled={showCorrectAnswers}
-                                                            onChange={(event) => {
-                                                                oikeaValintaMuuttui(cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
-                                                            }}
-                                                        /> */}
-                                                        {/* <p style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-                                                            {listItem.vaihtoehto}
-                                                        </p> */}
                                                     </ListItem>
                                                 ))}
                                                 <IconButton onClick={() => dispatch({
@@ -290,23 +208,13 @@ function App() {
                                                 </IconButton>
                                             </List>
                                         </CardContent>
-                                        {/* {(showCorrectAnswers && (allCorrect(Object.values(card.vaihtoehdot))) ? (
-                                            <CardMedia className={classes.cover}>
-                                                <img className="image" src="/images/selma.png"
-                                                    height="30px" width="30px" alt="Selma" />
-                                            </CardMedia>
-                                        ) : (null))} */}
                                     </Card>
                                 )
                             }
-                            < IconButton style={{ float: "right" }}
+                            <IconButton style={{ float: "right" }}
                                 onClick={() => dispatch({ type: "add_card" })}>
                                 <Icon>add_circle</Icon>
                             </IconButton>
-                            {/* <Button style={{ marginTop: "10px", marginRight: "10px" }} name="vastaukset" variant="contained" color="primary"
-                                onClick={() => (
-                                    (showCorrectAnswers ? setShowCorrectAnswers(false) : setShowCorrectAnswers(true))
-                                )}>Näytä vastaukset</Button> */}
                         </>
                     )
                 }
