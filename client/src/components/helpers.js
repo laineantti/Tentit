@@ -16,7 +16,16 @@ const tarkistaSalasana = (str) => {
     return res.test(str);
   }
 
+const autentikoitu = () => {
+  let loggedUser = JSON.parse(JSON.stringify(window.localStorage.getItem('jwtToken')));
+  if (!loggedUser) {
+    return false;
+  }
+  return loggedUser;
+}
+
   export {
       tarkistaSahkoposti, 
-      tarkistaSalasana
+      tarkistaSalasana,
+      autentikoitu
   }

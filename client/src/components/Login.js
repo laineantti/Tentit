@@ -6,7 +6,6 @@ import Grid from '@material-ui/core/Grid'
 import Typography from '@material-ui/core/Typography'
 import FormControl from '@material-ui/core/FormControl'
 import { strings } from './Locale'
-import {autentikoitu} from './autentikoitu'
 import axios from 'axios'
 
 var path = null
@@ -42,7 +41,7 @@ const Login = ({kirjautunut,setKirjautunut}) => {
             await axios.post(path + "kirjaudu/", body).then(response => {
                 // tehdään post josta saadaan onnistuneessa kirjautumisessa response
                 // mistä tallennetaan datasta saatava token localStorageen
-                localStorage.setItem('jwtToken', response.data.token);
+                window.localStorage.setItem('jwtToken', response.data.token);
                 // alert("Kirjautuminen onnistui, tervetuloa "+response.data.sahkoposti+"!")
                 setKirjautunut(true)
             })

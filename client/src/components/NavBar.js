@@ -1,7 +1,6 @@
 import { AppBar, Toolbar, Typography } from '@material-ui/core'
 import { useStyles, MenuButton } from './Style'
 import { strings } from './Locale'
-import { autentikoitu } from './autentikoitu'
 import { useEffect } from 'react'
 
 export function NavBar({kirjautunut,setKirjautunut}) {

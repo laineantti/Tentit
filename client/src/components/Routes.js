@@ -8,21 +8,26 @@ import Register from './Register'
 import Login from './Login'
 import { NavBar } from './NavBar'
 import { Route, Switch/* , Redirect */ } from 'react-router-dom'
-import {autentikoitu} from './autentikoitu'
+import {autentikoitu} from './helpers'
 
 export const Routes = () => {
     const [kirjautunut, setKirjautunut] = useState(false)
 
+    // autentikoidun paluuarvo on joko authToken tai false
     useEffect(() => {
-        setKirjautunut(autentikoitu()) 
-    },[])
+        let paluuarvo = autentikoitu()
+        console.log("paluuarvo :",paluuarvo)
+        if (paluuarvo !== false) {
+            setKirjautunut(true)
+        }
+    },[kirjautunut])
      
     // tarkistetaanko kirjautumisen tila tokenista ja asetetaan tähän arvoksi?
 
     return (
         <div>
             <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>          
-            {kirjautunut ?
+            {kirjautunut ? 
                 <Switch>
                     <Route exact path="/login">
                         <User />
@@ -52,7 +57,7 @@ export const Routes = () => {
                         <Login kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>
                     </Route>
                     <Route exact path="/">
-                        <Login />
+                        <Login kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>
                     </Route>
                 </Switch>
             }
