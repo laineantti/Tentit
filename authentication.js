@@ -3,9 +3,9 @@ dotenv.config()
 const jwt = require('jsonwebtoken'); //token
 
 
-
-const getTokenFrom = (request) => {
-    const authorization = request.get('authorization')
+const getTokenFrom = request => {
+    const authorization = request.get('Authorization')
+    console.log(authorization)
     if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
         return authorization.substring(7)
     }
@@ -22,7 +22,7 @@ const isAuthenticated = (request, response, next) => {
     let decodedToken = null;
 
     try {
-        decodedToken = jwt.verify(token, process.env.SECRET);
+        decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     }
     catch (error) {
         console.log("jwt error");
@@ -30,9 +30,10 @@ const isAuthenticated = (request, response, next) => {
 
     if (!decodedToken || !decodedToken.id) {
         return response.status(401).json({ error: 'token invalid' });
-    }    
+    }  
     console.log("autentikoitu")
-    next()
+    response.authentication = { userId : decodedToken.id }
+    next()    
 }
 
 module.exports = isAuthenticated;

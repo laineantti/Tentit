@@ -256,12 +256,11 @@ app.post('/upload', async (req, res) => {
 // tehdään uploads-sijainnista staattinen
 app.use(express.static('uploads'));
 
-// //----------------------------------------------------------------------------------------------
-// // autentikointi
-// const isAuthenticated = require('./authentication')
-// app.use(isAuthenticated)
-// //----------------------------------------------------------------------------------------------
-
+//----------------------------------------------------------------------------------------------
+// autentikointi, jossa myös kaivetaan käyttäjä id tokenista
+const isAuthenticated = require('./authentication')
+app.use(isAuthenticated)
+//----------------------------------------------------------------------------------------------
 // tarkistetaan onko käyttäjä admin
 app.get('/onko_admin/:id', (req, response, next) => {
   db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.id], (err, res) => {
@@ -274,9 +273,10 @@ app.get('/onko_admin/:id', (req, response, next) => {
   })
 })
 
-// haetaan käyttäjä id:n perusteella
-app.get('/kayttaja/:id', (req, response, next) => {
-  db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.id], (err, res) => {
+// haetaan käyttäjä id:n perusteella (id saadaan isAuthenticated-koodista ja tallennetaan userId-muuttujaan)
+app.get('/kayttaja/', (req, response, next) => {
+  const userId = response.authentication.userId
+  db.query('SELECT * FROM kayttaja WHERE id = $1', [userId], (err, res) => {
     if (err) {
       return next(err)
     }

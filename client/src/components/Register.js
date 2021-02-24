@@ -11,7 +11,7 @@ import FormControl from '@material-ui/core/FormControl'
 import FormLabel from '@material-ui/core/FormLabel'
 import axios from 'axios'
 import { strings } from './Locale'
-import {tarkistaSahkoposti,tarkistaSalasana} from './inputchecks.js';
+import {tarkistaSahkoposti,tarkistaSalasana} from './helpers.js';
 
 var path = null
 var default_error = new Error("Environment not properly set!")
