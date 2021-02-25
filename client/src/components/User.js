@@ -1,4 +1,4 @@
-import { React, useState, useEffect, useReducer, useContext } from 'react'
+import { React, useState, useEffect, useContext } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 import {
@@ -31,9 +31,11 @@ function App() {
     }
 
     useEffect(()=>{
-        console.log("User: ",autentikoitu())
+        console.log("User: ",autentikoitu())    
         fetchUser(setCurrentUser, autentikoitu())
-        fetchData(currentUser, autentikoitu(), dispatch)   
+        if (currentUser) {
+            fetchData(currentUser, autentikoitu(), dispatch)
+        }   
     },[currentUser])  
     
     return (

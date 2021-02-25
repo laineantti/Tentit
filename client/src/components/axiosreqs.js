@@ -39,9 +39,9 @@ const fetchUser = async (setCurrentUser, authToken) => {
 const fetchData = async (currentUser, authToken, dispatch) => {
     let headers = {headers:{ Authorization: `bearer ${authToken}`},} 
     try {
-
+        let tentit = []
         let tentit_data = await axios.get(path + "kayttajan_tentit/" + currentUser, headers )
-        let tentit = tentit_data.data
+        tentit = tentit_data.data
         if (tentit.length > 0) {
             // käydään tentit läpi
             for (var i = 0; i < tentit.length; i++) {
@@ -52,8 +52,7 @@ const fetchData = async (currentUser, authToken, dispatch) => {
                 // haetaan kayttajan_vastaukset
                 if (tentit[i].kysymykset.length > 0){
                     let kayttajan_vastaukset = 
-                        await axios.get(path + "kayttajan_vastaukset/"
-                        + currentUser + "/" + tentit[i].id, headers)
+                        await axios.get(path + "kayttajan_vastaukset/" + currentUser + "/" + tentit[i].id, headers)
                     // käydään tentin kysymykset läpi
                     for (var j = 0; j < tentit[i].kysymykset.length; j++) {
                         // haetaan kysymyksen vaihtoehdot
@@ -90,7 +89,7 @@ const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemI
     let v_id = Number(vaihtoehto_id)
     let e_id = Number(exam_id)
     try {
-        let result = await axios({
+        await axios({
             method: 'put',
             url: `${path}paivita_valinta/${currentUser}/${v_id}/${e_id}/${currentCourse}/${checkedValue}`, 
             headers: {'Authorization': `bearer ${authToken}`}
