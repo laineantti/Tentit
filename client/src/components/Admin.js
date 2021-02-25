@@ -8,24 +8,18 @@ import {
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import { store } from './store.js'
-
-var path = null
-var default_error = new Error("Environment not properly set!")
-let environment = process.env.NODE_ENV || 'development'
-
-switch (environment) {
-    case 'production':
-        path = 'https://tentti-fullstack.herokuapp.com/'
-        break
-    case 'development':
-        path = 'http://localhost:4000/'
-        break
-    case 'test':
-        path = 'http://localhost:4000/'
-        break
-    default:
-        throw default_error
-}
+import {
+    fetchUser,
+    fetchData,
+    /* valintaMuuttui, */
+    lisaaKysymys,
+    lisaaVaihtoehto,
+    oikeaValintaMuuttui,
+    lisaaTentti,
+    muutaKysymys,
+    currentExamIndexChanged
+} from './axiosreqs'
+import { autentikoitu } from './helpers'
 
 function App() {
     const storeContext = useContext(store)
@@ -33,9 +27,16 @@ function App() {
     const { dispatch } = storeContext
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
     const [currentDatabaseExamIdChanged, setCurrentDatabaseExamIdChanged] = useState(-1)
+    const [currentUser, setCurrentUser] = useState("")
     const classes = useStyles()
 
     useEffect(() => {
+        console.log("kukkuu: ", autentikoitu())
+        fetchUser(setCurrentUser, autentikoitu())
+        fetchData(currentUser, autentikoitu(), dispatch)
+    }, [currentUser])
+
+    /* useEffect(() => {
         const fetchData = async () => {
             try {
                 let tentit_data = await axios.get(path + "tentti")
@@ -67,71 +68,7 @@ function App() {
             }
         }
         fetchData()
-    }, [])
-
-    const lisaaKysymys = async () => {
-        try {
-            console.log(path + "lisaa_kysymys/" + currentDatabaseExamIdChanged)
-            await axios.post(path + "lisaa_kysymys/" + currentDatabaseExamIdChanged)
-        } catch (exception) {
-            console.log("Datan päivitäminen ei onnistunut.")
-        }
-        dispatch({ type: "add_card", data: { examIndex: currentExamIndex } })
-    }
-
-    const lisaaVaihtoehto = async (cardIndex, kysymys_id) => {
-        try {
-            console.log(path + "lisaa_vaihtoehto/" + kysymys_id)
-            await axios.post(path + "lisaa_vaihtoehto/" + kysymys_id)
-        } catch (exception) {
-            console.log("Datan päivitäminen ei onnistunut.")
-        }
-        dispatch({ type: "add_choise", data: { cardIndex: cardIndex, examIndex: currentExamIndex } })
-    }
-
-    const oikeaValintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex) => {
-        try {
-            await axios.put(path + "paivita_oikea_valinta/"
-                + vaihtoehto_id + "/"
-                + checkedValue)
-        } catch (exception) {
-            console.log("Datan päivitäminen ei onnistunut.")
-        }
-        dispatch({
-            type: "correct_checked_changed",
-            data: {
-                examIndex: currentExamIndex,
-                cardIndex: kysymys_id,
-                listItemIndex: listItemIndex,
-                checkedValue: checkedValue
-            }
-        })
-    }
-
-    const lisaaTentti = async () => {
-        try {
-            await axios.post(path + "lisaa_tentti/")
-        } catch (exception) {
-            console.log("Datan päivitäminen ei onnistunut.")
-        }
-        dispatch({ type: "add_exam" })
-    }
-
-    const muutaKysymys = async (value, id, cardIndex) => {
-        try {
-            await axios.put(path + "paivita_kysymys/" + id + "/" + value)
-        } catch (exception) {
-            console.log(exception)
-        }
-        dispatch({
-            type: "card_label_changed",
-            data: { examIndex: currentExamIndex, cardIndex: cardIndex, newCardLabel: value }
-        })
-    }
-
-    const currentExamIndexChanged = (value) => {
-        setCurrentExamIndex(value)
-    }
+    }, []) */
 
     return (
         <Box>
@@ -215,7 +152,7 @@ function App() {
                                 )
                             }
                             <IconButton style={{ float: "right" }}
-                                onClick={() => lisaaKysymys()}>
+                                onClick={() => lisaaKysymys(currentDatabaseExamIdChanged)}>
                                 <Icon>add_circle</Icon>
                             </IconButton>
                         </>
