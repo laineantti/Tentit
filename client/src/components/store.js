@@ -66,6 +66,11 @@ const StateProvider = ({ children }) => {
                     .vaihtoehdot[action.data.listItemIndex].oikea_vastaus = action.data.checkedValue
                 console.log(tempCopy)
                 return tempCopy
+            
+            case "checked_changed":
+                tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
+                    .vaihtoehdot[action.data.listItemIndex].vastaus = action.data.checkedValue
+                return tempCopy
 
             case "choise_changed":
                 tempCopy[action.data.examIndex].cards[action.data.cardIndex]

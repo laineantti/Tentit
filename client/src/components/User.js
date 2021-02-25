@@ -1,4 +1,4 @@
-import { React, useState, useEffect, useReducer } from 'react'
+import { React, useState, useEffect, useReducer, useContext } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 import {
@@ -8,32 +8,14 @@ import {
 import { strings } from './Locale'
 import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
 import {autentikoitu} from './helpers'
-
-
-function reducer(state, action) {
-
-    let tempCopy = JSON.parse(JSON.stringify(state))
-
-    switch (action.type) {
-
-        case "checked_changed":
-            tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
-                .vaihtoehdot[action.data.listItemIndex].vastaus = action.data.checkedValue
-            return tempCopy
-
-        case "INIT_DATA":
-            return action.data
-
-        default:
-            throw new Error()
-
-    }
-}
+import { store } from './store.js'
 
 function App() {
+    const storeContext = useContext(store)
+    const { state } = storeContext
+    const { dispatch } = storeContext
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
-    const [state, dispatch] = useReducer(reducer, [])
     const [currentUser, setCurrentUser] = useState("")
     const [currentCourse, setCurrentCourse] = useState(1)
     const classes = useStyles()
