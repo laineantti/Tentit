@@ -48,18 +48,11 @@ function App() {
             === choise.oikea_vastaus).length === cardChoisesArray.length)
     }
 
-    // const authToken = () => {
-    //     let paluuarvo = autentikoitu()
-    //     if (paluuarvo){
-    //         return 
-    //     }
-    // }
-
     useEffect(()=>{
-        console.log("kukkuu: ",autentikoitu())
+        console.log("User: ",autentikoitu())
         fetchUser(setCurrentUser, autentikoitu())
         fetchData(currentUser, autentikoitu(), dispatch)   
-    },[])  
+    },[currentUser])  
     
     return (
         <Box>
