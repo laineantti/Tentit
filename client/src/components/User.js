@@ -58,8 +58,8 @@ function App() {
     useEffect(()=>{
         console.log("kukkuu: ",autentikoitu())
         fetchUser(setCurrentUser, autentikoitu())
-        fetchData(currentUser, autentikoitu(), dispatch)   
-    },[])  
+        fetchData(currentUser, autentikoitu(), dispatch, false) // admin? --> true/false
+    },[currentUser])  
     
     return (
         <Box>

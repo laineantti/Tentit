@@ -34,11 +34,16 @@ const fetchUser = async (setCurrentUser, authToken) => {
     }
 }
 
-const fetchData = async (currentUser, authToken, dispatch) => {
+const fetchData = async (currentUser, authToken, dispatch, admin) => { // admin? --> true/false
     let headers = { headers: { Authorization: `bearer ${authToken}` }, }
     try {
-
-        let tentit_data = await axios.get(path + "kayttajan_tentit/" + currentUser, headers)
+        let tentit_string = ""
+        if (admin) { // admin? --> true/false
+            tentit_string = path + "tentti"
+        } else {
+            tentit_string = path + "kayttajan_tentit/" + currentUser
+        }
+        let tentit_data = await axios.get(tentit_string, headers)
         let tentit = tentit_data.data
 
         if (tentit.length > 0) {
@@ -82,12 +87,12 @@ const fetchData = async (currentUser, authToken, dispatch) => {
 
 // /paivita_valinta/:kayttaja_id/:vaihtoehto_id/:tentti_id/:kurssi_id/:vastaus
 const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex, exam_id, currentUser, currentCourse, currentExamIndex, dispatch, authToken) => {
-    let headers = { headers: { Authorization: `bearer ${authToken}` }, }
-    let v_id = Number(vaihtoehto_id)
-    let e_id = Number(exam_id)
-    console.log(headers)
     try {
-        await axios.put(`${path}paivita_valinta/${currentUser}/${v_id}/${e_id}/${currentCourse}/${checkedValue}`, headers)
+        await axios({
+            method: 'put',
+            url: `${path}paivita_valinta/${currentUser}/${vaihtoehto_id}/${exam_id}/${currentCourse}/${checkedValue}`,
+            headers: { 'Authorization': `bearer ${authToken}` }
+        });
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
@@ -102,31 +107,41 @@ const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemI
     })
 }
 
-const lisaaKysymys = async () => {
+const lisaaKysymys = async (currentDatabaseExamIdChanged, dispatch, currentExamIndex, authToken) => {
     try {
         console.log(path + "lisaa_kysymys/" + currentDatabaseExamIdChanged)
-        await axios.post(path + "lisaa_kysymys/" + currentDatabaseExamIdChanged)
+        await axios({
+            method: 'post',
+            url: `${path}lisaa_kysymys/${currentDatabaseExamIdChanged}`,
+            headers: { 'Authorization': `bearer ${authToken}` }
+        })
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
     dispatch({ type: "add_card", data: { examIndex: currentExamIndex } })
 }
 
-const lisaaVaihtoehto = async (cardIndex, kysymys_id) => {
+const lisaaVaihtoehto = async (dispatch, cardIndex, kysymys_id, currentExamIndex, authToken) => {
     try {
         console.log(path + "lisaa_vaihtoehto/" + kysymys_id)
-        await axios.post(path + "lisaa_vaihtoehto/" + kysymys_id)
+        await axios({
+            method: 'post',
+            url: `${path}lisaa_vaihtoehto/${kysymys_id}`,
+            headers: { 'Authorization': `bearer ${authToken}` }
+        })
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
     dispatch({ type: "add_choise", data: { cardIndex: cardIndex, examIndex: currentExamIndex } })
 }
 
-const oikeaValintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex) => {
+const oikeaValintaMuuttui = async (dispatch, currentExamIndex, kysymys_id, checkedValue, vaihtoehto_id, listItemIndex, authToken) => {
     try {
-        await axios.put(path + "paivita_oikea_valinta/"
-            + vaihtoehto_id + "/"
-            + checkedValue)
+        await axios({
+            method: 'put',
+            url: `${path}paivita_oikea_valinta/${vaihtoehto_id}/${checkedValue}`,
+            headers: { 'Authorization': `bearer ${authToken}` }
+        })
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
@@ -141,18 +156,26 @@ const oikeaValintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, list
     })
 }
 
-const lisaaTentti = async () => {
+const lisaaTentti = async (dispatch, authToken) => {
     try {
-        await axios.post(path + "lisaa_tentti/")
+        await axios({
+            method: 'post',
+            url: `${path}lisaa_tentti/`,
+            headers: { 'Authorization': `bearer ${authToken}` }
+        })
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
     dispatch({ type: "add_exam" })
 }
 
-const muutaKysymys = async (value, id, cardIndex) => {
+const muutaKysymys = async (dispatch, currentExamIndex, value, id, cardIndex, authToken) => {
     try {
-        await axios.put(path + "paivita_kysymys/" + id + "/" + value)
+        await axios({
+            method: 'put',
+            url: `${path}paivita_kysymys/${id}/${value}`,
+            headers: { 'Authorization': `bearer ${authToken}` }
+        })
     } catch (exception) {
         console.log(exception)
     }
@@ -160,10 +183,6 @@ const muutaKysymys = async (value, id, cardIndex) => {
         type: "card_label_changed",
         data: { examIndex: currentExamIndex, cardIndex: cardIndex, newCardLabel: value }
     })
-}
-
-const currentExamIndexChanged = (value) => {
-    setCurrentExamIndex(value)
 }
 
 export {
@@ -174,6 +193,5 @@ export {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
-    muutaKysymys,
-    currentExamIndexChanged
+    muutaKysymys
 }
