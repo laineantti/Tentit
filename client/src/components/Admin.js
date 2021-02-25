@@ -16,7 +16,8 @@ import {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
-    muutaKysymys
+    muutaKysymys,
+    poistaKysymyksenLiitos
 } from './axiosreqs'
 import { autentikoitu } from './helpers'
 
@@ -34,40 +35,6 @@ function App() {
         fetchUser(setCurrentUser, autentikoitu())
         fetchData(currentUser, autentikoitu(), dispatch, true) // admin? --> true/false
     }, [currentUser])
-
-    /* useEffect(() => {
-        const fetchData = async () => {
-            try {
-                let tentit_data = await axios.get(path + "tentti")
-                let tentit = tentit_data.data
-
-                if (tentit.length > 0) {
-                    // käydään tentit läpi
-                    for (var i = 0; i < tentit.length; i++) {
-                        // haetaan tentin kysymykset
-                        tentit[i].kysymykset = []
-                        let kysymykset_taulu = await axios.get(path + "tentin_kysymykset/" + tentit[i].id)
-                        tentit[i].kysymykset = kysymykset_taulu.data
-                        // käydään tentin kysymykset läpi
-                        for (var j = 0; j < tentit[i].kysymykset.length; j++) {
-                            // haetaan kysymyksen vaihtoehdot
-                            tentit[i].kysymykset[j].vaihtoehdot = []
-                            let vaihtoehdot_taulu =
-                                await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id)
-                            tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
-                        }
-                    }
-                    dispatch({ type: "INIT_DATA", data: tentit })
-                } else {
-                    throw console.log("Dataa ei saatu palvelimelta.")
-                }
-            }
-            catch (exception) {
-                console.log(exception)
-            }
-        }
-        fetchData()
-    }, []) */
 
     return (
         <Box>
@@ -89,7 +56,8 @@ function App() {
                     (
                         <>
                             <h2>{state[currentExamIndex].nimi}</h2>
-                            {console.log("state[currentExamIndex].id (taulukon index): ", state[currentExamIndex].id)}
+                            {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
+                            {console.log("currentExamIndex (taulukon index): ", currentExamIndex)}
                             {state[currentExamIndex].kysymykset
                                 .map((card, cardIndex) =>
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
@@ -100,14 +68,7 @@ function App() {
                                                 }}>
                                                 </TextField>
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
-                                                    color="primary" onClick={() => dispatch(
-                                                        {
-                                                            type: "card_deleted", data: {
-                                                                examIndex: currentExamIndex,
-                                                                cardIndex: cardIndex
-                                                            }
-                                                        }
-                                                    )}>
+                                                    color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id, autentikoitu())}>
                                                     <DeleteIcon />
                                                 </IconButton >
                                                 {card.vaihtoehdot.map((listItem, listItemIndex) => (

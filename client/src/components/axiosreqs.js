@@ -185,6 +185,28 @@ const muutaKysymys = async (dispatch, currentExamIndex, value, id, cardIndex, au
     })
 }
 
+// dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id, autentikoitu()
+const poistaKysymyksenLiitos = async (dispatch, currentExamIndex, kysymys_id, cardIndex, tentti_id, authToken) => {
+    console.log("Kysymys_id " + kysymys_id + ", tentti_id " + tentti_id + ", liitos poistettu!")
+    try {
+        await axios({
+            method: 'delete',
+            url: `${path}poista_kysymyksen_liitos/${kysymys_id}/${tentti_id}`,
+            headers: { 'Authorization': `bearer ${authToken}` }
+        })
+    } catch (exception) {
+        console.log(exception)
+    }
+    dispatch(
+        {
+            type: "card_deleted", data: {
+                examIndex: currentExamIndex,
+                cardIndex: cardIndex
+            }
+        }
+    )
+}
+
 export {
     fetchUser,
     fetchData,
@@ -193,5 +215,6 @@ export {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
-    muutaKysymys
+    muutaKysymys,
+    poistaKysymyksenLiitos
 }
