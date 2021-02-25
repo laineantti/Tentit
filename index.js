@@ -258,8 +258,8 @@ app.use(express.static('uploads'));
 
 //----------------------------------------------------------------------------------------------
 // autentikointi, jossa myös kaivetaan käyttäjä id tokenista
-const isAuthenticated = require('./authentication')
-app.use(isAuthenticated)
+/* const isAuthenticated = require('./authentication')
+app.use(isAuthenticated) */
 //----------------------------------------------------------------------------------------------
 // tarkistetaan onko käyttäjä admin
 app.get('/onko_admin/:id', (req, response, next) => {
@@ -275,8 +275,9 @@ app.get('/onko_admin/:id', (req, response, next) => {
 
 // haetaan käyttäjä id:n perusteella (id saadaan isAuthenticated-koodista ja tallennetaan userId-muuttujaan)
 app.get('/kayttaja/', (req, response, next) => {
-  const userId = response.authentication.userId
-  db.query('SELECT * FROM kayttaja WHERE id = $1', [userId], (err, res) => {
+  /* const userId = response.authentication.userId
+  db.query('SELECT * FROM kayttaja WHERE id = $1', [userId], (err, res) => { */
+  db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.id], (err, res) => {
     if (err) {
       return next(err)
     }
@@ -411,6 +412,29 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
   catch (err) {
     response.send(err)
   }
+})
+
+// päivitetään kysymyksen tekstin muutos tietokantaan
+app.put('/paivita_kysymys/:kysymys_id/:lause', (req, response, next) => {
+  db.query("SELECT * FROM kysymys WHERE id = $1",
+    [req.params.kysymys_id],
+    (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      if (res.rows[0] !== undefined) {
+        db.query("UPDATE kysymys SET lause = $2 WHERE id = $1",
+          [req.params.kysymys_id, req.params.lause],
+          (err, res) => {
+            if (err) {
+              return next(err)
+            }
+            response.send("Kysymyksen teksti päivitetty onnistuneesti!")
+          })
+      } else {
+        response.send("Muutosta ei tallennettu, koska tällä id:llä ei ole kysymystä!")
+      }
+    })
 })
 
 // tulostetaan kaikkien kysymysten vaihtoehdot

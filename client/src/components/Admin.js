@@ -34,7 +34,7 @@ function App() {
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
     const [currentDatabaseExamIdChanged, setCurrentDatabaseExamIdChanged] = useState(-1)
     const classes = useStyles()
-    
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -117,6 +117,18 @@ function App() {
         dispatch({ type: "add_exam" })
     }
 
+    const muutaKysymys = async (value, id, cardIndex) => {
+        try {
+            await axios.put(path + "paivita_kysymys/" + id + "/" + value)
+        } catch (exception) {
+            console.log(exception)
+        }
+        dispatch({
+            type: "card_label_changed",
+            data: { examIndex: currentExamIndex, cardIndex: cardIndex, newCardLabel: value }
+        })
+    }
+
     const currentExamIndexChanged = (value) => {
         setCurrentExamIndex(value)
     }
@@ -146,19 +158,10 @@ function App() {
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <TextField key={uuid()} style={{
-                                                    overflow: "hidden",
-                                                    textOverflow: "ellipsis"
-                                                }}
-                                                    onChange={(event) => dispatch({
-                                                        type: "card_label_changed",
-                                                        data: {
-                                                            newCardLabel: event.target.value,
-                                                            examIndex: currentExamIndex,
-                                                            cardIndex: cardIndex
-                                                        }
-                                                    })}
-                                                    value={card.lause} />
+                                                <TextField type="text" defaultValue={card.lause} id={card.id} onBlur={(event) => {
+                                                    muutaKysymys(event.target.value, card.id, cardIndex)
+                                                }}>
+                                                </TextField>
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
                                                     color="primary" onClick={() => dispatch(
                                                         {
