@@ -277,6 +277,7 @@ app.get('/onko_admin/:id', (req, response, next) => {
 app.get('/kayttaja/', (req, response, next) => {
   const userId = response.authentication.userId
   db.query('SELECT * FROM kayttaja WHERE id = $1', [userId], (err, res) => {
+    /* db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.id], (err, res) => { */
     if (err) {
       return next(err)
     }
@@ -411,6 +412,40 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
   catch (err) {
     response.send(err)
   }
+})
+
+// päivitetään kysymyksen tekstin muutos tietokantaan
+app.put('/paivita_kysymys/:kysymys_id/:lause', (req, response, next) => {
+  db.query("SELECT * FROM kysymys WHERE id = $1",
+    [req.params.kysymys_id],
+    (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      if (res.rows[0] !== undefined) {
+        db.query("UPDATE kysymys SET lause = $2 WHERE id = $1",
+          [req.params.kysymys_id, req.params.lause],
+          (err, res) => {
+            if (err) {
+              return next(err)
+            }
+            response.send("Kysymyksen teksti päivitetty onnistuneesti!")
+          })
+      } else {
+        response.send("Muutosta ei tallennettu, koska tällä id:llä ei ole kysymystä!")
+      }
+    })
+})
+
+// poistetaan kysymyksen liitos tenttiin
+app.delete('/poista_kysymyksen_liitos/:kysymys_id/:tentti_id', (req, res, next) => {
+  db.query('DELETE FROM tentin_kysymykset WHERE kysymys_id=$1 AND tentti_id=$2',
+    [req.params.kysymys_id, req.params.tentti_id], (err, result) => {
+      if (err) {
+        return next(err)
+      }
+      res.send(result.rows)
+    })
 })
 
 // tulostetaan kaikkien kysymysten vaihtoehdot

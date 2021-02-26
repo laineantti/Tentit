@@ -7,7 +7,7 @@ import {
 } from '@material-ui/core'
 import { strings } from './Locale'
 import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
-import {autentikoitu} from './helpers'
+import { autentikoitu } from './helpers'
 
 import { store } from './store.js'
 
@@ -34,15 +34,15 @@ function App() {
     }
 
 
-    useEffect(()=>{
-        console.log("User: ",autentikoitu())    
+    useEffect(() => {
+        console.log("User: ", autentikoitu())
         fetchUser(setCurrentUser, autentikoitu())
         if (currentUser) {
-            fetchData(currentUser, autentikoitu(), dispatch)
-        }   
-    },[currentUser])  
+            fetchData(currentUser, autentikoitu(), dispatch, false) // admin? --> true/false
+        }
+    }, [currentUser])
 
-    
+
     return (
         <Box>
             <CssBaseline />
@@ -70,11 +70,11 @@ function App() {
                                                         <Checkbox checked={listItem.vastaus} disabled={showCorrectAnswers}
                                                             onChange={(event) => {
                                                                 valintaMuuttui(
-                                                                    cardIndex, event.target.checked, 
-                                                                    listItem.id, listItemIndex, 
-                                                                    state[currentExamIndex].id, 
-                                                                    currentUser, currentCourse, 
-                                                                    currentExamIndex, dispatch, 
+                                                                    cardIndex, event.target.checked,
+                                                                    listItem.id, listItemIndex,
+                                                                    state[currentExamIndex].id,
+                                                                    currentUser, currentCourse,
+                                                                    currentExamIndex, dispatch,
                                                                     autentikoitu())
                                                             }}
                                                         />

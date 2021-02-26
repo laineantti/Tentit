@@ -1,31 +1,25 @@
 import { React, useState, useEffect, useContext } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
-import axios from 'axios'
+/* import axios from 'axios' */
 import {
     Card, CardContent, Container, List, ListItem, Box, Icon,
     IconButton, CssBaseline, TextField
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import { store } from './store.js'
-
-var path = null
-var default_error = new Error("Environment not properly set!")
-let environment = process.env.NODE_ENV || 'development'
-
-switch (environment) {
-    case 'production':
-        path = 'https://tentti-fullstack.herokuapp.com/'
-        break
-    case 'development':
-        path = 'http://localhost:4000/'
-        break
-    case 'test':
-        path = 'http://localhost:4000/'
-        break
-    default:
-        throw default_error
-}
+import {
+    fetchUser,
+    fetchData,
+    /* valintaMuuttui, */
+    lisaaKysymys,
+    lisaaVaihtoehto,
+    oikeaValintaMuuttui,
+    lisaaTentti,
+    muutaKysymys,
+    poistaKysymyksenLiitos
+} from './axiosreqs'
+import { autentikoitu } from './helpers'
 
 function App() {
     const storeContext = useContext(store)
@@ -33,93 +27,14 @@ function App() {
     const { dispatch } = storeContext
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
     const [currentDatabaseExamIdChanged, setCurrentDatabaseExamIdChanged] = useState(-1)
+    const [currentUser, setCurrentUser] = useState("")
     const classes = useStyles()
-    
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                let tentit_data = await axios.get(path + "tentti")
-                let tentit = tentit_data.data
-
-                if (tentit.length > 0) {
-                    // käydään tentit läpi
-                    for (var i = 0; i < tentit.length; i++) {
-                        // haetaan tentin kysymykset
-                        tentit[i].kysymykset = []
-                        let kysymykset_taulu = await axios.get(path + "tentin_kysymykset/" + tentit[i].id)
-                        tentit[i].kysymykset = kysymykset_taulu.data
-                        // käydään tentin kysymykset läpi
-                        for (var j = 0; j < tentit[i].kysymykset.length; j++) {
-                            // haetaan kysymyksen vaihtoehdot
-                            tentit[i].kysymykset[j].vaihtoehdot = []
-                            let vaihtoehdot_taulu =
-                                await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id)
-                            tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
-                        }
-                    }
-                    dispatch({ type: "INIT_DATA", data: tentit })
-                } else {
-                    throw console.log("Dataa ei saatu palvelimelta.")
-                }
-            }
-            catch (exception) {
-                console.log(exception)
-            }
-        }
-        fetchData()
-    }, [])
-
-    const lisaaKysymys = async () => {
-        try {
-            console.log(path + "lisaa_kysymys/" + currentDatabaseExamIdChanged)
-            await axios.post(path + "lisaa_kysymys/" + currentDatabaseExamIdChanged)
-        } catch (exception) {
-            console.log("Datan päivitäminen ei onnistunut.")
-        }
-        dispatch({ type: "add_card", data: { examIndex: currentExamIndex } })
-    }
-
-    const lisaaVaihtoehto = async (cardIndex, kysymys_id) => {
-        try {
-            console.log(path + "lisaa_vaihtoehto/" + kysymys_id)
-            await axios.post(path + "lisaa_vaihtoehto/" + kysymys_id)
-        } catch (exception) {
-            console.log("Datan päivitäminen ei onnistunut.")
-        }
-        dispatch({ type: "add_choise", data: { cardIndex: cardIndex, examIndex: currentExamIndex } })
-    }
-
-    const oikeaValintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex) => {
-        try {
-            await axios.put(path + "paivita_oikea_valinta/"
-                + vaihtoehto_id + "/"
-                + checkedValue)
-        } catch (exception) {
-            console.log("Datan päivitäminen ei onnistunut.")
-        }
-        dispatch({
-            type: "correct_checked_changed",
-            data: {
-                examIndex: currentExamIndex,
-                cardIndex: kysymys_id,
-                listItemIndex: listItemIndex,
-                checkedValue: checkedValue
-            }
-        })
-    }
-
-    const lisaaTentti = async () => {
-        try {
-            await axios.post(path + "lisaa_tentti/")
-        } catch (exception) {
-            console.log("Datan päivitäminen ei onnistunut.")
-        }
-        dispatch({ type: "add_exam" })
-    }
-
-    const currentExamIndexChanged = (value) => {
-        setCurrentExamIndex(value)
-    }
+        console.log("kukkuu: ", autentikoitu())
+        fetchUser(setCurrentUser, autentikoitu())
+        fetchData(currentUser, autentikoitu(), dispatch, true) // admin? --> true/false
+    }, [currentUser])
 
     return (
         <Box>
@@ -128,53 +43,39 @@ function App() {
                 component="main">
                 {Object.values(state).map((exam, examIndex) =>
                     <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
-                        currentExamIndexChanged(examIndex)
+                        setCurrentExamIndex(examIndex)
                         setCurrentDatabaseExamIdChanged(exam.id)
                     }}>
                         {exam.nimi}
                     </ExamButton>
                 )}
-                <IconButton onClick={() => { lisaaTentti() }}>
+                <IconButton onClick={() => { lisaaTentti(dispatch, autentikoitu()) }}>
                     <Icon>add_circle</Icon>
                 </IconButton>
                 {currentExamIndex >= 0 &&
                     (
                         <>
                             <h2>{state[currentExamIndex].nimi}</h2>
+                            {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
+                            {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
                             {state[currentExamIndex].kysymykset
                                 .map((card, cardIndex) =>
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <TextField key={uuid()} style={{
-                                                    overflow: "hidden",
-                                                    textOverflow: "ellipsis"
-                                                }}
-                                                    onChange={(event) => dispatch({
-                                                        type: "card_label_changed",
-                                                        data: {
-                                                            newCardLabel: event.target.value,
-                                                            examIndex: currentExamIndex,
-                                                            cardIndex: cardIndex
-                                                        }
-                                                    })}
-                                                    value={card.lause} />
+                                                <TextField type="text" defaultValue={card.lause} id={card.id} onBlur={(event) => {
+                                                    muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, autentikoitu())
+                                                }}>
+                                                </TextField>
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
-                                                    color="primary" onClick={() => dispatch(
-                                                        {
-                                                            type: "card_deleted", data: {
-                                                                examIndex: currentExamIndex,
-                                                                cardIndex: cardIndex
-                                                            }
-                                                        }
-                                                    )}>
+                                                    color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id, autentikoitu())}>
                                                     <DeleteIcon />
                                                 </IconButton >
                                                 {card.vaihtoehdot.map((listItem, listItemIndex) => (
                                                     <ListItem key={uuid()}>
                                                         <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
                                                             onChange={(event) => {
-                                                                oikeaValintaMuuttui(cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
+                                                                oikeaValintaMuuttui(dispatch, currentExamIndex, cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id, autentikoitu())
                                                             }} />
                                                         <TextField key={uuid()} style={{
                                                             minWidth: "600px", overflow: "hidden",
@@ -203,7 +104,7 @@ function App() {
                                                             <DeleteIcon /></IconButton >
                                                     </ListItem>
                                                 ))}
-                                                <IconButton onClick={() => lisaaVaihtoehto(cardIndex, card.id)}>
+                                                <IconButton onClick={() => lisaaVaihtoehto(dispatch, cardIndex, card.id, currentExamIndex, autentikoitu())}>
                                                     <Icon>add_circle</Icon>
                                                 </IconButton>
                                             </List>
@@ -212,7 +113,7 @@ function App() {
                                 )
                             }
                             <IconButton style={{ float: "right" }}
-                                onClick={() => lisaaKysymys()}>
+                                onClick={() => lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex, autentikoitu())}>
                                 <Icon>add_circle</Icon>
                             </IconButton>
                         </>

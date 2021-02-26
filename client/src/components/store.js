@@ -44,8 +44,7 @@ const StateProvider = ({ children }) => {
                 return tempCopy
 
             case "card_deleted":
-                tempCopy[action.data.examIndex].cards[action.data.cardIndex].cards
-                    .splice(action.data.cardIndex, 1)
+                tempCopy[action.data.examIndex].kysymykset.splice(action.data.cardIndex, 1)
                 return tempCopy
 
             case "add_exam":
