@@ -39,9 +39,11 @@ const fetchUser = async (setCurrentUser, authToken) => {
 const fetchData = async (currentUser, authToken, dispatch) => {
     let headers = {headers:{ Authorization: `bearer ${authToken}`},} 
     try {
+
         let tentit = []
         let tentit_data = await axios.get(path + "kayttajan_tentit/" + currentUser, headers )
         tentit = tentit_data.data
+
         if (tentit.length > 0) {
             // käydään tentit läpi
             for (var i = 0; i < tentit.length; i++) {
@@ -50,6 +52,7 @@ const fetchData = async (currentUser, authToken, dispatch) => {
                 let kysymykset_taulu = await axios.get(path + "tentin_kysymykset/" + tentit[i].id, headers)
                 tentit[i].kysymykset = kysymykset_taulu.data
                 // haetaan kayttajan_vastaukset
+
                 if (tentit[i].kysymykset.length > 0){
                     let kayttajan_vastaukset = 
                         await axios.get(path + "kayttajan_vastaukset/" + currentUser + "/" + tentit[i].id, headers)
@@ -69,6 +72,7 @@ const fetchData = async (currentUser, authToken, dispatch) => {
                                         tentit[i].kysymykset[j].vaihtoehdot[k].vastaus = kayttajan_vastaukset.data[l].vastaus
                                     }
                                 }
+
                             }
                         }
                     }
@@ -86,6 +90,7 @@ const fetchData = async (currentUser, authToken, dispatch) => {
 
 // /paivita_valinta/:kayttaja_id/:vaihtoehto_id/:tentti_id/:kurssi_id/:vastaus
 const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex, exam_id, currentUser, currentCourse, currentExamIndex, dispatch, authToken) => {
+
     let v_id = Number(vaihtoehto_id)
     let e_id = Number(exam_id)
     try {
@@ -94,6 +99,7 @@ const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemI
             url: `${path}paivita_valinta/${currentUser}/${v_id}/${e_id}/${currentCourse}/${checkedValue}`, 
             headers: {'Authorization': `bearer ${authToken}`}
         });
+
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }

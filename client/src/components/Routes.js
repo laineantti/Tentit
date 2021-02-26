@@ -13,9 +13,11 @@ import {autentikoitu} from './helpers'
 export const Routes = () => {
     const [kirjautunut, setKirjautunut] = useState(false)
 
+
     // autentikoidun paluuarvo on joko token tai false
     useEffect(() => {
         let paluuarvo = autentikoitu()
+
         if (paluuarvo !== false) {
             setKirjautunut(true)
         }

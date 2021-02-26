@@ -17,7 +17,9 @@ const tarkistaSalasana = (str) => {
   }
 
 const autentikoitu = () => {
+
   // palauttaa joko falsen tai tokenin
+
   let loggedUser = JSON.parse(JSON.stringify(window.localStorage.getItem('jwtToken')));
   if (!loggedUser) {
     return false;

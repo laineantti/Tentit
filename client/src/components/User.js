@@ -8,7 +8,9 @@ import {
 import { strings } from './Locale'
 import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
 import {autentikoitu} from './helpers'
+
 import { store } from './store.js'
+
 
 function App() {
     const storeContext = useContext(store)
@@ -16,6 +18,7 @@ function App() {
     const { dispatch } = storeContext
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
+
     const [currentUser, setCurrentUser] = useState("")
     const [currentCourse, setCurrentCourse] = useState(1)
     const classes = useStyles()
@@ -30,6 +33,7 @@ function App() {
             === choise.oikea_vastaus).length === cardChoisesArray.length)
     }
 
+
     useEffect(()=>{
         console.log("User: ",autentikoitu())    
         fetchUser(setCurrentUser, autentikoitu())
@@ -37,6 +41,7 @@ function App() {
             fetchData(currentUser, autentikoitu(), dispatch)
         }   
     },[currentUser])  
+
     
     return (
         <Box>
