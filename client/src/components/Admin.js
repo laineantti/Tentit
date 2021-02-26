@@ -56,8 +56,8 @@ function App() {
                     (
                         <>
                             <h2>{state[currentExamIndex].nimi}</h2>
-                            {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
-                            {console.log("currentExamIndex (taulukon index): ", currentExamIndex)}
+                            {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
+                            {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
                             {state[currentExamIndex].kysymykset
                                 .map((card, cardIndex) =>
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
