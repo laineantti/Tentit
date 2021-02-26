@@ -40,8 +40,9 @@ const fetchData = async (currentUser, authToken, dispatch) => {
     let headers = {headers:{ Authorization: `bearer ${authToken}`},} 
     try {
 
+        let tentit = []
         let tentit_data = await axios.get(path + "kayttajan_tentit/" + currentUser, headers )
-        let tentit = tentit_data.data
+        tentit = tentit_data.data
 
         if (tentit.length > 0) {
             // käydään tentit läpi
@@ -51,22 +52,27 @@ const fetchData = async (currentUser, authToken, dispatch) => {
                 let kysymykset_taulu = await axios.get(path + "tentin_kysymykset/" + tentit[i].id, headers)
                 tentit[i].kysymykset = kysymykset_taulu.data
                 // haetaan kayttajan_vastaukset
-                let kayttajan_vastaukset =
-                    await axios.get(path + "kayttajan_vastaukset/"
-                        + currentUser + "/" + tentit[i].id, headers)
-                // käydään tentin kysymykset läpi
-                for (var j = 0; j < tentit[i].kysymykset.length; j++) {
-                    // haetaan kysymyksen vaihtoehdot
-                    tentit[i].kysymykset[j].vaihtoehdot = []
-                    let vaihtoehdot_taulu =
-                        await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id, headers)
-                    tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
-                    // käydään kayttajan_vastaukset läpi
-                    for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
-                        for (var l = 0; l < kayttajan_vastaukset.data.length; l++) {
-                            if (tentit[i].kysymykset[j].vaihtoehdot[k].id === kayttajan_vastaukset.data[l].vaihtoehto_id) {
-                                tentit[i].kysymykset[j].vaihtoehdot[k]
-                                    .vastaus = kayttajan_vastaukset.data[l].vastaus
+
+                if (tentit[i].kysymykset.length > 0){
+                    let kayttajan_vastaukset = 
+                        await axios.get(path + "kayttajan_vastaukset/" + currentUser + "/" + tentit[i].id, headers)
+                    // käydään tentin kysymykset läpi
+                    for (var j = 0; j < tentit[i].kysymykset.length; j++) {
+                        // haetaan kysymyksen vaihtoehdot
+                        tentit[i].kysymykset[j].vaihtoehdot = []
+                        let vaihtoehdot_taulu =
+                            await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id, headers)
+                            tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
+                        // käydään kayttajan_vastaukset läpi
+                        for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
+                            tentit[i].kysymykset[j].vaihtoehdot[k].vastaus = null
+                            if (kayttajan_vastaukset.data.length > 0) {
+                                for (var l = 0; l < kayttajan_vastaukset.data.length; l++) {
+                                    if (tentit[i].kysymykset[j].vaihtoehdot[k].id === kayttajan_vastaukset.data[l].vaihtoehto_id) {
+                                        tentit[i].kysymykset[j].vaihtoehdot[k].vastaus = kayttajan_vastaukset.data[l].vastaus
+                                    }
+                                }
+
                             }
                         }
                     }
@@ -84,12 +90,16 @@ const fetchData = async (currentUser, authToken, dispatch) => {
 
 // /paivita_valinta/:kayttaja_id/:vaihtoehto_id/:tentti_id/:kurssi_id/:vastaus
 const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex, exam_id, currentUser, currentCourse, currentExamIndex, dispatch, authToken) => {
-    let headers = {headers:{ Authorization: `bearer ${authToken}`},}
+
     let v_id = Number(vaihtoehto_id)
     let e_id = Number(exam_id)
-    console.log (headers)
     try {
-        await axios.put(`${path}paivita_valinta/${currentUser}/${v_id}/${e_id}/${currentCourse}/${checkedValue}`, headers)
+        await axios({
+            method: 'put',
+            url: `${path}paivita_valinta/${currentUser}/${v_id}/${e_id}/${currentCourse}/${checkedValue}`, 
+            headers: {'Authorization': `bearer ${authToken}`}
+        });
+
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
