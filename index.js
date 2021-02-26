@@ -515,7 +515,7 @@ app.get('/kysymys/:id', (req, response, next) => {
 
 // palauttaa tentin kysymykset tentin id perusteella
 app.get('/tentin_kysymykset/:tentti_id', (req, response, next) => {
-  db.query('SELECT * FROM kysymys WHERE id IN (SELECT kysymys_id FROM tentin_kysymykset WHERE tentti_id = $1)',
+  db.query('SELECT * FROM kysymys WHERE id IN (SELECT kysymys_id FROM tentin_kysymykset WHERE tentti_id = $1) ORDER BY id',
     [req.params.tentti_id], (err, res) => {
       if (err) {
         return next(err)

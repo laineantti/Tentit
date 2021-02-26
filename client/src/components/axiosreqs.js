@@ -54,22 +54,27 @@ const fetchData = async (currentUser, authToken, dispatch, admin) => { // admin?
                 let kysymykset_taulu = await axios.get(path + "tentin_kysymykset/" + tentit[i].id, headers)
                 tentit[i].kysymykset = kysymykset_taulu.data
                 // haetaan kayttajan_vastaukset
-                let kayttajan_vastaukset =
-                    await axios.get(path + "kayttajan_vastaukset/"
-                        + currentUser + "/" + tentit[i].id, headers)
-                // käydään tentin kysymykset läpi
-                for (var j = 0; j < tentit[i].kysymykset.length; j++) {
-                    // haetaan kysymyksen vaihtoehdot
-                    tentit[i].kysymykset[j].vaihtoehdot = []
-                    let vaihtoehdot_taulu =
-                        await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id, headers)
-                    tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
-                    // käydään kayttajan_vastaukset läpi
-                    for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
-                        for (var l = 0; l < kayttajan_vastaukset.data.length; l++) {
-                            if (tentit[i].kysymykset[j].vaihtoehdot[k].id === kayttajan_vastaukset.data[l].vaihtoehto_id) {
-                                tentit[i].kysymykset[j].vaihtoehdot[k]
-                                    .vastaus = kayttajan_vastaukset.data[l].vastaus
+
+                if (tentit[i].kysymykset.length > 0){
+                    let kayttajan_vastaukset = 
+                        await axios.get(path + "kayttajan_vastaukset/" + currentUser + "/" + tentit[i].id, headers)
+                    // käydään tentin kysymykset läpi
+                    for (var j = 0; j < tentit[i].kysymykset.length; j++) {
+                        // haetaan kysymyksen vaihtoehdot
+                        tentit[i].kysymykset[j].vaihtoehdot = []
+                        let vaihtoehdot_taulu =
+                            await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id, headers)
+                            tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
+                        // käydään kayttajan_vastaukset läpi
+                        for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
+                            tentit[i].kysymykset[j].vaihtoehdot[k].vastaus = null
+                            if (kayttajan_vastaukset.data.length > 0) {
+                                for (var l = 0; l < kayttajan_vastaukset.data.length; l++) {
+                                    if (tentit[i].kysymykset[j].vaihtoehdot[k].id === kayttajan_vastaukset.data[l].vaihtoehto_id) {
+                                        tentit[i].kysymykset[j].vaihtoehdot[k].vastaus = kayttajan_vastaukset.data[l].vastaus
+                                    }
+                                }
+
                             }
                         }
                     }
