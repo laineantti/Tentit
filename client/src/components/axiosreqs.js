@@ -56,8 +56,8 @@ const fetchData = async (currentUser, dispatch, admin) => { // admin? --> true/f
                 tentit[i].kysymykset = kysymykset_taulu.data
                 // haetaan kayttajan_vastaukset
 
-                if (tentit[i].kysymykset.length > 0){
-                    let kayttajan_vastaukset = 
+                if (tentit[i].kysymykset.length > 0) {
+                    let kayttajan_vastaukset =
                         await axios.get(path + "kayttajan_vastaukset/" + currentUser + "/" + tentit[i].id, headers)
                     // käydään tentin kysymykset läpi
                     for (var j = 0; j < tentit[i].kysymykset.length; j++) {
@@ -65,7 +65,7 @@ const fetchData = async (currentUser, dispatch, admin) => { // admin? --> true/f
                         tentit[i].kysymykset[j].vaihtoehdot = []
                         let vaihtoehdot_taulu =
                             await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id, headers)
-                            tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
+                        tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
                         // käydään kayttajan_vastaukset läpi
                         for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
                             tentit[i].kysymykset[j].vaihtoehdot[k].vastaus = null
@@ -116,11 +116,13 @@ const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemI
 const lisaaKysymys = async (currentDatabaseExamIdChanged, dispatch, currentExamIndex) => {
     try {
         console.log(path + "lisaa_kysymys/" + currentDatabaseExamIdChanged)
-        await axios({
+        let response = await axios({
             method: 'post',
             url: `${path}lisaa_kysymys/${currentDatabaseExamIdChanged}`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
+        // palauttaa uuden luodun kysymyksen id
+        return response.data
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
@@ -164,11 +166,14 @@ const oikeaValintaMuuttui = async (dispatch, currentExamIndex, kysymys_id, check
 
 const lisaaTentti = async (dispatch) => {
     try {
-        await axios({
+        let response = await axios({
             method: 'post',
             url: `${path}lisaa_tentti/`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
+        // palauttaa uuden luodun tentin id
+        return response.data
+
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }

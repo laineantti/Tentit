@@ -405,7 +405,8 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
               return next(err)
             }
           })
-        response.status(201).send("Uusi kysymys lisätty ja liitetty tenttiin onnistuneesti!")
+        // "Uusi kysymys lisätty ja liitetty tenttiin onnistuneesti!"
+        response.status(201).send(res.rows[0].id)
       })
 
   }
@@ -547,12 +548,13 @@ app.get('/tentti/:id', (req, response, next) => {
 // lisää tyhjä tentti
 app.post('/lisaa_tentti', (req, res, next) => {
   try {
-    db.query("INSERT INTO tentti (nimi, suoritettu, aloitus, lopetus, minimipisteraja) values ('Uusi tentti',false,now(),now(),'65')",
-      (err) => {
+    db.query("INSERT INTO tentti (nimi, suoritettu, aloitus, lopetus, minimipisteraja) values ('Uusi tentti',false,now(),now(),'65') RETURNING id",
+      (err, response) => {
         if (err) {
           return next(err)
         }
-        res.status(201).send("Uusi tentti lisätty onnistuneesti!")
+        // Uusi tentti lisätty onnistuneesti!
+        res.status(201).send(response.rows[0].id)
       })
   }
   catch (err) {
