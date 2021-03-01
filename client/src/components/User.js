@@ -7,15 +7,12 @@ import {
 } from '@material-ui/core'
 import { strings } from './Locale'
 import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
-import { autentikoitu } from './helpers'
 
 import { store } from './store.js'
 
 
 function App() {
-    const storeContext = useContext(store)
-    const { state } = storeContext
-    const { dispatch } = storeContext
+    const { state, dispatch } = useContext(store) 
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
 
@@ -34,13 +31,13 @@ function App() {
     }
 
 
-    useEffect(() => {
-        console.log("User: ", autentikoitu())
-        fetchUser(setCurrentUser, autentikoitu())
-        if (currentUser) {
-            fetchData(currentUser, autentikoitu(), dispatch, false) // admin? --> true/false
+    useEffect(() => {           // tekee tämän kun Useriin tullaan
+        if (!currentUser) {     // hakee käyttäjän jos currentUser vielä "", eli eka kierros
+            fetchUser(setCurrentUser)   // asettaa currentUserin arvoksi kirjautuneen käyttäjän
+        } else {                // toisella kierroksella haetaan käyttäjän data
+            fetchData(currentUser, dispatch, false) // admin? --> true/false
         }
-    }, [currentUser])
+    }, [currentUser])           // tekee toisen kierroksen kun käyttäjän arvo asetettu
 
 
     return (
@@ -74,8 +71,7 @@ function App() {
                                                                     listItem.id, listItemIndex,
                                                                     state[currentExamIndex].id,
                                                                     currentUser, currentCourse,
-                                                                    currentExamIndex, dispatch,
-                                                                    autentikoitu())
+                                                                    currentExamIndex, dispatch)
                                                             }}
                                                         />
                                                         {showCorrectAnswers && <GreenCheckbox disabled checked={listItem.oikea_vastaus} color="primary" />}
