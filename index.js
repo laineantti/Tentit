@@ -261,17 +261,16 @@ app.use(express.static('uploads'));
 const isAuthenticated = require('./authentication')
 app.use(isAuthenticated)
 //----------------------------------------------------------------------------------------------
-// tarkistetaan onko käyttäjä admin
-app.get('/onko_admin/:id', (req, response, next) => {
-  db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.id], (err, res) => {
-    console.log(res.rows[0].rooli)
+// tarkistetaan onko käyttäjä admin (SAMAN TIEDON SAA ALEMMASTA /kayttaja/)
+/* app.get('/onko_admin/:kayttaja_id', (req, response, next) => {
+  db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.kayttaja_id], (err, res) => {
     if (res.rows[0].rooli === 'admin') {
       next()
     } else {
       return res.send(401)
     }
   })
-})
+}) */
 
 // haetaan käyttäjä id:n perusteella (id saadaan isAuthenticated-koodista ja tallennetaan userId-muuttujaan)
 app.get('/kayttaja/', (req, response, next) => {

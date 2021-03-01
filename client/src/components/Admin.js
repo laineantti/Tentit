@@ -37,7 +37,7 @@ function App() {
         if (!currentUser) {
             fetchUser(setCurrentUser)
         } else {
-            fetchData(currentUser, dispatch, true) // admin? --> true/false
+            fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         }
     }, [currentUser, newExamId, newCardId])
 
@@ -58,13 +58,13 @@ function App() {
                         {exam.nimi}
                     </ExamButton>
                 )}
-                <IconButton onClick={() => { setNewExamId(lisaaTentti(dispatch,currentUser)) }}>
+                <IconButton onClick={() => { setNewExamId(lisaaTentti(dispatch, currentUser)) }}>
                     <Icon>add_circle</Icon>
                 </IconButton>
                 {currentExamIndex >= 0 &&
                     (
                         <>                                         {/* Logiikka tehty, mutta heittää [object Promise] */}
-                            <h2>{state[currentExamIndex].nimi + " (luoja_id: "+ haeTentinLuojanId(state[currentExamIndex].id) +")"}</h2>
+                            <h2>{state[currentExamIndex].nimi + " (luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"}</h2>
                             {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
                             {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
                             {state[currentExamIndex].kysymykset

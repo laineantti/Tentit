@@ -35,13 +35,35 @@ const fetchUser = async (setCurrentUser) => {
     }
 }
 
-const fetchData = async (currentUser, dispatch, admin) => { // admin? --> true/false
+const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_sivulla? --> true/false
+    // ensin tarkistetaan admin-oikeus
+    let adminOikeus = false
+    try {
+        let response = await axios({
+            method: 'get',
+            url: `${path}kayttaja/`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        // asettaa admin tiedon (true/false)
+        if (response.data.rooli === "admin") {
+            adminOikeus = true
+        } else {
+            adminOikeus = false
+        }
+
+    } catch (exception) {
+        console.log("Datan päivitäminen ei onnistunut.")
+    }
+
+    // haetaan data edeltävä sivu ja admin-oikeus huomioon ottaen
     let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
     try {
         let tentit_string = ""
-        if (admin) { // admin? --> true/false
+        if (admin_sivulla && adminOikeus) { // admin_sivulla? --> true/false
+            console.log("Olet admin eli voit muokata kaikkia tenttejä.")
             tentit_string = path + "tentti"
         } else {
+            console.log("Saat vain omat tenttisi.")
             tentit_string = path + "kayttajan_tentit/" + currentUser
         }
         let tentit_data = await axios.get(tentit_string, headers)
@@ -164,7 +186,7 @@ const oikeaValintaMuuttui = async (dispatch, currentExamIndex, kysymys_id, check
     })
 }
 
-const lisaaTentti = async (dispatch,currentUser) => {
+const lisaaTentti = async (dispatch, currentUser) => {
     try {
         let response = await axios({
             method: 'post',
@@ -243,5 +265,5 @@ export {
     lisaaTentti,
     haeTentinLuojanId,
     muutaKysymys,
-    poistaKysymyksenLiitos,
+    poistaKysymyksenLiitos
 }
