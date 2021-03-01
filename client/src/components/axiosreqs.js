@@ -217,6 +217,22 @@ const haeTentinLuojanId = async (tentti_id) => {
     }
 }
 
+const muutaTentti = async (dispatch, currentExamIndex, tentti_id, value) => {
+    try {
+        await axios({
+            method: 'put',
+            url: `${path}paivita_tentti/${tentti_id}/${value}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+    } catch (exception) {
+        console.log(exception)
+    }
+    dispatch({
+        type: "exam_changed",
+        data: { examIndex: currentExamIndex, newExam: value }
+    })
+}
+
 const muutaKysymys = async (dispatch, currentExamIndex, value, id, cardIndex) => {
     try {
         await axios({
@@ -230,6 +246,27 @@ const muutaKysymys = async (dispatch, currentExamIndex, value, id, cardIndex) =>
     dispatch({
         type: "card_label_changed",
         data: { examIndex: currentExamIndex, cardIndex: cardIndex, newCardLabel: value }
+    })
+}
+
+const muutaVaihtoehto = async (dispatch, currentExamIndex, value, vaihtoehto_id, cardIndex, listItemIndex) => {
+    try {
+        await axios({
+            method: 'put',
+            url: `${path}paivita_vaihtoehto/${vaihtoehto_id}/${value}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+    } catch (exception) {
+        console.log(exception)
+    }
+    dispatch({
+        type: "choise_changed",
+        data: {
+            examIndex: currentExamIndex,
+            cardIndex: cardIndex,
+            listItemIndex: listItemIndex,
+            newChoise: value
+        }
     })
 }
 
@@ -264,6 +301,8 @@ export {
     oikeaValintaMuuttui,
     lisaaTentti,
     haeTentinLuojanId,
+    muutaTentti,
     muutaKysymys,
+    muutaVaihtoehto,
     poistaKysymyksenLiitos
 }

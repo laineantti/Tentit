@@ -493,6 +493,18 @@ app.post('/lisaa_vaihtoehto/:kysymys_id', (req, response, next) => {
   }
 })
 
+// päivitetään vaihtoehdon teksti
+app.put('/paivita_vaihtoehto/:id/:teksti', (req, response, next) => {
+  db.query("UPDATE vaihtoehto SET vaihtoehto = $2 where id = $1",
+    [req.params.id, req.params.teksti],
+    (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send("Vaihtoehdon teksti päivitetty onnistuneesti!")
+    })
+})
+
 // tulostetaan kaikki kysymykset
 app.get('/kysymys', (req, response, next) => {
   db.query('SELECT * FROM kysymys', (err, res) => {
@@ -568,6 +580,18 @@ app.post('/lisaa_tentti/:kayttaja_id', (req, res, next) => {
   }
 })
 
+// päivitetään tentin nimi
+app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
+  db.query("UPDATE tentti SET nimi = $2 where id = $1",
+    [req.params.id, req.params.nimi],
+    (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send("Tentin nimi päivitetty onnistuneesti!")
+    })
+})
+
 // palauttaa tentin luojan id, tentin id perusteella
 app.get('/tentin_luoja/:tentti_id', (req, response, next) => {
   db.query('SELECT * FROM kayttajan_tentit WHERE tentti_id = $1',
@@ -577,21 +601,6 @@ app.get('/tentin_luoja/:tentti_id', (req, response, next) => {
       }
       response.send(res.rows[0].kayttaja_id)
     })
-})
-
-// päivitetään tentin nimi
-app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
-  try {
-    db.query('UPDATE tentti SET nimi = $2 WHERE id = $1', [req.params.id], [req.params.nimi], (err, res) => {
-      if (err) {
-        return next(err)
-      }
-      response.status(201).send("Tentin nimi päivitetty!")
-    })
-  }
-  catch (err) {
-    response.send(err)
-  }
 })
 
 // palautetaan vaihtoehdot

@@ -54,6 +54,10 @@ const StateProvider = ({ children }) => {
                 tempCopy.push(newExam)
                 return tempCopy
 
+            case "exam_changed":
+                tempCopy[action.data.examIndex].nimi = action.data.newExam
+                return tempCopy
+
             case "correct_checked_changed":
                 tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
                     .vaihtoehdot[action.data.listItemIndex].oikea_vastaus = action.data.checkedValue
@@ -66,8 +70,8 @@ const StateProvider = ({ children }) => {
                 return tempCopy
 
             case "choise_changed":
-                tempCopy[action.data.examIndex].cards[action.data.cardIndex]
-                    .choises[action.data.listItemIndex].choise = action.data.newChoise
+                tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
+                    .vaihtoehdot[action.data.listItemIndex].vaihtoehto = action.data.newChoise
                 return tempCopy
 
             case "choise_deleted":

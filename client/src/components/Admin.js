@@ -17,7 +17,9 @@ import {
     oikeaValintaMuuttui,
     lisaaTentti,
     haeTentinLuojanId,
+    muutaTentti,
     muutaKysymys,
+    muutaVaihtoehto,
     poistaKysymyksenLiitos
 } from './axiosreqs'
 
@@ -64,7 +66,10 @@ function App() {
                 {currentExamIndex >= 0 &&
                     (
                         <>                                         {/* Logiikka tehty, mutta heittää [object Promise] */}
-                            <h2>{state[currentExamIndex].nimi + " (luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"}</h2>
+                            <TextField type="text" defaultValue={state[currentExamIndex].nimi} id={state[currentExamIndex].id} onBlur={(event) => {
+                                muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, event.target.value)
+                            }}>
+                            </TextField> {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"}
                             {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
                             {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
                             {state[currentExamIndex].kysymykset
@@ -86,20 +91,14 @@ function App() {
                                                             onChange={(event) => {
                                                                 oikeaValintaMuuttui(dispatch, currentExamIndex, cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
                                                             }} />
-                                                        <TextField key={uuid()} style={{
+
+                                                        <TextField key={listItem.id} style={{
                                                             minWidth: "600px", overflow: "hidden",
                                                             textOverflow: "ellipsis"
-                                                        }} value={listItem.vaihtoehto}
-                                                            onChange={(event) => dispatch(
-                                                                {
-                                                                    type: "choise_changed", data: {
-                                                                        examIndex: currentExamIndex,
-                                                                        cardIndex: cardIndex,
-                                                                        listItemIndex: listItemIndex,
-                                                                        newChoise: event.target.value
-                                                                    }
-                                                                }
-                                                            )} />
+                                                        }} defaultValue={listItem.vaihtoehto}
+                                                            onBlur={(event) => {
+                                                                muutaVaihtoehto(dispatch, currentExamIndex, event.target.value, listItem.id, cardIndex, listItemIndex)
+                                                            }} />
                                                         <IconButton style={{ float: "right" }} label="delete" color="primary"
                                                             onClick={() => dispatch(
                                                                 {
