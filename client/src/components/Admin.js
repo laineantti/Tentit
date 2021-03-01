@@ -19,21 +19,23 @@ import {
     muutaKysymys,
     poistaKysymyksenLiitos
 } from './axiosreqs'
-import { autentikoitu } from './helpers'
 
 function App() {
-    const storeContext = useContext(store)
-    const { state } = storeContext
-    const { dispatch } = storeContext
+    const { state, dispatch } = useContext(store)
+    // const storeContext = useContext(store)
+    // const { state } = storeContext
+    // const { dispatch } = storeContext
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
     const [currentDatabaseExamIdChanged, setCurrentDatabaseExamIdChanged] = useState(-1)
     const [currentUser, setCurrentUser] = useState("")
     const classes = useStyles()
 
     useEffect(() => {
-        console.log("kukkuu: ", autentikoitu())
-        fetchUser(setCurrentUser, autentikoitu())
-        fetchData(currentUser, autentikoitu(), dispatch, true) // admin? --> true/false
+        if (!currentUser) {
+            fetchUser(setCurrentUser)
+        } else {
+            fetchData(currentUser, dispatch, true) // admin? --> true/false
+        }
     }, [currentUser])
 
     return (
@@ -49,7 +51,7 @@ function App() {
                         {exam.nimi}
                     </ExamButton>
                 )}
-                <IconButton onClick={() => { lisaaTentti(dispatch, autentikoitu()) }}>
+                <IconButton onClick={() => { lisaaTentti(dispatch) }}>
                     <Icon>add_circle</Icon>
                 </IconButton>
                 {currentExamIndex >= 0 &&
@@ -64,18 +66,18 @@ function App() {
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
                                                 <TextField type="text" defaultValue={card.lause} id={card.id} onBlur={(event) => {
-                                                    muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, autentikoitu())
+                                                    muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                 }}>
                                                 </TextField>
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
-                                                    color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id, autentikoitu())}>
+                                                    color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)}>
                                                     <DeleteIcon />
                                                 </IconButton >
                                                 {card.vaihtoehdot.map((listItem, listItemIndex) => (
                                                     <ListItem key={uuid()}>
                                                         <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
                                                             onChange={(event) => {
-                                                                oikeaValintaMuuttui(dispatch, currentExamIndex, cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id, autentikoitu())
+                                                                oikeaValintaMuuttui(dispatch, currentExamIndex, cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
                                                             }} />
                                                         <TextField key={uuid()} style={{
                                                             minWidth: "600px", overflow: "hidden",
@@ -104,7 +106,7 @@ function App() {
                                                             <DeleteIcon /></IconButton >
                                                     </ListItem>
                                                 ))}
-                                                <IconButton onClick={() => lisaaVaihtoehto(dispatch, cardIndex, card.id, currentExamIndex, autentikoitu())}>
+                                                <IconButton onClick={() => lisaaVaihtoehto(dispatch, cardIndex, card.id, currentExamIndex)}>
                                                     <Icon>add_circle</Icon>
                                                 </IconButton>
                                             </List>
@@ -113,7 +115,7 @@ function App() {
                                 )
                             }
                             <IconButton style={{ float: "right" }}
-                                onClick={() => lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex, autentikoitu())}>
+                                onClick={() => lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex)}>
                                 <Icon>add_circle</Icon>
                             </IconButton>
                         </>
