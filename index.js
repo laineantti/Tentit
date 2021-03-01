@@ -546,13 +546,20 @@ app.get('/tentti/:id', (req, response, next) => {
 })
 
 // lisää tyhjä tentti
-app.post('/lisaa_tentti', (req, res, next) => {
+app.post('/lisaa_tentti/:kayttaja_id', (req, res, next) => {
   try {
     db.query("INSERT INTO tentti (nimi, suoritettu, aloitus, lopetus, minimipisteraja) values ('Uusi tentti',false,now(),now(),'65') RETURNING id",
       (err, response) => {
         if (err) {
           return next(err)
         }
+        db.query("INSERT INTO kayttajan_tentit (kayttaja_id,tentti_id) values ($1," + response.rows[0].id + ")",
+          [req.params.kayttaja_id],
+          (err) => {
+            if (err) {
+              return next(err)
+            }
+          })
         // Uusi tentti lisätty onnistuneesti!
         res.status(201).send(response.rows[0].id)
       })
@@ -560,6 +567,17 @@ app.post('/lisaa_tentti', (req, res, next) => {
   catch (err) {
     res.send(err)
   }
+})
+
+// palauttaa tentin luojan id, tentin id perusteella
+app.get('/tentin_luoja/:tentti_id', (req, response, next) => {
+  db.query('SELECT * FROM kayttajan_tentit WHERE tentti_id = $1',
+    [req.params.tentti_id], (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send(res.rows[0].kayttaja_id)
+    })
 })
 
 // päivitetään tentin nimi

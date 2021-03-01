@@ -16,6 +16,7 @@ import {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
+    haeTentinLuojanId,
     muutaKysymys,
     poistaKysymyksenLiitos
 } from './axiosreqs'
@@ -57,13 +58,13 @@ function App() {
                         {exam.nimi}
                     </ExamButton>
                 )}
-                <IconButton onClick={() => { setNewExamId(lisaaTentti(dispatch)) }}>
+                <IconButton onClick={() => { setNewExamId(lisaaTentti(dispatch,currentUser)) }}>
                     <Icon>add_circle</Icon>
                 </IconButton>
                 {currentExamIndex >= 0 &&
                     (
-                        <>
-                            <h2>{state[currentExamIndex].nimi}</h2>
+                        <>                                         {/* Logiikka tehty, mutta heittää [object Promise] */}
+                            <h2>{state[currentExamIndex].nimi + " (luoja_id: "+ haeTentinLuojanId(state[currentExamIndex].id) +")"}</h2>
                             {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
                             {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
                             {state[currentExamIndex].kysymykset

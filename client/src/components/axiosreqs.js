@@ -164,11 +164,11 @@ const oikeaValintaMuuttui = async (dispatch, currentExamIndex, kysymys_id, check
     })
 }
 
-const lisaaTentti = async (dispatch) => {
+const lisaaTentti = async (dispatch,currentUser) => {
     try {
         let response = await axios({
             method: 'post',
-            url: `${path}lisaa_tentti/`,
+            url: `${path}lisaa_tentti/${currentUser}`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
         // palauttaa uuden luodun tentin id
@@ -178,6 +178,21 @@ const lisaaTentti = async (dispatch) => {
         console.log("Datan päivitäminen ei onnistunut.")
     }
     dispatch({ type: "add_exam" })
+}
+
+const haeTentinLuojanId = async (tentti_id) => {
+    try {
+        let response = await axios({
+            method: 'get',
+            url: `${path}tentin_luoja/${tentti_id}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        // palauttaa tentin luojan id
+        return response.data
+
+    } catch (exception) {
+        console.log("Datan päivitäminen ei onnistunut.")
+    }
 }
 
 const muutaKysymys = async (dispatch, currentExamIndex, value, id, cardIndex) => {
@@ -226,6 +241,7 @@ export {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
+    haeTentinLuojanId,
     muutaKysymys,
-    poistaKysymyksenLiitos
+    poistaKysymyksenLiitos,
 }
