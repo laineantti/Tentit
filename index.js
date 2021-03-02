@@ -505,6 +505,17 @@ app.put('/paivita_vaihtoehto/:id/:teksti', (req, response, next) => {
     })
 })
 
+// poistetaan vaihtoehdon liitos kysymykseen
+app.delete('/poista_vaihtoehdon_liitos/:vaihtoehto_id/:kysymys_id', (req, res, next) => {
+  db.query('DELETE FROM kysymyksen_vaihtoehdot WHERE vaihtoehto_id=$1 AND kysymys_id=$2',
+    [req.params.vaihtoehto_id, req.params.kysymys_id], (err, result) => {
+      if (err) {
+        return next(err)
+      }
+      res.send(result.rows)
+    })
+})
+
 // tulostetaan kaikki kysymykset
 app.get('/kysymys', (req, response, next) => {
   db.query('SELECT * FROM kysymys', (err, res) => {
@@ -589,6 +600,17 @@ app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
         return next(err)
       }
       response.send("Tentin nimi päivitetty onnistuneesti!")
+    })
+})
+
+// poistetaan tentti
+app.delete('/poista_tentti/:tentti_id', (req, res, next) => {
+  db.query('DELETE FROM tentti WHERE id=$1',
+    [req.params.tentti_id], (err, result) => {
+      if (err) {
+        return next(err)
+      }
+      res.send(result.rows)
     })
 })
 

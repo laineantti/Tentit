@@ -20,7 +20,9 @@ import {
     muutaTentti,
     muutaKysymys,
     muutaVaihtoehto,
-    poistaKysymyksenLiitos
+    poistaKysymyksenLiitos,
+    poistaVaihtoehdonLiitos,
+    poistaTentti
 } from './axiosreqs'
 
 function App() {
@@ -65,11 +67,21 @@ function App() {
                 </IconButton>
                 {currentExamIndex >= 0 &&
                     (
-                        <>                                         {/* Logiikka tehty, mutta heittää [object Promise] */}
-                            <TextField type="text" defaultValue={state[currentExamIndex].nimi} id={state[currentExamIndex].id} onBlur={(event) => {
-                                muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, event.target.value)
-                            }}>
-                            </TextField> {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"}
+                        <>
+                            {(state[currentExamIndex].nimi) && (<>
+                                <TextField type="text" defaultValue={state[currentExamIndex].nimi} id={state[currentExamIndex].id} onBlur={(event) => {
+                                    muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, event.target.value)
+                                }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
+                                </TextField> {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"}
+                                <IconButton style={{ float: "right" }} label="delete" color="primary"
+                                    onClick={() => {
+                                        poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged)
+                                        setCurrentExamIndex(-1)
+                                    }}>
+                                    <DeleteIcon />
+                                </IconButton >
+                            </>)}
+
                             {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
                             {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
                             {state[currentExamIndex].kysymykset
@@ -100,15 +112,8 @@ function App() {
                                                                 muutaVaihtoehto(dispatch, currentExamIndex, event.target.value, listItem.id, cardIndex, listItemIndex)
                                                             }} />
                                                         <IconButton style={{ float: "right" }} label="delete" color="primary"
-                                                            onClick={() => dispatch(
-                                                                {
-                                                                    type: "choise_deleted", data: {
-                                                                        examIndex: currentExamIndex,
-                                                                        cardIndex: cardIndex,
-                                                                        listItemIndex: listItemIndex
-                                                                    }
-                                                                }
-                                                            )}>
+
+                                                            onClick={() => poistaVaihtoehdonLiitos(dispatch, currentExamIndex, listItem.id, cardIndex, card.id)}>
                                                             <DeleteIcon /></IconButton >
                                                     </ListItem>
                                                 ))}
@@ -136,7 +141,7 @@ function App() {
                     )
                 }
             </Container>
-        </Box>
+        </Box >
     )
 }
 
