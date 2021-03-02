@@ -27,13 +27,7 @@ const StateProvider = ({ children }) => {
             case "add_card":
                 let newCard = {
                     lause: "Uusi kysymys",
-                    vaihtoehdot: [
-                        {
-                            vaihtoehto: "Uusi vaihtoehto",
-                            vastaus: false,
-                            oikea_vastaus: false
-                        }
-                    ]
+                    vaihtoehdot: []
                 }
                 tempCopy[action.data.examIndex].kysymykset.push(newCard)
                 return tempCopy
@@ -60,20 +54,24 @@ const StateProvider = ({ children }) => {
                 tempCopy.push(newExam)
                 return tempCopy
 
+            case "exam_changed":
+                tempCopy[action.data.examIndex].nimi = action.data.newExam
+                return tempCopy
+
             case "correct_checked_changed":
                 tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
                     .vaihtoehdot[action.data.listItemIndex].oikea_vastaus = action.data.checkedValue
                 console.log(tempCopy)
                 return tempCopy
-            
+
             case "checked_changed":
                 tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
                     .vaihtoehdot[action.data.listItemIndex].vastaus = action.data.checkedValue
                 return tempCopy
 
             case "choise_changed":
-                tempCopy[action.data.examIndex].cards[action.data.cardIndex]
-                    .choises[action.data.listItemIndex].choise = action.data.newChoise
+                tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
+                    .vaihtoehdot[action.data.listItemIndex].vaihtoehto = action.data.newChoise
                 return tempCopy
 
             case "choise_deleted":

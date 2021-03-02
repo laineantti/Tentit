@@ -261,17 +261,16 @@ app.use(express.static('uploads'));
 const isAuthenticated = require('./authentication')
 app.use(isAuthenticated)
 //----------------------------------------------------------------------------------------------
-// tarkistetaan onko käyttäjä admin
-app.get('/onko_admin/:id', (req, response, next) => {
-  db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.id], (err, res) => {
-    console.log(res.rows[0].rooli)
+// tarkistetaan onko käyttäjä admin (SAMAN TIEDON SAA ALEMMASTA /kayttaja/)
+/* app.get('/onko_admin/:kayttaja_id', (req, response, next) => {
+  db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.kayttaja_id], (err, res) => {
     if (res.rows[0].rooli === 'admin') {
       next()
     } else {
       return res.send(401)
     }
   })
-})
+}) */
 
 // haetaan käyttäjä id:n perusteella (id saadaan isAuthenticated-koodista ja tallennetaan userId-muuttujaan)
 app.get('/kayttaja/', (req, response, next) => {
@@ -405,7 +404,8 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
               return next(err)
             }
           })
-        response.status(201).send("Uusi kysymys lisätty ja liitetty tenttiin onnistuneesti!")
+        // "Uusi kysymys lisätty ja liitetty tenttiin onnistuneesti!"
+        response.status(201).send(res.rows[0].id)
       })
 
   }
@@ -493,6 +493,18 @@ app.post('/lisaa_vaihtoehto/:kysymys_id', (req, response, next) => {
   }
 })
 
+// päivitetään vaihtoehdon teksti
+app.put('/paivita_vaihtoehto/:id/:teksti', (req, response, next) => {
+  db.query("UPDATE vaihtoehto SET vaihtoehto = $2 where id = $1",
+    [req.params.id, req.params.teksti],
+    (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send("Vaihtoehdon teksti päivitetty onnistuneesti!")
+    })
+})
+
 // tulostetaan kaikki kysymykset
 app.get('/kysymys', (req, response, next) => {
   db.query('SELECT * FROM kysymys', (err, res) => {
@@ -545,14 +557,22 @@ app.get('/tentti/:id', (req, response, next) => {
 })
 
 // lisää tyhjä tentti
-app.post('/lisaa_tentti', (req, res, next) => {
+app.post('/lisaa_tentti/:kayttaja_id', (req, res, next) => {
   try {
-    db.query("INSERT INTO tentti (nimi, suoritettu, aloitus, lopetus, minimipisteraja) values ('Uusi tentti',false,now(),now(),'65')",
-      (err) => {
+    db.query("INSERT INTO tentti (nimi, suoritettu, aloitus, lopetus, minimipisteraja) values ('Uusi tentti',false,now(),now(),'65') RETURNING id",
+      (err, response) => {
         if (err) {
           return next(err)
         }
-        res.status(201).send("Uusi tentti lisätty onnistuneesti!")
+        db.query("INSERT INTO kayttajan_tentit (kayttaja_id,tentti_id) values ($1," + response.rows[0].id + ")",
+          [req.params.kayttaja_id],
+          (err) => {
+            if (err) {
+              return next(err)
+            }
+          })
+        // Uusi tentti lisätty onnistuneesti!
+        res.status(201).send(response.rows[0].id)
       })
   }
   catch (err) {
@@ -562,17 +582,25 @@ app.post('/lisaa_tentti', (req, res, next) => {
 
 // päivitetään tentin nimi
 app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
-  try {
-    db.query('UPDATE tentti SET nimi = $2 WHERE id = $1', [req.params.id], [req.params.nimi], (err, res) => {
+  db.query("UPDATE tentti SET nimi = $2 where id = $1",
+    [req.params.id, req.params.nimi],
+    (err, res) => {
       if (err) {
         return next(err)
       }
-      response.status(201).send("Tentin nimi päivitetty!")
+      response.send("Tentin nimi päivitetty onnistuneesti!")
     })
-  }
-  catch (err) {
-    response.send(err)
-  }
+})
+
+// palauttaa tentin luojan id, tentin id perusteella
+app.get('/tentin_luoja/:tentti_id', (req, response, next) => {
+  db.query('SELECT * FROM kayttajan_tentit WHERE tentti_id = $1',
+    [req.params.tentti_id], (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send(res.rows[0].kayttaja_id)
+    })
 })
 
 // palautetaan vaihtoehdot

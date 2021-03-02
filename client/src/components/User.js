@@ -35,7 +35,7 @@ function App() {
         if (!currentUser) {     // hakee käyttäjän jos currentUser vielä "", eli eka kierros
             fetchUser(setCurrentUser)   // asettaa currentUserin arvoksi kirjautuneen käyttäjän
         } else {                // toisella kierroksella haetaan käyttäjän data
-            fetchData(currentUser, dispatch, false) // admin? --> true/false
+            fetchData(currentUser, dispatch, false) // admin_sivulla? --> true/false
         }
     }, [currentUser])           // tekee toisen kierroksen kun käyttäjän arvo asetettu
 

@@ -16,7 +16,10 @@ import {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
+    haeTentinLuojanId,
+    muutaTentti,
     muutaKysymys,
+    muutaVaihtoehto,
     poistaKysymyksenLiitos
 } from './axiosreqs'
 
@@ -27,6 +30,8 @@ function App() {
     // const { dispatch } = storeContext
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
     const [currentDatabaseExamIdChanged, setCurrentDatabaseExamIdChanged] = useState(-1)
+    const [newExamId, setNewExamId] = useState(-1)
+    const [newCardId, setNewCardId] = useState(-1)
     const [currentUser, setCurrentUser] = useState("")
     const classes = useStyles()
 
@@ -34,9 +39,9 @@ function App() {
         if (!currentUser) {
             fetchUser(setCurrentUser)
         } else {
-            fetchData(currentUser, dispatch, true) // admin? --> true/false
+            fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         }
-    }, [currentUser])
+    }, [currentUser, newExamId, newCardId])
 
     return (
         <Box>
@@ -46,18 +51,25 @@ function App() {
                 {Object.values(state).map((exam, examIndex) =>
                     <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
                         setCurrentExamIndex(examIndex)
-                        setCurrentDatabaseExamIdChanged(exam.id)
+                        if (exam.id) {
+                            setCurrentDatabaseExamIdChanged(exam.id)
+                        } else {
+                            setCurrentDatabaseExamIdChanged(newExamId)
+                        }
                     }}>
                         {exam.nimi}
                     </ExamButton>
                 )}
-                <IconButton onClick={() => { lisaaTentti(dispatch) }}>
+                <IconButton onClick={() => { setNewExamId(lisaaTentti(dispatch, currentUser)) }}>
                     <Icon>add_circle</Icon>
                 </IconButton>
                 {currentExamIndex >= 0 &&
                     (
-                        <>
-                            <h2>{state[currentExamIndex].nimi}</h2>
+                        <>                                         {/* Logiikka tehty, mutta heittää [object Promise] */}
+                            <TextField type="text" defaultValue={state[currentExamIndex].nimi} id={state[currentExamIndex].id} onBlur={(event) => {
+                                muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, event.target.value)
+                            }}>
+                            </TextField> {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"}
                             {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
                             {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
                             {state[currentExamIndex].kysymykset
@@ -79,20 +91,14 @@ function App() {
                                                             onChange={(event) => {
                                                                 oikeaValintaMuuttui(dispatch, currentExamIndex, cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
                                                             }} />
-                                                        <TextField key={uuid()} style={{
+
+                                                        <TextField key={listItem.id} style={{
                                                             minWidth: "600px", overflow: "hidden",
                                                             textOverflow: "ellipsis"
-                                                        }} value={listItem.vaihtoehto}
-                                                            onChange={(event) => dispatch(
-                                                                {
-                                                                    type: "choise_changed", data: {
-                                                                        examIndex: currentExamIndex,
-                                                                        cardIndex: cardIndex,
-                                                                        listItemIndex: listItemIndex,
-                                                                        newChoise: event.target.value
-                                                                    }
-                                                                }
-                                                            )} />
+                                                        }} defaultValue={listItem.vaihtoehto}
+                                                            onBlur={(event) => {
+                                                                muutaVaihtoehto(dispatch, currentExamIndex, event.target.value, listItem.id, cardIndex, listItemIndex)
+                                                            }} />
                                                         <IconButton style={{ float: "right" }} label="delete" color="primary"
                                                             onClick={() => dispatch(
                                                                 {
@@ -106,7 +112,15 @@ function App() {
                                                             <DeleteIcon /></IconButton >
                                                     </ListItem>
                                                 ))}
-                                                <IconButton onClick={() => lisaaVaihtoehto(dispatch, cardIndex, card.id, currentExamIndex)}>
+                                                <IconButton onClick={() => {
+                                                    let kysymys_id = null
+                                                    if (card.id) {
+                                                        kysymys_id = card.id
+                                                    } else {
+                                                        kysymys_id = newCardId
+                                                    }
+                                                    lisaaVaihtoehto(dispatch, cardIndex, kysymys_id, currentExamIndex)
+                                                }}>
                                                     <Icon>add_circle</Icon>
                                                 </IconButton>
                                             </List>
@@ -115,7 +129,7 @@ function App() {
                                 )
                             }
                             <IconButton style={{ float: "right" }}
-                                onClick={() => lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex)}>
+                                onClick={() => setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))}>
                                 <Icon>add_circle</Icon>
                             </IconButton>
                         </>

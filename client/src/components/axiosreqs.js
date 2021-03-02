@@ -35,13 +35,35 @@ const fetchUser = async (setCurrentUser) => {
     }
 }
 
-const fetchData = async (currentUser, dispatch, admin) => { // admin? --> true/false
+const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_sivulla? --> true/false
+    // ensin tarkistetaan admin-oikeus
+    let adminOikeus = false
+    try {
+        let response = await axios({
+            method: 'get',
+            url: `${path}kayttaja/`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        // asettaa admin tiedon (true/false)
+        if (response.data.rooli === "admin") {
+            adminOikeus = true
+        } else {
+            adminOikeus = false
+        }
+
+    } catch (exception) {
+        console.log("Datan päivitäminen ei onnistunut.")
+    }
+
+    // haetaan data edeltävä sivu ja admin-oikeus huomioon ottaen
     let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
     try {
         let tentit_string = ""
-        if (admin) { // admin? --> true/false
+        if (admin_sivulla && adminOikeus) { // admin_sivulla? --> true/false
+            console.log("Olet admin eli voit muokata kaikkia tenttejä.")
             tentit_string = path + "tentti"
         } else {
+            console.log("Saat vain omat tenttisi.")
             tentit_string = path + "kayttajan_tentit/" + currentUser
         }
         let tentit_data = await axios.get(tentit_string, headers)
@@ -56,8 +78,8 @@ const fetchData = async (currentUser, dispatch, admin) => { // admin? --> true/f
                 tentit[i].kysymykset = kysymykset_taulu.data
                 // haetaan kayttajan_vastaukset
 
-                if (tentit[i].kysymykset.length > 0){
-                    let kayttajan_vastaukset = 
+                if (tentit[i].kysymykset.length > 0) {
+                    let kayttajan_vastaukset =
                         await axios.get(path + "kayttajan_vastaukset/" + currentUser + "/" + tentit[i].id, headers)
                     // käydään tentin kysymykset läpi
                     for (var j = 0; j < tentit[i].kysymykset.length; j++) {
@@ -65,7 +87,7 @@ const fetchData = async (currentUser, dispatch, admin) => { // admin? --> true/f
                         tentit[i].kysymykset[j].vaihtoehdot = []
                         let vaihtoehdot_taulu =
                             await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id, headers)
-                            tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
+                        tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
                         // käydään kayttajan_vastaukset läpi
                         for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
                             tentit[i].kysymykset[j].vaihtoehdot[k].vastaus = null
@@ -116,11 +138,13 @@ const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemI
 const lisaaKysymys = async (currentDatabaseExamIdChanged, dispatch, currentExamIndex) => {
     try {
         console.log(path + "lisaa_kysymys/" + currentDatabaseExamIdChanged)
-        await axios({
+        let response = await axios({
             method: 'post',
             url: `${path}lisaa_kysymys/${currentDatabaseExamIdChanged}`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
+        // palauttaa uuden luodun kysymyksen id
+        return response.data
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
@@ -162,17 +186,51 @@ const oikeaValintaMuuttui = async (dispatch, currentExamIndex, kysymys_id, check
     })
 }
 
-const lisaaTentti = async (dispatch) => {
+const lisaaTentti = async (dispatch, currentUser) => {
     try {
-        await axios({
+        let response = await axios({
             method: 'post',
-            url: `${path}lisaa_tentti/`,
+            url: `${path}lisaa_tentti/${currentUser}`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
+        // palauttaa uuden luodun tentin id
+        return response.data
+
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
     dispatch({ type: "add_exam" })
+}
+
+const haeTentinLuojanId = async (tentti_id) => {
+    try {
+        let response = await axios({
+            method: 'get',
+            url: `${path}tentin_luoja/${tentti_id}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        // palauttaa tentin luojan id
+        return response.data
+
+    } catch (exception) {
+        console.log("Datan päivitäminen ei onnistunut.")
+    }
+}
+
+const muutaTentti = async (dispatch, currentExamIndex, tentti_id, value) => {
+    try {
+        await axios({
+            method: 'put',
+            url: `${path}paivita_tentti/${tentti_id}/${value}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+    } catch (exception) {
+        console.log(exception)
+    }
+    dispatch({
+        type: "exam_changed",
+        data: { examIndex: currentExamIndex, newExam: value }
+    })
 }
 
 const muutaKysymys = async (dispatch, currentExamIndex, value, id, cardIndex) => {
@@ -188,6 +246,27 @@ const muutaKysymys = async (dispatch, currentExamIndex, value, id, cardIndex) =>
     dispatch({
         type: "card_label_changed",
         data: { examIndex: currentExamIndex, cardIndex: cardIndex, newCardLabel: value }
+    })
+}
+
+const muutaVaihtoehto = async (dispatch, currentExamIndex, value, vaihtoehto_id, cardIndex, listItemIndex) => {
+    try {
+        await axios({
+            method: 'put',
+            url: `${path}paivita_vaihtoehto/${vaihtoehto_id}/${value}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+    } catch (exception) {
+        console.log(exception)
+    }
+    dispatch({
+        type: "choise_changed",
+        data: {
+            examIndex: currentExamIndex,
+            cardIndex: cardIndex,
+            listItemIndex: listItemIndex,
+            newChoise: value
+        }
     })
 }
 
@@ -221,6 +300,9 @@ export {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
+    haeTentinLuojanId,
+    muutaTentti,
     muutaKysymys,
+    muutaVaihtoehto,
     poistaKysymyksenLiitos
 }
