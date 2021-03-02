@@ -1,18 +1,18 @@
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { vs } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 // merkkijonosta CODE sanan jälkeen tuleva osa tulkitaan koodiksi ja ennen CODE sanaa oleva osa kysymykseksi, jos CODE sanaa ei ole merkkijono tulostuu sellaisenaan
 
 const CodeComponent = ({questionString}) => {
-    let examQuestion = questionString
-    let codePos = examQuestion.search("CODE")
-    if (codePos !== -1) {       // seach palauttaa -1, jos etsittävää ei löydy
-        let code = examQuestion.substring(codePos+5)
-        let question = examQuestion.slice(0,codePos-1)
+
+    let codePos = questionString.search("CODE")
+    if (codePos !== -1) {       // search palauttaa -1, jos etsittävää ei löydy
+        let code = questionString.substring(codePos+5)
+        let question = questionString.slice(0,codePos-1)
         return (
             <>
                 {question}
-                <SyntaxHighlighter language="javascript" style={docco} wrapLongLines={true}
+                <SyntaxHighlighter language="javascript" style={vs} wrapLongLines={true}
                 showLineNumbers={true}>
                     {code}
                 </SyntaxHighlighter>
