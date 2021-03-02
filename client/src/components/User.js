@@ -7,7 +7,7 @@ import {
 } from '@material-ui/core'
 import { strings } from './Locale'
 import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
-
+import CodeComponent from './CodeComponent'
 import { store } from './store.js'
 
 
@@ -59,8 +59,8 @@ function App() {
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <p className="label" style={{ whiteSpace: "pre-wrap" }}>
-                                                    {card.lause}
+                                                <p className="label" style={{ whiteSpace: "pre-wrap" }}> 
+                                                    <CodeComponent questionString={card.lause}/>
                                                 </p>
                                                 {Object.values(card.vaihtoehdot).map((listItem, listItemIndex) => (
                                                     <ListItem key={uuid()}>
