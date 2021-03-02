@@ -234,10 +234,14 @@ const muutaTentti = async (dispatch, currentExamIndex, tentti_id, value) => {
 }
 
 const muutaKysymys = async (dispatch, currentExamIndex, value, id, cardIndex) => {
+    let body = {
+        lause: value,
+    }
     try {
         await axios({
             method: 'put',
-            url: `${path}paivita_kysymys/${id}/${value}`,
+            url: `${path}paivita_kysymys/${id}`,
+            data: body,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
     } catch (exception) {
