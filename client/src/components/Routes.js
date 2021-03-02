@@ -30,7 +30,7 @@ export const Routes = () => {
             <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>          
             {kirjautunut ? 
                 <Switch>
-                    <Route exact path="/login">
+                    {/* <Route exact path="/login">
                         <User />
                     </Route>
                     <Route exact path="/user">
@@ -38,7 +38,7 @@ export const Routes = () => {
                     </Route>
                     <Route exact path="/">
                         <User />
-                    </Route>
+                    </Route> */}
                     <Route exact path="/admin">
                         <Admin />
                     </Route>
@@ -48,18 +48,24 @@ export const Routes = () => {
                     <Route exact path="/upload">
                         <Upload />
                     </Route>
+                    <Route exact path="*">
+                        <User />
+                    </Route>
                 </Switch>
                 :
                 <Switch>
                     <Route exact path="/register">
                         <Register />
                     </Route>
-                    <Route exact path="/login">
+                    <Route exact path="*">
+                        <Login kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>
+                    </Route>
+                    {/* <Route exact path="/login">
                         <Login kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>
                     </Route>
                     <Route exact path="/">
                         <Login kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>
-                    </Route>
+                    </Route> */}
                 </Switch>
             }
         </div>
