@@ -611,7 +611,7 @@ app.get('/tentin_luoja/:tentti_id', (req, response, next) => {
 
 // palautetaan vaihtoehdot
 app.get('/vaihtoehto', (req, response, next) => {
-  db.query('SELECT * FROM vaihtoehto', (err, res) => {
+  db.query('SELECT * FROM vaihtoehto ORDER BY id', (err, res) => {
     if (err) {
       return next(err)
     }
