@@ -22,6 +22,7 @@ import {
     muutaVaihtoehto,
     poistaKysymyksenLiitos
 } from './axiosreqs'
+import CodeComponent from './CodeComponent'
 
 function App() {
     const { state, dispatch } = useContext(store)
@@ -77,7 +78,8 @@ function App() {
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <TextField type="text" defaultValue={card.lause} id={card.id} onBlur={(event) => {
+                                                <CodeComponent questionString={card.lause}/>
+                                                <TextField multiline type="text" style={{minWidth: "90%"}} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                                     muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                 }}>
                                                 </TextField>
@@ -86,14 +88,15 @@ function App() {
                                                     <DeleteIcon />
                                                 </IconButton >
                                                 {card.vaihtoehdot.map((listItem, listItemIndex) => (
+                                                    <>
+                                                    <ListItem><CodeComponent questionString={listItem.vaihtoehto}/></ListItem>
                                                     <ListItem key={uuid()}>
                                                         <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
                                                             onChange={(event) => {
                                                                 oikeaValintaMuuttui(dispatch, currentExamIndex, cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
                                                             }} />
-
-                                                        <TextField key={listItem.id} style={{
-                                                            minWidth: "600px", overflow: "hidden",
+                                                        <TextField multiline key={listItem.id} style={{
+                                                            minWidth: "80%", overflow: "hidden",
                                                             textOverflow: "ellipsis"
                                                         }} defaultValue={listItem.vaihtoehto}
                                                             onBlur={(event) => {
@@ -111,6 +114,7 @@ function App() {
                                                             )}>
                                                             <DeleteIcon /></IconButton >
                                                     </ListItem>
+                                                    </>
                                                 ))}
                                                 <IconButton onClick={() => {
                                                     let kysymys_id = null
