@@ -1,10 +1,23 @@
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { vs } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { vs, far } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 // merkkijonosta CODE sanan jälkeen tuleva osa tulkitaan koodiksi ja ennen CODE sanaa oleva osa kysymykseksi, jos CODE sanaa ei ole merkkijono tulostuu sellaisenaan
 
-const CodeComponent = ({questionString,isCodeQuestionEdit,background}) => {
+const CodeComponent = ({questionString, background}) => {
 
+    let bs = ""
+    switch (background) {
+        case 'light':
+            bs = vs
+            break
+        case 'dark':
+            bs = far
+            break
+        default:
+            bs = vs
+    }
+    
+    
     let codePos = questionString.search("CODE")
     if (codePos !== -1) {       // search palauttaa -1, jos etsittävää ei löydy
         let code = questionString.substring(codePos+5)
@@ -12,7 +25,7 @@ const CodeComponent = ({questionString,isCodeQuestionEdit,background}) => {
         return (
             <>
                 {question}
-                <SyntaxHighlighter language="javascript" style={vs} wrapLongLines={true}
+                <SyntaxHighlighter language="javascript" style={bs} wrapLongLines={true}
                 showLineNumbers={true}>
                     {code}
                 </SyntaxHighlighter>
@@ -21,7 +34,7 @@ const CodeComponent = ({questionString,isCodeQuestionEdit,background}) => {
     } else {
         return (
             <>
-                {questionString}
+                {/* {questionString} */}
             </>
         )
     }
