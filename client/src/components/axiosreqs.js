@@ -154,11 +154,13 @@ const lisaaKysymys = async (currentDatabaseExamIdChanged, dispatch, currentExamI
 const lisaaVaihtoehto = async (dispatch, cardIndex, kysymys_id, currentExamIndex) => {
     try {
         console.log(path + "lisaa_vaihtoehto/" + kysymys_id)
-        await axios({
+        let response = await axios({
             method: 'post',
             url: `${path}lisaa_vaihtoehto/${kysymys_id}`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
+        // palauttaa uuden luodun kysymyksen id
+        return response.data
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }

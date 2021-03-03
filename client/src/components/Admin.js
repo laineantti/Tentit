@@ -34,6 +34,7 @@ function App() {
     const [currentDatabaseExamIdChanged, setCurrentDatabaseExamIdChanged] = useState(-1)
     const [newExamId, setNewExamId] = useState(-1)
     const [newCardId, setNewCardId] = useState(-1)
+    const [newChoiseId, setNewChoiseId] = useState(-1)
     const [currentUser, setCurrentUser] = useState("")
     const classes = useStyles()
 
@@ -43,7 +44,7 @@ function App() {
         } else {
             fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         }
-    }, [currentUser, newExamId, newCardId])
+    }, [currentUser, newExamId, newCardId, newChoiseId])
 
     return (
         <Box>
@@ -124,7 +125,7 @@ function App() {
                                                     } else {
                                                         kysymys_id = newCardId
                                                     }
-                                                    lisaaVaihtoehto(dispatch, cardIndex, kysymys_id, currentExamIndex)
+                                                    setNewChoiseId(lisaaVaihtoehto(dispatch, cardIndex, kysymys_id, currentExamIndex))
                                                 }}>
                                                     <Icon>add_circle</Icon>
                                                 </IconButton>
