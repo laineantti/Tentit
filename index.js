@@ -603,15 +603,45 @@ app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
     })
 })
 
-// poistetaan tentti
+
+
+// poista tentti - KESKENERÄINEN, KAATUU, JOS PAINAA ROSKAKORIA TENTISSÄ
 app.delete('/poista_tentti/:tentti_id', (req, res, next) => {
-  db.query('DELETE FROM tentti WHERE id=$1',
-    [req.params.tentti_id], (err, result) => {
-      if (err) {
-        return next(err)
-      }
-      res.send(result.rows)
-    })
+  let saa_poistaa = true
+  try {
+    // tarkistetaan onko tentti linkattu kurssiin
+    db.query("SELECT * FROM kurssin_tentit WHERE tentti_id = $1",
+      [req.params.tentti_id],
+      (err, response) => {
+        if (err) {
+          return next(err)
+        }
+        // tarkistetaan onko tentti linkattu kysymykseen
+        // tarkistetaan onko tentti linkattu käyttäjän vastaukseen
+        // tarkistetaan onko tentti linkattu käyttäjään
+        db.query("SELECT * FROM kayttajan_tentit WHERE tentti_id = $1",
+          [req.params.tentti_id],
+          (err1) => {
+            if (err1) {
+              return next(err)
+            }
+            // poistetaan käyttäjän liitos ensin
+            // jos tenttiä ei ole linkattu, se voidaan poistaa
+            db.query("DELETE FROM tentti WHERE id=$1",
+              [req.params.tentti_id],
+              (err2) => {
+                if (err2) {
+                  return next(err2)
+                }
+              })
+          })
+        // Tentti poistettu onnistuneesti!
+        res.status(201).send()
+      })
+  }
+  catch (err) {
+    res.send(err)
+  }
 })
 
 // palauttaa tentin luojan id, tentin id perusteella

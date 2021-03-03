@@ -72,7 +72,7 @@ function App() {
                                 <TextField type="text" defaultValue={state[currentExamIndex].nimi} id={state[currentExamIndex].id} onBlur={(event) => {
                                     muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, event.target.value)
                                 }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
-                                </TextField> {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"}
+                                </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
                                 <IconButton style={{ float: "right" }} label="delete" color="primary"
                                     onClick={() => {
                                         poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged)
