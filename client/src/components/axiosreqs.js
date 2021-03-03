@@ -154,11 +154,13 @@ const lisaaKysymys = async (currentDatabaseExamIdChanged, dispatch, currentExamI
 const lisaaVaihtoehto = async (dispatch, cardIndex, kysymys_id, currentExamIndex) => {
     try {
         console.log(path + "lisaa_vaihtoehto/" + kysymys_id)
-        await axios({
+        let response = await axios({
             method: 'post',
             url: `${path}lisaa_vaihtoehto/${kysymys_id}`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
+        // palauttaa uuden luodun kysymyksen id
+        return response.data
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
@@ -296,6 +298,53 @@ const poistaKysymyksenLiitos = async (dispatch, currentExamIndex, kysymys_id, ca
     )
 }
 
+const poistaVaihtoehdonLiitos = async (dispatch, currentExamIndex, vaihtoehto_id, cardIndex, kysymys_id) => {
+    console.log("Vaihtoehto_id " + vaihtoehto_id + ", kysymys_id " + kysymys_id + ", liitos poistettu!")
+    try {
+        await axios({
+            method: 'delete',
+            url: `${path}poista_vaihtoehdon_liitos/${vaihtoehto_id}/${kysymys_id}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+    } catch (exception) {
+        console.log(exception)
+    }
+    dispatch(
+        {
+            type: "choise_deleted", data: {
+                examIndex: currentExamIndex,
+                cardIndex: cardIndex
+            }
+        }
+    )
+}
+
+const poistaTentti = async (dispatch, currentExamIndex, tentti_id) => {
+    let poistettu = false
+    try {
+        let result = await axios({
+            method: 'delete',
+            url: `${path}poista_tentti/${tentti_id}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        poistettu = result.data
+    } catch (exception) {
+        console.log(exception)
+    }
+    if (poistettu) {
+        console.log("Tentti_id " + tentti_id + ", poistettu!")
+        dispatch(
+            {
+                type: "exam_deleted", data: {
+                    examIndex: currentExamIndex
+                }
+            }
+        )
+    } else {
+        console.log("Tentti_id " + tentti_id + ", poistaminen epäonnistui liitoksien takia!")
+    }
+}
+
 export {
     fetchUser,
     fetchData,
@@ -308,5 +357,7 @@ export {
     muutaTentti,
     muutaKysymys,
     muutaVaihtoehto,
-    poistaKysymyksenLiitos
+    poistaKysymyksenLiitos,
+    poistaVaihtoehdonLiitos,
+    poistaTentti
 }
