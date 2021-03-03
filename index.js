@@ -378,6 +378,17 @@ app.get('/kayttajan_tentit/:kayttaja_id', (req, response, next) => {
     })
 })
 
+// palauttaa käyttäjän omat tentit joihin hänellä on admin-oikeus, käyttäjän id perusteella
+app.get('/oikeus_muokata_tenttia/:kayttaja_id', (req, response, next) => {
+  db.query('SELECT * FROM tentti WHERE id IN (SELECT tentti_id FROM oikeus_muokata_tenttia WHERE kayttaja_id = $1)',
+    [req.params.kayttaja_id], (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send(res.rows)
+    })
+})
+
 // palauttaa kayttajan_vastaukset, kayttaja_id sekä tentti_id perusteella
 app.get('/kayttajan_vastaukset/:kayttaja_id/:tentti_id', (req, response, next) => {
   db.query('SELECT * FROM kayttajan_vastaus WHERE kayttaja_id = $1 AND tentti_id = $2',
@@ -581,7 +592,7 @@ app.post('/lisaa_tentti/:kayttaja_id', (req, res, next) => {
         if (err) {
           return next(err)
         }
-        db.query("INSERT INTO kayttajan_tentit (kayttaja_id,tentti_id) values ($1," + response.rows[0].id + ")",
+        db.query("INSERT INTO oikeus_muokata_tenttia (kayttaja_id,tentti_id) values ($1," + response.rows[0].id + ")",
           [req.params.kayttaja_id],
           (err) => {
             if (err) {

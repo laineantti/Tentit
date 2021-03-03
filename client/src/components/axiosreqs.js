@@ -59,11 +59,16 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
     let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
     try {
         let tentit_string = ""
-        if (admin_sivulla && adminOikeus) { // admin_sivulla? --> true/false
-            console.log("Olet admin eli voit muokata kaikkia tenttejä.")
-            tentit_string = path + "tentti"
+        if (admin_sivulla) { // admin_sivulla? --> true/false
+            if (adminOikeus) {
+                console.log("Admin-sivulla voit muokata kaikkia tenttejä.")
+                tentit_string = path + "tentti"
+            } else {
+                console.log("Admin-sivulla voit muokata vain luomiasi tenttejä.")
+                tentit_string = path + "oikeus_muokata_tenttia/" + currentUser
+            }
         } else {
-            console.log("Saat vain omat tenttisi.")
+            console.log("User-sivulla voit nähdä vain omia tenttejä.")
             tentit_string = path + "kayttajan_tentit/" + currentUser
         }
         let tentit_data = await axios.get(tentit_string, headers)
