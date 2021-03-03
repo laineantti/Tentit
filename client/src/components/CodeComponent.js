@@ -3,7 +3,7 @@ import { vs } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 // merkkijonosta CODE sanan jälkeen tuleva osa tulkitaan koodiksi ja ennen CODE sanaa oleva osa kysymykseksi, jos CODE sanaa ei ole merkkijono tulostuu sellaisenaan
 
-const CodeComponent = ({questionString}) => {
+const CodeComponent = ({questionString,isCodeQuestionEdit,background}) => {
 
     let codePos = questionString.search("CODE")
     if (codePos !== -1) {       // search palauttaa -1, jos etsittävää ei löydy
