@@ -415,7 +415,13 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
 })
 
 // päivitetään kysymyksen tekstin muutos tietokantaan
-app.put('/paivita_kysymys/:kysymys_id/:lause', (req, response, next) => {
+app.put('/paivita_kysymys/:kysymys_id', (req, response, next) => {
+  const body = req.body
+  if (body.lause == undefined){
+    return response.status(400).json({
+      error: 'Kysymys puuttuu!'
+    })
+  } else {
   db.query("SELECT * FROM kysymys WHERE id = $1",
     [req.params.kysymys_id],
     (err, res) => {
@@ -424,7 +430,7 @@ app.put('/paivita_kysymys/:kysymys_id/:lause', (req, response, next) => {
       }
       if (res.rows[0] !== undefined) {
         db.query("UPDATE kysymys SET lause = $2 WHERE id = $1",
-          [req.params.kysymys_id, req.params.lause],
+          [req.params.kysymys_id, body.lause],
           (err, res) => {
             if (err) {
               return next(err)
@@ -434,7 +440,7 @@ app.put('/paivita_kysymys/:kysymys_id/:lause', (req, response, next) => {
       } else {
         response.send("Muutosta ei tallennettu, koska tällä id:llä ei ole kysymystä!")
       }
-    })
+    })}
 })
 
 // poistetaan kysymyksen liitos tenttiin
@@ -657,7 +663,7 @@ app.get('/tentin_luoja/:tentti_id', (req, response, next) => {
 
 // palautetaan vaihtoehdot
 app.get('/vaihtoehto', (req, response, next) => {
-  db.query('SELECT * FROM vaihtoehto', (err, res) => {
+  db.query('SELECT * FROM vaihtoehto ORDER BY id', (err, res) => {
     if (err) {
       return next(err)
     }
