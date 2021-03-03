@@ -129,7 +129,9 @@ function App() {
                                                     } else {
                                                         kysymys_id = newCardId
                                                     }
+
                                                     setNewChoiseId(lisaaVaihtoehto(dispatch, cardIndex, kysymys_id, currentExamIndex))
+
                                                 }}>
                                                     <Icon>add_circle</Icon>
                                                 </IconButton>
