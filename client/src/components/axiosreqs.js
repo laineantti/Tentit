@@ -326,28 +326,30 @@ const poistaVaihtoehdonLiitos = async (dispatch, currentExamIndex, vaihtoehto_id
 }
 
 const poistaTentti = async (dispatch, currentExamIndex, tentti_id) => {
-    let poistettu = false
+    let tiedot_poistettavasta_tentista = null
     try {
         let result = await axios({
             method: 'delete',
             url: `${path}poista_tentti/${tentti_id}`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
-        poistettu = result.data
+        tiedot_poistettavasta_tentista = result.data
+        /* console.log(tiedot_poistettavasta_tentista) */
+        if (tiedot_poistettavasta_tentista.poistettu) {
+            console.log("Tentti_id " + tentti_id + ", poistettu!")
+            dispatch(
+                {
+                    type: "exam_deleted", data: {
+                        examIndex: currentExamIndex
+                    }
+                }
+            )
+        } else {
+            console.log("Tentti_id " + tentti_id + ", poistaminen epäonnistui liitoksien takia!")
+        }
+        return tiedot_poistettavasta_tentista
     } catch (exception) {
         console.log(exception)
-    }
-    if (poistettu) {
-        console.log("Tentti_id " + tentti_id + ", poistettu!")
-        dispatch(
-            {
-                type: "exam_deleted", data: {
-                    examIndex: currentExamIndex
-                }
-            }
-        )
-    } else {
-        console.log("Tentti_id " + tentti_id + ", poistaminen epäonnistui liitoksien takia!")
     }
 }
 

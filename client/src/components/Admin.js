@@ -66,7 +66,9 @@ function App() {
                         {exam.nimi}
                     </ExamButton>
                 )}
-                <IconButton onClick={() => { setNewExamId(lisaaTentti(dispatch, currentUser)) }}>
+                <IconButton onClick={() => {
+                    setNewExamId(lisaaTentti(dispatch, currentUser))
+                }}>
                     <Icon>add_circle</Icon>
                 </IconButton>
                 {currentExamIndex >= 0 &&
@@ -87,9 +89,14 @@ function App() {
                                         }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
                                     </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
                                     <IconButton style={{ float: "right" }} label="delete" color="primary"
-                                        onClick={() => {
-                                            poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged)
-                                            setCurrentExamIndex(-1)
+                                        onClick={async () => {
+                                            try {
+                                                let result = await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged)
+                                                console.log("Viesti poistaTentti-funktiolta: ", result)
+                                                setCurrentExamIndex(-1)
+                                            } catch (err) {
+                                                console.log(err)
+                                            }
                                         }}>
                                         <DeleteIcon />
                                     </IconButton >

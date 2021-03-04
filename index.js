@@ -629,41 +629,67 @@ app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
 
 
 // poista tentti - KESKENERÄINEN, KAATUU, JOS PAINAA ROSKAKORIA TENTISSÄ
-app.delete('/poista_tentti/:tentti_id', (req, res, next) => {
-  let saa_poistaa = true
+app.delete('/poista_tentti/:tentti_id', (req, response, next) => {
   try {
+    let tiedot_poistettavasta_tentista = {
+      poistettu: false,
+      liitokset: {
+        kurssi_id: [],
+        kysymys_id: []
+      }
+    }
+    let saa_poistaa = true
     // tarkistetaan onko tentti linkattu kurssiin
     db.query("SELECT * FROM kurssin_tentit WHERE tentti_id = $1 ORDER BY id",
       [req.params.tentti_id],
-      (err, response) => {
-        if (err) {
-          return next(err)
+      (err, res) => {
+        if (err) { return next(err) }
+        // jos kursseihin liitoksia; tallennetaan tietoihin kurssi_id:t
+        if (res.rows.length > 0) {
+          saa_poistaa = false
+          res.rows.map((row, i) => {
+            tiedot_poistettavasta_tentista.liitokset.kurssi_id[i] = row.kurssi_id
+          })
         }
         // tarkistetaan onko tentti linkattu kysymykseen
-        // tarkistetaan onko tentti linkattu käyttäjän vastaukseen
-        // tarkistetaan onko tentti linkattu käyttäjään
-        db.query("SELECT * FROM kayttajan_tentit WHERE tentti_id = $1 ORDER BY id",
+        db.query("SELECT * FROM tentin_kysymykset WHERE tentti_id = $1 ORDER BY id",
           [req.params.tentti_id],
-          (err1) => {
-            if (err1) {
-              return next(err)
+          (err, res) => {
+            if (err) { return next(err) }
+            // jos kursseihin liitoksia; tallennetaan tietoihin kurssi_id:t
+            if (res.rows.length > 0) {
+              saa_poistaa = false
+              res.rows.map((row, i) => {
+                tiedot_poistettavasta_tentista.liitokset.kysymys_id[i] = row.kysymys_id
+              })
             }
-            // poistetaan käyttäjän liitos ensin
-            // jos tenttiä ei ole linkattu, se voidaan poistaa
-            db.query("DELETE FROM tentti WHERE id=$1",
+            // tarkistetaan onko tentti linkattu käyttäjän vastaukseen
+            // tarkistetaan onko tentti linkattu käyttäjään
+            db.query("SELECT * FROM kayttajan_tentit WHERE tentti_id = $1 ORDER BY id",
               [req.params.tentti_id],
-              (err2) => {
-                if (err2) {
-                  return next(err2)
+              (err) => {
+                if (err) { return next(err) }
+                // poistetaan käyttäjän liitos ensin
+                // jos tenttiä ei ole linkattu, se voidaan poistaa
+                /* console.log("saa_poistaa: " + saa_poistaa) */
+                if (saa_poistaa) {
+                  db.query("DELETE FROM tentti WHERE id=$1",
+                    [req.params.tentti_id],
+                    (err) => {
+                      if (err) { return next(err) }
+                      tiedot_poistettavasta_tentista.poistettu = true
+                    })
                 }
+                // palautetaan tentin tiedot
+                response.status(201).send(tiedot_poistettavasta_tentista)
+                /* console.log(tiedot_poistettavasta_tentista) */
               })
           })
-        // Tentti poistettu onnistuneesti!
-        res.status(201).send()
-      })
+      }
+    )
   }
   catch (err) {
-    res.send(err)
+    response.send(err)
   }
 })
 
