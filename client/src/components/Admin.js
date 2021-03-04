@@ -76,8 +76,13 @@ function App() {
                                 <h2>
                                     <TextField type="text" value={examName} /*value={state[currentExamIndex].nimi}*/ id={state[currentExamIndex].id} 
                                         onChange={(event) => {
-                                            setExamName(event.target.value)}}
+                                            setExamName(event.target.value)
+                                        }}
                                         onBlur={() => {
+                                            if (examName === ""){
+                                                setExamName("Nimetön")
+                                                muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, "Nimetön") 
+                                            }
                                             muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, examName)
                                         }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
                                     </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
