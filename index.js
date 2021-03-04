@@ -146,23 +146,28 @@ app.post('/lisaa_kayttaja', (req, response, next) => {
   if (!(body.sahkoposti && body.salasana_hash && body.rooli)) {
     return response.status(400).json({ error: 'Tallennettava tieto puuttuu!' })
   }
-  try {
+  try { // tarkistetaan onko sähköpostiosoitteella jo luotu käyttäjä...
     db.query('SELECT * FROM kayttaja WHERE sahkoposti = $1 ORDER BY id', [body.sahkoposti], (err, result) => {
       if (err) {
         return next(err)
       }
       if (result.rows.length > 0) {
         return response.status(401).json({ error: 'Rekisteröintivirhe' })
-      } else {
+      } else { // ...jos ei ole luotu niin luodaan uusi käyttäjä kyseisellä sähköpostiosoitteella
         bcrypt.hash(body.salasana_hash, 12, (err, bcrypt_hashatty_salasana) => {
           db.query("INSERT INTO kayttaja (etunimi, sukunimi, sahkoposti, salasana_hash, rooli) values ($1,$2,$3,$4,$5) RETURNING id",
             [body.etunimi, body.sukunimi, body.sahkoposti, bcrypt_hashatty_salasana, body.rooli],
             (err, res) => {
               if (res.rows[0].id != undefined) {
-                response.status(200).send("Käyttäjä lisätty onnistuneesti!")
-              }
-              if (err) {
-                return next(err)
+                // jos käyttäjä luotiin onnistuneesti niin lisätään kyseiselle käyttäjälle "alkutentti" (kovakoodattu tentti_id 1)
+                db.query("INSERT INTO kayttajan_tentit (kayttaja_id, tentti_id) values (" + res.rows[0].id + ",$1)",
+                  [1],
+                  (err1, res1) => {
+                    if (err1) {
+                      return next(err1)
+                    }
+                  })
+                response.status(200).send("Käyttäjä ja alkutentti lisätty onnistuneesti!")
               }
             })
         })
@@ -428,30 +433,31 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
 // päivitetään kysymyksen tekstin muutos tietokantaan
 app.put('/paivita_kysymys/:kysymys_id', (req, response, next) => {
   const body = req.body
-  if (body.lause == undefined){
+  if (body.lause == undefined) {
     return response.status(400).json({
       error: 'Kysymys puuttuu!'
     })
   } else {
-  db.query("SELECT * FROM kysymys WHERE id = $1 ORDER BY id",
-    [req.params.kysymys_id],
-    (err, res) => {
-      if (err) {
-        return next(err)
-      }
-      if (res.rows[0] !== undefined) {
-        db.query("UPDATE kysymys SET lause = $2 WHERE id = $1",
-          [req.params.kysymys_id, body.lause],
-          (err, res) => {
-            if (err) {
-              return next(err)
-            }
-            response.send("Kysymyksen teksti päivitetty onnistuneesti!")
-          })
-      } else {
-        response.send("Muutosta ei tallennettu, koska tällä id:llä ei ole kysymystä!")
-      }
-    })}
+    db.query("SELECT * FROM kysymys WHERE id = $1 ORDER BY id",
+      [req.params.kysymys_id],
+      (err, res) => {
+        if (err) {
+          return next(err)
+        }
+        if (res.rows[0] !== undefined) {
+          db.query("UPDATE kysymys SET lause = $2 WHERE id = $1",
+            [req.params.kysymys_id, body.lause],
+            (err, res) => {
+              if (err) {
+                return next(err)
+              }
+              response.send("Kysymyksen teksti päivitetty onnistuneesti!")
+            })
+        } else {
+          response.send("Muutosta ei tallennettu, koska tällä id:llä ei ole kysymystä!")
+        }
+      })
+  }
 })
 
 // poistetaan kysymyksen liitos tenttiin
