@@ -147,7 +147,7 @@ app.post('/lisaa_kayttaja', (req, response, next) => {
     return response.status(400).json({ error: 'Tallennettava tieto puuttuu!' })
   }
   try {
-    db.query('SELECT * FROM kayttaja WHERE sahkoposti = $1', [body.sahkoposti], (err, result) => {
+    db.query('SELECT * FROM kayttaja WHERE sahkoposti = $1 ORDER BY id', [body.sahkoposti], (err, result) => {
       if (err) {
         return next(err)
       }
@@ -180,7 +180,7 @@ app.post('/kirjaudu', (req, res, next) => {
   const client_body = req.body
 
   // tarkistetaan tietokannasta kayttaja annetulla sahkopostilla
-  db.query("SELECT * FROM kayttaja WHERE sahkoposti = $1", [client_body.sahkoposti], async (err, result) => {
+  db.query("SELECT * FROM kayttaja WHERE sahkoposti = $1 ORDER BY id", [client_body.sahkoposti], async (err, result) => {
 
     const db_body = result.rows[0]
 
@@ -275,7 +275,7 @@ app.use(isAuthenticated)
 // haetaan käyttäjä id:n perusteella (id saadaan isAuthenticated-koodista ja tallennetaan userId-muuttujaan)
 app.get('/kayttaja/', (req, response, next) => {
   const userId = response.authentication.userId
-  db.query('SELECT * FROM kayttaja WHERE id = $1', [userId], (err, res) => {
+  db.query('SELECT * FROM kayttaja WHERE id = $1 ORDER BY id', [userId], (err, res) => {
     /* db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.id], (err, res) => { */
     if (err) {
       return next(err)
@@ -299,7 +299,7 @@ app.put('/paivita_kayttaja/:id/:etunimi/:sukunimi/:sahkoposti/:salasana_hash/:ro
 
 // päivitetään tentin oikea_valinta-ruudun muutos tietokantaan
 app.put('/paivita_oikea_valinta/:vaihtoehto_id/:oikea_vastaus', (req, response, next) => {
-  db.query("SELECT * FROM vaihtoehto WHERE id = $1",
+  db.query("SELECT * FROM vaihtoehto WHERE id = $1 ORDER BY id",
     [req.params.vaihtoehto_id],
     (err, res) => {
       if (err) {
@@ -322,7 +322,7 @@ app.put('/paivita_oikea_valinta/:vaihtoehto_id/:oikea_vastaus', (req, response, 
 
 // päivitetään tentin valinta-ruudun muutos tietokantaan
 app.put('/paivita_valinta/:kayttaja_id/:vaihtoehto_id/:tentti_id/:kurssi_id/:vastaus', (req, response, next) => {
-  db.query("SELECT * FROM kayttajan_vastaus WHERE kayttaja_id = $1 AND vaihtoehto_id = $2",
+  db.query("SELECT * FROM kayttajan_vastaus WHERE kayttaja_id = $1 AND vaihtoehto_id = $2 ORDER BY id",
     [req.params.kayttaja_id, req.params.vaihtoehto_id],
     (err, res) => {
       if (err) {
@@ -358,7 +358,7 @@ app.put('/paivita_valinta/:kayttaja_id/:vaihtoehto_id/:tentti_id/:kurssi_id/:vas
 
 // palauttaa käyttäjän kurssit, käyttäjän id perusteella
 app.get('/kayttajan_kurssit/:kayttaja_id', (req, response, next) => {
-  db.query('SELECT * FROM kurssi WHERE id IN (SELECT kurssi_id FROM kayttajan_kurssit WHERE kayttaja_id = $1)',
+  db.query('SELECT * FROM kurssi WHERE id IN (SELECT kurssi_id FROM kayttajan_kurssit WHERE kayttaja_id = $1 ORDER BY id) ORDER BY id',
     [req.params.kayttaja_id], (err, res) => {
       if (err) {
         return next(err)
@@ -369,7 +369,7 @@ app.get('/kayttajan_kurssit/:kayttaja_id', (req, response, next) => {
 
 // palauttaa käyttäjän tentit, käyttäjän id perusteella
 app.get('/kayttajan_tentit/:kayttaja_id', (req, response, next) => {
-  db.query('SELECT * FROM tentti WHERE id IN (SELECT tentti_id FROM kayttajan_tentit WHERE kayttaja_id = $1)',
+  db.query('SELECT * FROM tentti WHERE id IN (SELECT tentti_id FROM kayttajan_tentit WHERE kayttaja_id = $1 ORDER BY id) ORDER BY id',
     [req.params.kayttaja_id], (err, res) => {
       if (err) {
         return next(err)
@@ -380,7 +380,7 @@ app.get('/kayttajan_tentit/:kayttaja_id', (req, response, next) => {
 
 // palauttaa käyttäjän omat tentit joihin hänellä on admin-oikeus, käyttäjän id perusteella
 app.get('/oikeus_muokata_tenttia/:kayttaja_id', (req, response, next) => {
-  db.query('SELECT * FROM tentti WHERE id IN (SELECT tentti_id FROM oikeus_muokata_tenttia WHERE kayttaja_id = $1)',
+  db.query('SELECT * FROM tentti WHERE id IN (SELECT tentti_id FROM oikeus_muokata_tenttia WHERE kayttaja_id = $1 ORDER BY id) ORDER BY id',
     [req.params.kayttaja_id], (err, res) => {
       if (err) {
         return next(err)
@@ -391,7 +391,7 @@ app.get('/oikeus_muokata_tenttia/:kayttaja_id', (req, response, next) => {
 
 // palauttaa kayttajan_vastaukset, kayttaja_id sekä tentti_id perusteella
 app.get('/kayttajan_vastaukset/:kayttaja_id/:tentti_id', (req, response, next) => {
-  db.query('SELECT * FROM kayttajan_vastaus WHERE kayttaja_id = $1 AND tentti_id = $2',
+  db.query('SELECT * FROM kayttajan_vastaus WHERE kayttaja_id = $1 AND tentti_id = $2 ORDER BY id',
     [req.params.kayttaja_id, req.params.tentti_id], (err, res) => {
       if (err) {
         return next(err)
@@ -433,7 +433,7 @@ app.put('/paivita_kysymys/:kysymys_id', (req, response, next) => {
       error: 'Kysymys puuttuu!'
     })
   } else {
-  db.query("SELECT * FROM kysymys WHERE id = $1",
+  db.query("SELECT * FROM kysymys WHERE id = $1 ORDER BY id",
     [req.params.kysymys_id],
     (err, res) => {
       if (err) {
@@ -467,7 +467,7 @@ app.delete('/poista_kysymyksen_liitos/:kysymys_id/:tentti_id', (req, res, next) 
 
 // tulostetaan kaikkien kysymysten vaihtoehdot
 app.get('/kysymyksen_vaihtoehdot', (req, response, next) => {
-  db.query('SELECT * FROM kysymyksen_vaihtoehdot', (err, res) => {
+  db.query('SELECT * FROM kysymyksen_vaihtoehdot ORDER BY id', (err, res) => {
     if (err) {
       return next(err)
     }
@@ -477,7 +477,7 @@ app.get('/kysymyksen_vaihtoehdot', (req, response, next) => {
 
 // palauttaa kysymyksen vaihtoehdot, kysymyksen id perusteella
 app.get('/kysymyksen_vaihtoehdot/:kysymys_id', (req, response, next) => {
-  db.query('SELECT * FROM vaihtoehto WHERE id IN (SELECT vaihtoehto_id FROM kysymyksen_vaihtoehdot WHERE kysymys_id = $1)',
+  db.query('SELECT * FROM vaihtoehto WHERE id IN (SELECT vaihtoehto_id FROM kysymyksen_vaihtoehdot WHERE kysymys_id = $1 ORDER BY id) ORDER BY id',
     [req.params.kysymys_id], (err, res) => {
       if (err) {
         return next(err)
@@ -535,7 +535,7 @@ app.delete('/poista_vaihtoehdon_liitos/:vaihtoehto_id/:kysymys_id', (req, res, n
 
 // tulostetaan kaikki kysymykset
 app.get('/kysymys', (req, response, next) => {
-  db.query('SELECT * FROM kysymys', (err, res) => {
+  db.query('SELECT * FROM kysymys ORDER BY id', (err, res) => {
     if (err) {
       return next(err)
     }
@@ -545,7 +545,7 @@ app.get('/kysymys', (req, response, next) => {
 
 // tulostetaan kaikki kysymykset id:n perusteella
 app.get('/kysymys/:id', (req, response, next) => {
-  db.query('SELECT * FROM kysymys WHERE id = $1', [req.params.id], (err, res) => {
+  db.query('SELECT * FROM kysymys WHERE id = $1 ORDER BY id', [req.params.id], (err, res) => {
     if (err) {
       return next(err)
     }
@@ -555,7 +555,7 @@ app.get('/kysymys/:id', (req, response, next) => {
 
 // palauttaa tentin kysymykset tentin id perusteella
 app.get('/tentin_kysymykset/:tentti_id', (req, response, next) => {
-  db.query('SELECT * FROM kysymys WHERE id IN (SELECT kysymys_id FROM tentin_kysymykset WHERE tentti_id = $1) ORDER BY id',
+  db.query('SELECT * FROM kysymys WHERE id IN (SELECT kysymys_id FROM tentin_kysymykset WHERE tentti_id = $1 ORDER BY id) ORDER BY id',
     [req.params.tentti_id], (err, res) => {
       if (err) {
         return next(err)
@@ -566,7 +566,7 @@ app.get('/tentin_kysymykset/:tentti_id', (req, response, next) => {
 
 // palautetaan tentit
 app.get('/tentti', (req, response, next) => {
-  db.query('SELECT * FROM tentti', (err, res) => {
+  db.query('SELECT * FROM tentti ORDER BY id', (err, res) => {
     if (err) {
       return next(err)
     }
@@ -576,7 +576,7 @@ app.get('/tentti', (req, response, next) => {
 
 // palautetaan tentit id:n perusteella
 app.get('/tentti/:id', (req, response, next) => {
-  db.query('SELECT * FROM tentti WHERE id = $1', [req.params.id], (err, res) => {
+  db.query('SELECT * FROM tentti WHERE id = $1 ORDER BY id', [req.params.id], (err, res) => {
     if (err) {
       return next(err)
     }
@@ -627,7 +627,7 @@ app.delete('/poista_tentti/:tentti_id', (req, res, next) => {
   let saa_poistaa = true
   try {
     // tarkistetaan onko tentti linkattu kurssiin
-    db.query("SELECT * FROM kurssin_tentit WHERE tentti_id = $1",
+    db.query("SELECT * FROM kurssin_tentit WHERE tentti_id = $1 ORDER BY id",
       [req.params.tentti_id],
       (err, response) => {
         if (err) {
@@ -636,7 +636,7 @@ app.delete('/poista_tentti/:tentti_id', (req, res, next) => {
         // tarkistetaan onko tentti linkattu kysymykseen
         // tarkistetaan onko tentti linkattu käyttäjän vastaukseen
         // tarkistetaan onko tentti linkattu käyttäjään
-        db.query("SELECT * FROM kayttajan_tentit WHERE tentti_id = $1",
+        db.query("SELECT * FROM kayttajan_tentit WHERE tentti_id = $1 ORDER BY id",
           [req.params.tentti_id],
           (err1) => {
             if (err1) {
@@ -663,7 +663,7 @@ app.delete('/poista_tentti/:tentti_id', (req, res, next) => {
 
 // palauttaa tentin luojan id, tentin id perusteella
 app.get('/tentin_luoja/:tentti_id', (req, response, next) => {
-  db.query('SELECT * FROM kayttajan_tentit WHERE tentti_id = $1',
+  db.query('SELECT * FROM kayttajan_tentit WHERE tentti_id = $1 ORDER BY id',
     [req.params.tentti_id], (err, res) => {
       if (err) {
         return next(err)
