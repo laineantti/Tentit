@@ -74,14 +74,14 @@ function App() {
                         <>
                             {(state[currentExamIndex].nimi) && (<>
                                 <h2>
-                                    <TextField type="text" value={examName} /*value={state[currentExamIndex].nimi}*/ id={state[currentExamIndex].id} 
+                                    <TextField type="text" value={examName} /*value={state[currentExamIndex].nimi}*/ id={state[currentExamIndex].id}
                                         onChange={(event) => {
                                             setExamName(event.target.value)
                                         }}
                                         onBlur={() => {
-                                            if (examName === ""){
+                                            if (examName === "") {
                                                 setExamName("Nimetön")
-                                                muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, "Nimetön") 
+                                                muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, "Nimetön")
                                             }
                                             muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, examName)
                                         }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
@@ -103,8 +103,8 @@ function App() {
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="dark"/>
-                                                <TextField multiline type="text" style={{minWidth: "93%"}} defaultValue={card.lause} id={card.id} onBlur={(event) => {
+                                                <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="dark" />
+                                                <TextField multiline type="text" style={{ minWidth: "93%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                                     muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                 }}>
                                                 </TextField>
@@ -114,24 +114,24 @@ function App() {
                                                 </IconButton >
                                                 {card.vaihtoehdot.map((listItem, listItemIndex) => (
                                                     <>
-                                                    <ListItem key={uuid()}><CodeComponent style={{ width: "100%" }} questionString={listItem.vaihtoehto}/></ListItem>
-                                                    <ListItem key={uuid()}>
-                                                        <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
-                                                            onChange={(event) => {
-                                                                oikeaValintaMuuttui(dispatch, currentExamIndex, cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
-                                                            }} />
-                                                        <TextField multiline key={listItem.id} style={{
-                                                            minWidth: "80%", overflow: "hidden",
-                                                            textOverflow: "ellipsis"
-                                                        }} defaultValue={listItem.vaihtoehto}
-                                                            onBlur={(event) => {
-                                                                muutaVaihtoehto(dispatch, currentExamIndex, event.target.value, listItem.id, cardIndex, listItemIndex)
-                                                            }} />
-                                                        <IconButton style={{ float: "right" }} label="delete" color="primary"
+                                                        <ListItem key={uuid()}><CodeComponent style={{ width: "100%" }} questionString={listItem.vaihtoehto} /></ListItem>
+                                                        <ListItem key={uuid()}>
+                                                            <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
+                                                                onChange={(event) => {
+                                                                    oikeaValintaMuuttui(dispatch, currentExamIndex, cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
+                                                                }} />
+                                                            <TextField multiline key={listItem.id} style={{
+                                                                minWidth: "80%", overflow: "hidden",
+                                                                textOverflow: "ellipsis"
+                                                            }} defaultValue={listItem.vaihtoehto}
+                                                                onBlur={(event) => {
+                                                                    muutaVaihtoehto(dispatch, currentExamIndex, event.target.value, listItem.id, cardIndex, listItemIndex)
+                                                                }} />
+                                                            <IconButton style={{ float: "right" }} label="delete" color="primary"
 
-                                                            onClick={() => poistaVaihtoehdonLiitos(dispatch, currentExamIndex, listItem.id, cardIndex, card.id)}>
-                                                            <DeleteIcon /></IconButton >
-                                                    </ListItem>
+                                                                onClick={() => poistaVaihtoehdonLiitos(dispatch, currentExamIndex, listItem.id, cardIndex, card.id, listItemIndex)}>
+                                                                <DeleteIcon /></IconButton >
+                                                        </ListItem>
                                                     </>
                                                 ))}
                                                 <IconButton onClick={() => {

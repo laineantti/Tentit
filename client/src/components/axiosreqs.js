@@ -303,7 +303,7 @@ const poistaKysymyksenLiitos = async (dispatch, currentExamIndex, kysymys_id, ca
     )
 }
 
-const poistaVaihtoehdonLiitos = async (dispatch, currentExamIndex, vaihtoehto_id, cardIndex, kysymys_id) => {
+const poistaVaihtoehdonLiitos = async (dispatch, currentExamIndex, vaihtoehto_id, cardIndex, kysymys_id, listItemIndex) => {
     console.log("Vaihtoehto_id " + vaihtoehto_id + ", kysymys_id " + kysymys_id + ", liitos poistettu!")
     try {
         await axios({
@@ -318,7 +318,8 @@ const poistaVaihtoehdonLiitos = async (dispatch, currentExamIndex, vaihtoehto_id
         {
             type: "choise_deleted", data: {
                 examIndex: currentExamIndex,
-                cardIndex: cardIndex
+                cardIndex: cardIndex,
+                listItemIndex: listItemIndex
             }
         }
     )
