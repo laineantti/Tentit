@@ -10,9 +10,11 @@ const CodeComponent = ({questionString, background}) => {
         case 'light':
             bs = vs
             break
-        case 'dark':
+        case 'darkBlue':
             bs = far
             break
+        case 'dark':
+            bs = far
         default:
             bs = vs
     }
