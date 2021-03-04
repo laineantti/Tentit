@@ -26,7 +26,7 @@ import {
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 
-function App() {
+function App({currentUserName,setCurrentUserName}) {
     const { state, dispatch } = useContext(store)
     // const storeContext = useContext(store)
     // const { state } = storeContext
@@ -42,7 +42,7 @@ function App() {
 
     useEffect(() => {
         if (!currentUser) {
-            fetchUser(setCurrentUser)
+            fetchUser(setCurrentUser, setCurrentUserName)
         } else {
             fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         }

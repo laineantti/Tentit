@@ -11,7 +11,7 @@ import CodeComponent from './CodeComponent'
 import { store } from './store.js'
 
 
-function App() {
+function App({currentUserName,setCurrentUserName}) {
     const { state, dispatch } = useContext(store) 
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
@@ -33,7 +33,7 @@ function App() {
 
     useEffect(() => {           // tekee tämän kun Useriin tullaan
         if (!currentUser) {     // hakee käyttäjän jos currentUser vielä "", eli eka kierros
-            fetchUser(setCurrentUser)   // asettaa currentUserin arvoksi kirjautuneen käyttäjän
+            fetchUser(setCurrentUser, setCurrentUserName)   // asettaa currentUserin arvoksi kirjautuneen käyttäjän
         } else {                // toisella kierroksella haetaan käyttäjän data
             fetchData(currentUser, dispatch, false) // admin_sivulla? --> true/false
         }

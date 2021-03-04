@@ -12,6 +12,7 @@ import {autentikoitu} from './helpers'
 
 export const Routes = () => {
     const [kirjautunut, setKirjautunut] = useState(false)
+    const [currentUserName, setCurrentUserName] = useState("")
 
 
     // autentikoidun paluuarvo on joko token tai false
@@ -27,7 +28,7 @@ export const Routes = () => {
 
     return (
         <div>
-            <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>          
+            <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>          
             {kirjautunut ? 
                 <Switch>
                     {/* <Route exact path="/login">
@@ -40,7 +41,7 @@ export const Routes = () => {
                         <User />
                     </Route> */}
                     <Route exact path="/admin">
-                        <Admin />
+                        <Admin currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
                     </Route>
                     <Route exact path="/stats">
                         <Stats />
@@ -49,7 +50,7 @@ export const Routes = () => {
                         <Upload />
                     </Route>
                     <Route exact path="*">
-                        <User />
+                        <User currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
                     </Route>
                 </Switch>
                 :
