@@ -1,6 +1,7 @@
 import { React, useState, useEffect, useContext } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
+import CustomizedDialogs from './CustomizedDialogs'
 /* import axios from 'axios' */
 import {
     Card, CardContent, Container, List, ListItem, Box, Icon,
@@ -26,7 +27,7 @@ import {
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 
-function App({currentUserName,setCurrentUserName}) {
+function App({ currentUserName, setCurrentUserName }) {
     const { state, dispatch } = useContext(store)
     // const storeContext = useContext(store)
     // const { state } = storeContext
@@ -38,6 +39,7 @@ function App({currentUserName,setCurrentUserName}) {
     const [newChoiseId, setNewChoiseId] = useState(-1)
     const [currentUser, setCurrentUser] = useState("")
     const [examName, setExamName] = useState("")
+    const [examDeleteResult, setExamDeleteResult] = useState("")
     const classes = useStyles()
 
     useEffect(() => {
@@ -88,18 +90,85 @@ function App({currentUserName,setCurrentUserName}) {
                                             muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, examName)
                                         }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
                                     </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
-                                    <IconButton style={{ float: "right" }} label="delete" color="primary"
-                                        onClick={async () => {
-                                            try {
-                                                let result = await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged)
-                                                console.log("Viesti poistaTentti-funktiolta: ", result)
-                                                setCurrentExamIndex(-1)
-                                            } catch (err) {
-                                                console.log(err)
+                                    {/* tentin poistonappi */}
+                                    <CustomizedDialogs
+                                        otsikko={"Haluatko varmasti poistaa tentin " + state[currentExamIndex].nimi + "?"}
+                                        sisalto={examDeleteResult}
+                                        napin_teksti="Poista pysyvästi"
+                                        napin_funktio={
+                                            async () => {
+                                                try {
+                                                    await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged)
+                                                        .then(tiedot => {
+                                                            console.log(tiedot)
+                                                            // Tieto kursseista mihin tentti on liitettynä.
+                                                            let kurssi_id_string = ""
+                                                            let liitos = false
+                                                            if (tiedot.liitokset.kurssi_id.length > 0) {
+                                                                liitos = true
+                                                                if (tiedot.liitokset.kurssi_id.length === 1) {
+                                                                    kurssi_id_string = "Tentti on liitetty kurssiin " +
+                                                                        tiedot.liitokset.kurssi_id[0] + "."
+                                                                } else {
+                                                                    kurssi_id_string = "Tentti on liitetty kursseihin "
+                                                                    tiedot.liitokset.kurssi_id.map((id, index) => {
+                                                                        if (index === tiedot.liitokset.kurssi_id.length - 1) {
+                                                                            kurssi_id_string += id + "."
+                                                                        } else if (index === tiedot.liitokset.kurssi_id.length - 2) {
+                                                                            kurssi_id_string += id + " ja "
+                                                                        } else {
+                                                                            kurssi_id_string += id + ", "
+                                                                        }
+                                                                    })
+                                                                }
+                                                            } else {
+                                                                kurssi_id_string = "Tentti ei ole millään kurssilla."
+                                                            }
+                                                            // Tieto kysymyksistä mihin tentti on liitettynä.
+                                                            let kysymys_id_string = ""
+                                                            if (tiedot.liitokset.kysymys_id.length > 0) {
+                                                                liitos = true
+                                                                if (tiedot.liitokset.kysymys_id.length === 1) {
+                                                                    kysymys_id_string = "Se on myös liitetty kysymykseen " +
+                                                                        tiedot.liitokset.kysymys_id[0] + "."
+                                                                } else {
+                                                                    kysymys_id_string = "Se on myös liitetty kysymyksiin "
+                                                                    tiedot.liitokset.kysymys_id.map((id, index) => {
+                                                                        if (index === tiedot.liitokset.kysymys_id.length - 1) {
+                                                                            kysymys_id_string += id + "."
+                                                                        } else if (index === tiedot.liitokset.kysymys_id.length - 2) {
+                                                                            kysymys_id_string += id + " ja "
+                                                                        } else {
+                                                                            kysymys_id_string += id + ", "
+                                                                        }
+                                                                    })
+                                                                }
+                                                            } else {
+                                                                kysymys_id_string = "Siihen ei ole liitetty yhtään kysymystä."
+                                                            }
+                                                            // tarkistetaan onko oikeasti poistettu
+                                                            let poistettu_teksti = ""
+                                                            if (tiedot.liitokset.poistettu) {
+                                                                poistettu_teksti = "Tentti voitiin poistaa tietokannasta."
+                                                            } else {
+                                                                if(liitos) {
+                                                                    poistettu_teksti = "Tämän vuoksi tenttiä ei voitu poistaa tietokannasta."
+                                                                } else {
+                                                                    poistettu_teksti = "Se on kuitenkin liitettynä mm. käyttäjiin, joten sitä ei voida poistaa (backendistä puuttuu tähän tällä hetkellä logiikka)."
+                                                                }
+                                                            }
+
+                                                            setExamDeleteResult(kurssi_id_string + " " + kysymys_id_string + " " + poistettu_teksti)
+                                                        })
+
+                                                    /* setCurrentExamIndex(-1) */
+                                                } catch (err) {
+                                                    console.log(err)
+                                                    setExamDeleteResult(err)
+                                                }
                                             }
-                                        }}>
-                                        <DeleteIcon />
-                                    </IconButton >
+                                        }
+                                    />
                                 </h2>
                             </>)}
 
@@ -110,8 +179,8 @@ function App({currentUserName,setCurrentUserName}) {
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="darkBlue"/>
-                                                <TextField multiline type="text" style={{minWidth: "93%"}} defaultValue={card.lause} id={card.id} onBlur={(event) => {
+                                                <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="darkBlue" />
+                                                <TextField multiline type="text" style={{ minWidth: "93%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                                     muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                 }}>
                                                 </TextField>
