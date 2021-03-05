@@ -110,13 +110,8 @@ function App({currentUserName,setCurrentUserName}) {
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-<<<<<<< HEAD
-                                                <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="dark" />
-                                                <TextField multiline type="text" style={{ minWidth: "93%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
-=======
                                                 <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="darkBlue"/>
                                                 <TextField multiline type="text" style={{minWidth: "93%"}} defaultValue={card.lause} id={card.id} onBlur={(event) => {
->>>>>>> master
                                                     muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                 }}>
                                                 </TextField>
