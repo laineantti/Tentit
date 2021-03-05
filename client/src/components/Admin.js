@@ -26,7 +26,7 @@ import {
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 
-function App() {
+function App({currentUserName,setCurrentUserName}) {
     const { state, dispatch } = useContext(store)
     // const storeContext = useContext(store)
     // const { state } = storeContext
@@ -42,7 +42,7 @@ function App() {
 
     useEffect(() => {
         if (!currentUser) {
-            fetchUser(setCurrentUser)
+            fetchUser(setCurrentUser, setCurrentUserName)
         } else {
             fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         }
@@ -103,7 +103,7 @@ function App() {
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="dark"/>
+                                                <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="darkBlue"/>
                                                 <TextField multiline type="text" style={{minWidth: "93%"}} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                                     muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                 }}>

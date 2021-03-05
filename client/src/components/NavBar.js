@@ -1,10 +1,22 @@
-import { AppBar, Toolbar, Typography } from '@material-ui/core'
+import { AppBar, Toolbar, Typography, IconButton, MenuItem, Menu } from '@material-ui/core'
+import AccountCircle from '@material-ui/icons/AccountCircle'
+import EditIcon from '@material-ui/icons/Edit'
 import { useStyles, MenuButton } from './Style'
 import { strings } from './Locale'
-import { useEffect } from 'react'
+import { React, useState } from 'react'
 
-export function NavBar({kirjautunut,setKirjautunut}) {
+export function NavBar({kirjautunut,setKirjautunut,currentUserName,setCurrentUserName}) {
     const classes = useStyles()
+
+    const [examEdit, setExamEdit] = useState(false); 
+    const [anchorEl, setAnchorEl] = useState(null);
+    const isOpen = Boolean(anchorEl);
+    const handleMenu = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
 
     strings.setLanguage(strings.getInterfaceLanguage())
     console.log("Browser language in Settings: " + strings.getInterfaceLanguage())
@@ -26,7 +38,37 @@ export function NavBar({kirjautunut,setKirjautunut}) {
                         <MenuButton name="user" href="/user" style={{ backgroundColor: "white", color: "blue", marginRight: "10px" }}>{strings.kayttaja}</MenuButton>
                         <MenuButton name="admin" href="/admin" style={{ backgroundColor: "white", color: "red" }}>{strings.yllapitaja}</MenuButton>
                         {/* <MenuButton name="kieli" onClick={() => vaihdetaanKieli()}>{strings.kieli + "(" + strings.getLanguage() + ")"}</MenuButton> */}
-                        <MenuButton name="poistu" onClick={()=>{window.localStorage.removeItem('jwtToken');setKirjautunut(false)}}>{strings.poistu}</MenuButton>
+                        {/* {examEdit ? 
+                            <IconButton  color='secondary' onClick={() =>{setExamEdit(!examEdit)}} >
+                                <EditIcon/>
+                            </IconButton> :
+                            <IconButton  color='inherit' onClick={() =>{setExamEdit(!examEdit)} } >
+                                <EditIcon/>
+                            </IconButton>}  */}
+                        <IconButton aria-label="account of current user"
+                                aria-controls="menu-appbar"
+                                aria-haspopup="true" 
+                                onClick={handleMenu} 
+                                color="inherit">
+                            <AccountCircle/>
+                        </IconButton>
+                        <Menu   id= 'menu-appbar' 
+                                anchorEl={anchorEl}
+                                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                // keepMounted
+                                transformOrigin={{ vertical: 'top', horizontal: 'right' }} 
+                                open={isOpen} 
+                                onClose={handleClose}>
+                            <MenuItem style={{justifyContent: 'center'}}><AccountCircle/></MenuItem>
+                            <MenuItem ><strong>{currentUserName}</strong></MenuItem>
+                            <MenuItem onClick={() =>{} }>{strings.omatTentit}</MenuItem>
+                            <MenuItem onClick={() =>{
+                                    window.localStorage.removeItem('jwtToken');
+                                    setKirjautunut(false)
+                                    setAnchorEl(null);
+                                }}>{strings.poistu}
+                            </MenuItem>
+                        </Menu>
                     </Toolbar>
                 </AppBar>
             </>

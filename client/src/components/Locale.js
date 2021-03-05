@@ -4,6 +4,7 @@ export let strings = new LocalizedStrings({
     fi: {
         kieli: "kieli",
         tentit: "tentit",
+        omatTentit: "omat tentit",
         tilastot: "tilastot",
         rekisteroidy: "rekisteröidy",
         kirjaudu: "kirjaudu sisään",
@@ -27,6 +28,7 @@ export let strings = new LocalizedStrings({
     en: {
         kieli: "language",
         tentit: "exams",
+        omatTentit: "my exams",
         tilastot: "statistics",
         rekisteroidy: "sign in",
         kirjaudu: "log in",
