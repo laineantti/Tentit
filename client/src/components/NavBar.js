@@ -8,6 +8,7 @@ import { React, useState } from 'react'
 export function NavBar({kirjautunut,setKirjautunut,currentUserName,setCurrentUserName}) {
     const classes = useStyles()
 
+    const [examEdit, setExamEdit] = useState(false); 
     const [anchorEl, setAnchorEl] = useState(null);
     const isOpen = Boolean(anchorEl);
     const handleMenu = (event) => {
@@ -37,9 +38,13 @@ export function NavBar({kirjautunut,setKirjautunut,currentUserName,setCurrentUse
                         <MenuButton name="user" href="/user" style={{ backgroundColor: "white", color: "blue", marginRight: "10px" }}>{strings.kayttaja}</MenuButton>
                         <MenuButton name="admin" href="/admin" style={{ backgroundColor: "white", color: "red" }}>{strings.yllapitaja}</MenuButton>
                         {/* <MenuButton name="kieli" onClick={() => vaihdetaanKieli()}>{strings.kieli + "(" + strings.getLanguage() + ")"}</MenuButton> */}
-                        <IconButton  onClick={() =>{} } color='inherit'>
-                            <EditIcon/>
-                        </IconButton>
+                        {/* {examEdit ? 
+                            <IconButton  color='secondary' onClick={() =>{setExamEdit(!examEdit)}} >
+                                <EditIcon/>
+                            </IconButton> :
+                            <IconButton  color='inherit' onClick={() =>{setExamEdit(!examEdit)} } >
+                                <EditIcon/>
+                            </IconButton>}  */}
                         <IconButton aria-label="account of current user"
                                 aria-controls="menu-appbar"
                                 aria-haspopup="true" 
@@ -50,16 +55,17 @@ export function NavBar({kirjautunut,setKirjautunut,currentUserName,setCurrentUse
                         <Menu   id= 'menu-appbar' 
                                 anchorEl={anchorEl}
                                 anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                                keepMounted
+                                // keepMounted
                                 transformOrigin={{ vertical: 'top', horizontal: 'right' }} 
                                 open={isOpen} 
                                 onClose={handleClose}>
-                            <MenuItem style={{justifyContent: 'center'}} onClick={handleClose}><AccountCircle/></MenuItem>
+                            <MenuItem style={{justifyContent: 'center'}}><AccountCircle/></MenuItem>
                             <MenuItem ><strong>{currentUserName}</strong></MenuItem>
                             <MenuItem onClick={() =>{} }>{strings.omatTentit}</MenuItem>
                             <MenuItem onClick={() =>{
                                     window.localStorage.removeItem('jwtToken');
                                     setKirjautunut(false)
+                                    setAnchorEl(null);
                                 }}>{strings.poistu}
                             </MenuItem>
                         </Menu>
