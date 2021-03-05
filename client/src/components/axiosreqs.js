@@ -19,13 +19,15 @@ switch (environment) {
         throw default_error
 }
 
-const fetchUser = async (setCurrentUser) => {
+const fetchUser = async (setCurrentUser, setCurrentUserName) => {
     let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
     try {
         let userData = await axios.get(path + "kayttaja/", headers)
         if (userData.data.id) {
             let userId = Number(userData.data.id)
+            let user = `${userData.data.etunimi} ${userData.data.sukunimi}`
             setCurrentUser(userId)
+            setCurrentUserName(user)
             console.log(userData.data.id, userData.data.etunimi, userData.data.sukunimi)
         } else {
             console.log("kirjautunut käyttäjä hukassa")

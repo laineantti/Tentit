@@ -24,6 +24,7 @@ const autentikoitu = () => {
   if (!loggedUser) {
     return false;
   }
+  
   return loggedUser;
 }
 
