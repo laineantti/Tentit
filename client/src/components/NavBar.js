@@ -3,11 +3,15 @@ import AccountCircle from '@material-ui/icons/AccountCircle'
 import EditIcon from '@material-ui/icons/Edit'
 import { useStyles, MenuButton } from './Style'
 import { strings } from './Locale'
-import { React, useState, useEffect } from 'react'
+import { React, useState, useContext, useEffect } from 'react'
+import { logoutUser } from './axiosreqs'
+import { store } from './store.js'
 
 export function NavBar({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
     const classes = useStyles()
-    const [examEdit, setExamEdit] = useState(false)
+
+    const { state, dispatch } = useContext(store)
+    const [examEdit, setExamEdit] = useState(false); 
     const [anchorEl, setAnchorEl] = useState(null);
     const isOpen = Boolean(anchorEl);
     const handleMenu = (event) => {
@@ -64,6 +68,7 @@ export function NavBar({kirjautunut,setKirjautunut,currentUser,setCurrentUser,cu
                             <MenuItem onClick={() =>{
                                     window.localStorage.removeItem('jwtToken')
                                     setKirjautunut(false)
+                                    logoutUser(dispatch)
                                     setCurrentUser("")
                                     setCurrentUserName("")
                                     window.location.pathname="/login"

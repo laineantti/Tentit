@@ -120,7 +120,6 @@ pg_client.connect(err => {
   }
 })
 
-/*
 // addedrecord edustaa kaikkia muutoksia (insert/delete tentti/kurssi)
 const query = pg_client.query('LISTEN addedrecord');
 
@@ -133,7 +132,7 @@ io.sockets.on('connection', function (socket) {
       socket.emit('update', { message: title });
     });
   });
-}); */
+});
 
 /* ======================================================================================== */
 

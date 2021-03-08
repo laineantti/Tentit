@@ -120,6 +120,13 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
     }
 }
 
+const logoutUser = (dispatch) => {
+    dispatch({
+        type: "LOGOUT_USER",
+        data: {}
+    })
+}
+
 // /paivita_valinta/:kayttaja_id/:vaihtoehto_id/:tentti_id/:kurssi_id/:vastaus
 const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex, exam_id, currentUser, currentCourse, currentExamIndex, dispatch) => {
     try {
@@ -358,6 +365,7 @@ const poistaTentti = async (dispatch, currentExamIndex, tentti_id) => {
 export {
     fetchUser,
     fetchData,
+    logoutUser,
     valintaMuuttui,
     lisaaKysymys,
     lisaaVaihtoehto,
