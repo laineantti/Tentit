@@ -3,11 +3,11 @@ import AccountCircle from '@material-ui/icons/AccountCircle'
 import EditIcon from '@material-ui/icons/Edit'
 import { useStyles, MenuButton } from './Style'
 import { strings } from './Locale'
-import { React, useState, useContext } from 'react'
+import { React, useState, useContext, useEffect } from 'react'
 import { logoutUser } from './axiosreqs'
 import { store } from './store.js'
 
-export function NavBar({kirjautunut,setKirjautunut,currentUserName,setCurrentUserName}) {
+export function NavBar({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
     const classes = useStyles()
 
     const { state, dispatch } = useContext(store)
@@ -38,16 +38,16 @@ export function NavBar({kirjautunut,setKirjautunut,currentUserName,setCurrentUse
                                 {strings.tietoa}
                             </MenuButton>
                         </Typography>
-                        <MenuButton name="user" href="/user" style={{ backgroundColor: "white", color: "blue", marginRight: "10px" }}>{strings.kayttaja}</MenuButton>
-                        <MenuButton name="admin" href="/admin" style={{ backgroundColor: "white", color: "red" }}>{strings.yllapitaja}</MenuButton>
+                        {/* <MenuButton name="user" href="/user" style={{ backgroundColor: "white", color: "blue", marginRight: "10px" }}>{strings.kayttaja}</MenuButton>
+                        <MenuButton name="admin" href="/admin" style={{ backgroundColor: "white", color: "red" }}>{strings.yllapitaja}</MenuButton> */}
                         {/* <MenuButton name="kieli" onClick={() => vaihdetaanKieli()}>{strings.kieli + "(" + strings.getLanguage() + ")"}</MenuButton> */}
-                        {/* {examEdit ? 
-                            <IconButton  color='secondary' onClick={() =>{setExamEdit(!examEdit)}} >
+                        { window.location.pathname==="/admin"? 
+                            <IconButton color='secondary' href="/user" onClick={() => {setExamEdit(!examEdit)}}>
                                 <EditIcon/>
-                            </IconButton> :
-                            <IconButton  color='inherit' onClick={() =>{setExamEdit(!examEdit)} } >
+                            </IconButton> : 
+                            <IconButton color='inherit' href="/admin" onClick={() => {setExamEdit(!examEdit)}} >
                                 <EditIcon/>
-                            </IconButton>}  */}
+                            </IconButton>} 
                         <IconButton aria-label="account of current user"
                                 aria-controls="menu-appbar"
                                 aria-haspopup="true" 
@@ -62,14 +62,17 @@ export function NavBar({kirjautunut,setKirjautunut,currentUserName,setCurrentUse
                                 transformOrigin={{ vertical: 'top', horizontal: 'right' }} 
                                 open={isOpen} 
                                 onClose={handleClose}>
-                            <MenuItem style={{justifyContent: 'center'}}><AccountCircle/></MenuItem>
-                            <MenuItem ><strong>{currentUserName}</strong></MenuItem>
+                            <MenuItem disabled="true" style={{justifyContent: 'center'}} ><AccountCircle/></MenuItem >
+                            <MenuItem disabled="true"><strong>{currentUserName}</strong></MenuItem>
                             <MenuItem onClick={() =>{} }>{strings.omatTentit}</MenuItem>
                             <MenuItem onClick={() =>{
-                                    window.localStorage.removeItem('jwtToken');
+                                    window.localStorage.removeItem('jwtToken')
                                     setKirjautunut(false)
                                     logoutUser(dispatch)
-                                    setAnchorEl(null);
+                                    setCurrentUser("")
+                                    setCurrentUserName("")
+                                    window.location.pathname="/login"
+                                    setAnchorEl(null)
                                 }}>{strings.poistu}
                             </MenuItem>
                         </Menu>

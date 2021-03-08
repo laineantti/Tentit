@@ -11,12 +11,11 @@ import CodeComponent from './CodeComponent'
 import { store } from './store.js'
 
 
-function App({currentUserName,setCurrentUserName}) {
+function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
     const { state, dispatch } = useContext(store) 
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
 
-    const [currentUser, setCurrentUser] = useState("")
     const [currentCourse, setCurrentCourse] = useState(1)
     const classes = useStyles()
 
