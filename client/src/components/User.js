@@ -44,12 +44,8 @@ function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
             <CssBaseline />
             <Container key="container1_user" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
                 component="main">
-                {Object.values(state).map((exam, examIndex) =>
-                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => currentExamIndexChanged(examIndex)}>
-                        {exam.nimi}
-                    </ExamButton>
-                )}
-                {currentExamIndex >= 0 &&
+
+                {currentExamIndex >= 0 ?
                     (
                         <>
                             <h2>{state[currentExamIndex].nimi}</h2>
@@ -97,7 +93,14 @@ function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
                                 )}>{strings.nayta} {strings.vastaukset}</Button>
                         </>
                     )
-                }
+                : (
+                <>
+                {Object.values(state).map((exam, examIndex) =>
+                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => currentExamIndexChanged(examIndex)}>
+                        {exam.nimi}
+                    </ExamButton>
+                )}
+                </> )}
             </Container>
         </Box>
     )

@@ -31,7 +31,11 @@ export function NavBar({kirjautunut,setKirjautunut,currentUser,setCurrentUser,cu
                 <AppBar position="fixed">
                     <Toolbar>
                         <Typography variant="h6" className={classes.title}>
-                            <MenuButton name="tentit" href="/">{strings.tentit}</MenuButton>
+                            {window.location.pathname==="/admin"?
+                                <MenuButton name="tentit" href="/admin">{strings.tentit}</MenuButton>
+                            :
+                                <MenuButton name="tentit" href="/">{strings.tentit}</MenuButton>
+                            }
                             <MenuButton name="tilastot" href="/stats">{strings.tilastot}</MenuButton>
                             <MenuButton name="tiedostonlahetys" href="/upload">{strings.tiedostonlahetys}</MenuButton>
                             <MenuButton name="tietoa" target="_blank" href="https://www.youtube.com/watch?v=sAqnNWUD79Q">
