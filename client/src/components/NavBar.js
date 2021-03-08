@@ -3,11 +3,14 @@ import AccountCircle from '@material-ui/icons/AccountCircle'
 import EditIcon from '@material-ui/icons/Edit'
 import { useStyles, MenuButton } from './Style'
 import { strings } from './Locale'
-import { React, useState } from 'react'
+import { React, useState, useContext } from 'react'
+import { logoutUser } from './axiosreqs'
+import { store } from './store.js'
 
 export function NavBar({kirjautunut,setKirjautunut,currentUserName,setCurrentUserName}) {
     const classes = useStyles()
 
+    const { state, dispatch } = useContext(store)
     const [examEdit, setExamEdit] = useState(false); 
     const [anchorEl, setAnchorEl] = useState(null);
     const isOpen = Boolean(anchorEl);
@@ -65,6 +68,7 @@ export function NavBar({kirjautunut,setKirjautunut,currentUserName,setCurrentUse
                             <MenuItem onClick={() =>{
                                     window.localStorage.removeItem('jwtToken');
                                     setKirjautunut(false)
+                                    logoutUser(dispatch)
                                     setAnchorEl(null);
                                 }}>{strings.poistu}
                             </MenuItem>

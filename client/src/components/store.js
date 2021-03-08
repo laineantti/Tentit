@@ -89,6 +89,10 @@ const StateProvider = ({ children }) => {
                     = action.data.checkedValue
                 return tempCopy
 
+            case "LOGOUT_USER":
+                state = initialState
+                return initialState
+
             case "INIT_DATA":
                 return action.data
 
