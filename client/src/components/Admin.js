@@ -92,11 +92,19 @@ function App({ currentUserName, setCurrentUserName }) {
                                     </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
                                     {/* tentin poistonappi */}
                                     <CustomizedDialogs
-                                        otsikko={"Haluatko varmasti poistaa tentin " + state[currentExamIndex].nimi + "?"}
-                                        sisalto={examDeleteResult}
-                                        napin_teksti="Poista pysyvästi"
+                                        otsikko={"Tentin poistaminen"}
+                                        sisalto={
+                                            (examDeleteResult === "") ?
+                                                ("Haluatko varmasti poistaa tentin " + state[currentExamIndex].nimi + "?"):
+                                                (examDeleteResult)
+                                        }
+                                        napin_teksti={
+                                            (examDeleteResult === "") ?
+                                                ("Poista pysyvästi"):
+                                                ("ok")
+                                        }
                                         napin_funktio={
-                                            async () => {
+                                            (async () => {
                                                 try {
                                                     await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged)
                                                         .then(tiedot => {
@@ -151,7 +159,7 @@ function App({ currentUserName, setCurrentUserName }) {
                                                             if (tiedot.liitokset.poistettu) {
                                                                 poistettu_teksti = "Tentti voitiin poistaa tietokannasta."
                                                             } else {
-                                                                if(liitos) {
+                                                                if (liitos) {
                                                                     poistettu_teksti = "Tämän vuoksi tenttiä ei voitu poistaa tietokannasta."
                                                                 } else {
                                                                     poistettu_teksti = "Se on kuitenkin liitettynä mm. käyttäjiin, joten sitä ei voida poistaa (backendistä puuttuu tähän tällä hetkellä logiikka)."
@@ -166,7 +174,7 @@ function App({ currentUserName, setCurrentUserName }) {
                                                     console.log(err)
                                                     setExamDeleteResult(err)
                                                 }
-                                            }
+                                            })
                                         }
                                     />
                                 </h2>

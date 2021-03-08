@@ -76,8 +76,9 @@ export default function CustomizedDialogs(props) {
                 </DialogContent>
                 <DialogActions>
                     <Button autoFocus onClick={() => {
-                        /* handleClose() */
-                        props.napin_funktio()
+                        (props.napin_teksti === "ok") ?
+                            (handleClose()) :
+                            (props.napin_funktio())
                     }} color="primary">
                         {props.napin_teksti}
                     </Button>
