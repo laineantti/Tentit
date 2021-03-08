@@ -12,6 +12,7 @@ import {autentikoitu} from './helpers'
 
 export const Routes = () => {
     const [kirjautunut, setKirjautunut] = useState(false)
+    const [currentUser, setCurrentUser] = useState("")
     const [currentUserName, setCurrentUserName] = useState("")
 
 
@@ -28,7 +29,7 @@ export const Routes = () => {
 
     return (
         <div>
-            <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>          
+            <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut} currentUser={currentUser} setCurrentUser={setCurrentUser} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>          
             {kirjautunut ? 
                 <Switch>
                     {/* <Route exact path="/login">
@@ -41,7 +42,7 @@ export const Routes = () => {
                         <User />
                     </Route> */}
                     <Route exact path="/admin">
-                        <Admin currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
+                        <Admin currentUser={currentUser} setCurrentUser={setCurrentUser} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
                     </Route>
                     <Route exact path="/stats">
                         <Stats />
@@ -50,10 +51,10 @@ export const Routes = () => {
                         <Upload />
                     </Route>
                     <Route exact path="*">
-                        <User currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
+                        <User currentUser={currentUser} setCurrentUser={setCurrentUser} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
                     </Route>
                 </Switch>
-                :
+                : 
                 <Switch>
                     <Route exact path="/register">
                         <Register />

@@ -43,6 +43,7 @@ const Login = ({kirjautunut,setKirjautunut}) => {
                 // mistä tallennetaan datasta saatava token localStorageen
                 window.localStorage.setItem('jwtToken', response.data.token);
                 // alert("Kirjautuminen onnistui, tervetuloa "+response.data.sahkoposti+"!")
+                window.location.pathname="/user"
                 setKirjautunut(true)
             })
         } catch (e) {

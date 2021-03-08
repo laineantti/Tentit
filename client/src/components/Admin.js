@@ -26,7 +26,7 @@ import {
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 
-function App({currentUserName,setCurrentUserName}) {
+function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
     const { state, dispatch } = useContext(store)
     // const storeContext = useContext(store)
     // const { state } = storeContext
@@ -36,7 +36,6 @@ function App({currentUserName,setCurrentUserName}) {
     const [newExamId, setNewExamId] = useState(-1)
     const [newCardId, setNewCardId] = useState(-1)
     const [newChoiseId, setNewChoiseId] = useState(-1)
-    const [currentUser, setCurrentUser] = useState("")
     const [examName, setExamName] = useState("")
     const classes = useStyles()
 
