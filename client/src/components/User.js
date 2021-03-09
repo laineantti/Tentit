@@ -11,8 +11,8 @@ import CodeComponent from './CodeComponent'
 import { store } from './store.js'
 
 
-function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
-    const { state, dispatch } = useContext(store) 
+function App({ currentUser, setCurrentUser, currentUserName, setCurrentUserName }) {
+    const { state, dispatch } = useContext(store)
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
 
@@ -25,6 +25,9 @@ function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
     }
 
     const allCorrect = (cardChoisesArray) => {
+        cardChoisesArray.forEach((choise, i) =>
+            (choise.oikea_vastaus === null) && (cardChoisesArray[i].oikea_vastaus = false)
+        )
         return (cardChoisesArray.filter(choise => choise.vastaus
             === choise.oikea_vastaus).length === cardChoisesArray.length)
     }
@@ -58,8 +61,8 @@ function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <p className="label" style={{ whiteSpace: "pre-wrap" }}> 
-                                                    <CodeComponent questionString={card.lause}/>
+                                                <p className="label" style={{ whiteSpace: "pre-wrap" }}>
+                                                    <CodeComponent questionString={card.lause} />
                                                 </p>
                                                 {Object.values(card.vaihtoehdot).map((listItem, listItemIndex) => (
                                                     <ListItem key={uuid()}>
