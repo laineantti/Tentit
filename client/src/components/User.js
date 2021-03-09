@@ -9,9 +9,10 @@ import { strings } from './Locale'
 import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 import { store } from './store.js'
+import { NavBar } from './NavBar'
 
 
-function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
+function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
     const { state, dispatch } = useContext(store) 
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
     const [currentExamIndex, setCurrentExamIndex] = useState(-1)
@@ -40,6 +41,11 @@ function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
 
 
     return (
+        <>
+        <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}
+                currentUser={currentUser} setCurrentUser={setCurrentUser} 
+                currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}
+                currentExamIndex={currentExamIndex} setCurrentExamIndex={setCurrentExamIndex}/> 
         <Box>
             <CssBaseline />
             <Container key="container1_user" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
@@ -103,6 +109,7 @@ function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
                 </> )}
             </Container>
         </Box>
+    </>
     )
 }
 

@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 /* import { strings } from './Locale' */
 import { useDropzone } from 'react-dropzone'
 import request from 'superagent'
+import { NavBar } from './NavBar'
 
 var path = null
 var default_error = new Error("Environment not properly set!")
@@ -39,6 +40,8 @@ function Upload() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
     return (
+        <>
+        <NavBar/> 
         <div name="photos" key="photos" style={{ paddingTop: "60px" }} {...getRootProps()}>
             <input {...getInputProps()} />
             {
@@ -47,6 +50,7 @@ function Upload() {
                     <p>Drag 'n' drop some files here, or click to select files</p>
             }
         </div>
+        </>
     )
 }
 export default Upload

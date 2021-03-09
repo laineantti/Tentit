@@ -7,7 +7,12 @@ import { React, useState, useContext, useEffect } from 'react'
 import { logoutUser } from './axiosreqs'
 import { store } from './store.js'
 
-export function NavBar({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
+export function NavBar({
+    kirjautunut,setKirjautunut,
+    currentUser,setCurrentUser,
+    currentUserName,setCurrentUserName,
+    currentExamIndex,setCurrentExamIndex
+}) {
     const classes = useStyles()
 
     const { state, dispatch } = useContext(store)
@@ -25,17 +30,25 @@ export function NavBar({kirjautunut,setKirjautunut,currentUser,setCurrentUser,cu
     console.log("Browser language in Settings: " + strings.getInterfaceLanguage())
     console.log("React App language: " + strings.getLanguage())
 
-    if (kirjautunut) {
         return (
             <>
                 <AppBar position="fixed">
                     <Toolbar>
                         <Typography variant="h6" className={classes.title}>
-                            {window.location.pathname==="/admin"?
+                            <MenuButton name="tentit" onClick={()=>{
+                                if (window.location.pathname==="/admin" || window.location.pathname==="/user") {
+                                    if (currentExamIndex >=0) {
+                                        setCurrentExamIndex(-1)
+                                    }
+                                } else {
+                                    window.location.pathname="/user"
+                                }}                               
+                            }>{strings.tentit}</MenuButton>
+                            {/* {window.location.pathname==="/admin"?
                                 <MenuButton name="tentit" href="/admin">{strings.tentit}</MenuButton>
                             :
-                                <MenuButton name="tentit" href="/">{strings.tentit}</MenuButton>
-                            }
+                                <MenuButton name="tentit" href="/user">{strings.tentit}</MenuButton>
+                            } */}
                             <MenuButton name="tilastot" href="/stats">{strings.tilastot}</MenuButton>
                             <MenuButton name="tiedostonlahetys" href="/upload">{strings.tiedostonlahetys}</MenuButton>
                             <MenuButton name="tietoa" target="_blank" href="https://www.youtube.com/watch?v=sAqnNWUD79Q">
@@ -75,7 +88,6 @@ export function NavBar({kirjautunut,setKirjautunut,currentUser,setCurrentUser,cu
                                     logoutUser(dispatch)
                                     setCurrentUser("")
                                     setCurrentUserName("")
-                                    window.location.pathname="/login"
                                     setAnchorEl(null)
                                 }}>{strings.poistu}
                             </MenuItem>
@@ -84,19 +96,4 @@ export function NavBar({kirjautunut,setKirjautunut,currentUser,setCurrentUser,cu
                 </AppBar>
             </>
         )
-
-    } else {
-        return (
-            <>
-                <AppBar position="fixed">
-                    <Toolbar>
-                        <Typography variant="h6" className={classes.title}>
-                            <MenuButton name="rekisteroidy" href="/register">{strings.rekisteroidy}</MenuButton>
-                            <MenuButton name="kirjaudu" href="/login">{strings.kirjaudu}</MenuButton>
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
-            </>
-        )
-    }
 }

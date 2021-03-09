@@ -26,8 +26,9 @@ import {
     poistaTentti
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
+import { NavBar } from './NavBar'
 
-function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
+function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
     const { state, dispatch } = useContext(store)
     // const storeContext = useContext(store)
     // const { state } = storeContext
@@ -50,6 +51,11 @@ function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
     }, [currentUser, newExamId, newCardId, newChoiseId])
 
     return (
+        <>
+        <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}
+                 currentUser={currentUser} setCurrentUser={setCurrentUser} 
+                 currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}
+                 currentExamIndex={currentExamIndex} setCurrentExamIndex={setCurrentExamIndex}/> 
         <Box>
             <CssBaseline />
             <Container key="container1_admin" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
@@ -247,6 +253,7 @@ function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
                 </> )}
             </Container>
         </Box >
+    </>
     )
 }
 

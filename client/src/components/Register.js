@@ -12,6 +12,7 @@ import FormLabel from '@material-ui/core/FormLabel'
 import axios from 'axios'
 import { strings } from './Locale'
 import {tarkistaSahkoposti,tarkistaSalasana} from './helpers.js';
+import { NavBarLogin } from './NavBarLogin'
 
 var path = null
 var default_error = new Error("Environment not properly set!")
@@ -72,6 +73,8 @@ const Register = () => {
     }
 
     return (
+        <>
+        <NavBarLogin/>
         <div className="container">
             <Typography variant="h2" component="h2" style={{ paddingTop: "60px" }} className="h3 mb-3 font-weight-normal">{strings.rekisteroidy}</Typography>
             <Grid container spacing={1}>
@@ -136,6 +139,7 @@ const Register = () => {
 
             </Grid>
         </div>
+    </>
     )
 }
 export default Register

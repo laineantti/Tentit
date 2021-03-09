@@ -20,16 +20,16 @@ export const Routes = () => {
     useEffect(() => {
         let paluuarvo = autentikoitu()
 
-        if (paluuarvo !== false) {
+        if (paluuarvo) {
             setKirjautunut(true)
         }
-    },[kirjautunut])
+    },[])
      
     // tarkistetaanko kirjautumisen tila tokenista ja asetetaan tähän arvoksi?
+    
 
     return (
         <div>
-            <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut} currentUser={currentUser} setCurrentUser={setCurrentUser} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>          
             {kirjautunut ? 
                 <Switch>
                     {/* <Route exact path="/login">
@@ -42,7 +42,7 @@ export const Routes = () => {
                         <User />
                     </Route> */}
                     <Route exact path="/admin">
-                        <Admin currentUser={currentUser} setCurrentUser={setCurrentUser} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
+                        <Admin kirjautunut={kirjautunut} setKirjautunut={setKirjautunut} currentUser={currentUser} setCurrentUser={setCurrentUser} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
                     </Route>
                     <Route exact path="/stats">
                         <Stats />
@@ -51,7 +51,7 @@ export const Routes = () => {
                         <Upload />
                     </Route>
                     <Route exact path="*">
-                        <User currentUser={currentUser} setCurrentUser={setCurrentUser} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
+                        <User kirjautunut={kirjautunut} setKirjautunut={setKirjautunut} currentUser={currentUser} setCurrentUser={setCurrentUser} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
                     </Route>
                 </Switch>
                 : 
