@@ -70,7 +70,7 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
                 tentit_string = path + "oikeus_muokata_tenttia/" + currentUser
             }
         } else {
-            console.log("User-sivulla voit nähdä vain omia tenttejä.")
+            console.log("User-sivulla voit nähdä vain tilaamiasi tenttejä. Luomasi tentit näet vain Admin-sivulla (et täällä!).")
             tentit_string = path + "kayttajan_tentit/" + currentUser
         }
         let tentit_data = await axios.get(tentit_string, headers)
@@ -334,7 +334,7 @@ const poistaVaihtoehdonLiitos = async (dispatch, currentExamIndex, vaihtoehto_id
     )
 }
 
-const poistaTentti = async (dispatch, currentExamIndex, tentti_id) => {
+const poistaTentti = async (dispatch, currentExamIndex, /* setCurrentExamIndex,  */tentti_id) => {
     let tiedot_poistettavasta_tentista = null
     try {
         let result = await axios({
@@ -345,6 +345,8 @@ const poistaTentti = async (dispatch, currentExamIndex, tentti_id) => {
         tiedot_poistettavasta_tentista = result.data
         /* console.log(tiedot_poistettavasta_tentista) */
         if (tiedot_poistettavasta_tentista.poistettu) {
+            // kun tentti on poistettu, asetetaan ja välitetään Admin-sivulla valituksi tentiksi -1 (= tenttiä ei valittuna)
+            /* setCurrentExamIndex(-1) */
             console.log("Tentti_id " + tentti_id + ", poistettu!")
             dispatch(
                 {

@@ -627,14 +627,15 @@ app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
 
 
 
-// poista tentti - KESKENERÄINEN, KAATUU, JOS PAINAA ROSKAKORIA TENTISSÄ
+// poista tentti
 app.delete('/poista_tentti/:tentti_id', (req, response, next) => {
   try {
     let tiedot_poistettavasta_tentista = {
       poistettu: false,
       liitokset: {
         kurssi_id: [],
-        kysymys_id: []
+        kysymys_id: [],
+        kayttaja_id: []
       }
     }
     let saa_poistaa = true
@@ -662,26 +663,46 @@ app.delete('/poista_tentti/:tentti_id', (req, response, next) => {
                 tiedot_poistettavasta_tentista.liitokset.kysymys_id[i] = row.kysymys_id
               })
             }
-            // tarkistetaan onko tentti linkattu käyttäjän vastaukseen
             // tarkistetaan onko tentti linkattu käyttäjään
             db.query("SELECT * FROM kayttajan_tentit WHERE tentti_id = $1 ORDER BY id",
               [req.params.tentti_id],
-              (err) => {
+              (err, res) => {
                 if (err) { return next(err) }
                 // poistetaan käyttäjän liitos ensin
-                // jos tenttiä ei ole linkattu, se voidaan poistaa
-                /* console.log("saa_poistaa: " + saa_poistaa) */
-                if (saa_poistaa) {
-                  db.query("DELETE FROM tentti WHERE id=$1",
+                if (res.rows.length > 0) {
+                  // poistetaan tentin liitos kayttajan_tentit-taulusta
+                  db.query("DELETE FROM kayttajan_tentit WHERE tentti_id = $1",
                     [req.params.tentti_id],
                     (err) => {
                       if (err) { return next(err) }
-                      tiedot_poistettavasta_tentista.poistettu = true
                     })
                 }
-                // palautetaan tentin tiedot
-                response.status(201).send(tiedot_poistettavasta_tentista)
-                /* console.log(tiedot_poistettavasta_tentista) */
+                // jos tenttiä ei ole linkattu, se voidaan poistaa
+                if (saa_poistaa) {
+                  // poistetaan tentin liitos oikeus_muokata_tenttia-taulusta
+                  db.query("DELETE FROM oikeus_muokata_tenttia WHERE tentti_id = $1",
+                    [req.params.tentti_id],
+                    (err) => {
+                      if (err) { return next(err) }
+                      // tentti poistetaan lopullisesti
+                      db.query("DELETE FROM tentti WHERE id = $1",
+                        [req.params.tentti_id],
+                        (err) => {
+                          if (err) {
+                            return next(err)
+                          } else {
+                            tiedot_poistettavasta_tentista.poistettu = true
+                            // palautetaan tentin tiedot
+                            response.status(201).send(tiedot_poistettavasta_tentista)
+                            /* console.log(tiedot_poistettavasta_tentista) */
+                          }
+                        })
+                    })
+                } else {
+                  // palautetaan tentin tiedot
+                  response.status(201).send(tiedot_poistettavasta_tentista)
+                  /* console.log(tiedot_poistettavasta_tentista) */
+                }
               })
           })
       }
