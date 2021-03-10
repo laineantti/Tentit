@@ -89,7 +89,7 @@ function App({ currentUser, setCurrentUser, currentUserName, setCurrentUserName 
                                 <DeleteExamDialog
                                     /* tentin poistonappi */
                                     currentExamIndex={currentExamIndex}
-                                    /* setCurrentExamIndex={setCurrentExamIndex} */
+                                    setCurrentExamIndex={setCurrentExamIndex}
                                     currentDatabaseExamIdChanged={currentDatabaseExamIdChanged}
                                 />
                             </h2>

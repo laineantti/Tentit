@@ -52,7 +52,7 @@ const DialogActions = withStyles((theme) => ({
     },
 }))(MuiDialogActions)
 
-export default function DeleteExamDialog({ currentExamIndex, /* setCurrentExamIndex,  */currentDatabaseExamIdChanged }) {
+export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex, currentDatabaseExamIdChanged }) {
     const { state, dispatch } = useContext(store)
     const [examDeleteResult, setExamDeleteResult] = useState("")
     const [deleting, setDeleting] = useState(true)
@@ -62,7 +62,7 @@ export default function DeleteExamDialog({ currentExamIndex, /* setCurrentExamIn
 
     async function tentinPoistoLogiikka() {
         try {
-            await poistaTentti(dispatch, tempExamIndex, /* setCurrentExamIndex,  */currentDatabaseExamIdChanged)
+            await poistaTentti(dispatch, tempExamIndex, currentDatabaseExamIdChanged)
                 .then(tiedot => {
                     console.log(tiedot)
                     // Tieto kursseista mihin tentti on liitettynä.
@@ -123,6 +123,8 @@ export default function DeleteExamDialog({ currentExamIndex, /* setCurrentExamIn
                     }
                     setExamDeleteResult(kurssi_id_string + " " + kysymys_id_string + " " + poistoviesti)
                     setDeleting(false)
+                    // kun tentti on poistettu, asetetaan ja välitetään Admin-sivulla valituksi tentiksi -1 (= tenttiä ei valittuna)
+                    setCurrentExamIndex(-1)
                 })
         } catch (err) {
             console.log(err)

@@ -334,7 +334,7 @@ const poistaVaihtoehdonLiitos = async (dispatch, currentExamIndex, vaihtoehto_id
     )
 }
 
-const poistaTentti = async (dispatch, currentExamIndex, /* setCurrentExamIndex,  */tentti_id) => {
+const poistaTentti = async (dispatch, currentExamIndex, tentti_id) => {
     let tiedot_poistettavasta_tentista = null
     try {
         let result = await axios({
@@ -345,8 +345,6 @@ const poistaTentti = async (dispatch, currentExamIndex, /* setCurrentExamIndex, 
         tiedot_poistettavasta_tentista = result.data
         /* console.log(tiedot_poistettavasta_tentista) */
         if (tiedot_poistettavasta_tentista.poistettu) {
-            // kun tentti on poistettu, asetetaan ja välitetään Admin-sivulla valituksi tentiksi -1 (= tenttiä ei valittuna)
-            /* setCurrentExamIndex(-1) */
             console.log("Tentti_id " + tentti_id + ", poistettu!")
             dispatch(
                 {
