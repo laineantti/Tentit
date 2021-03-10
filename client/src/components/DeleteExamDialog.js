@@ -56,13 +56,12 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
     const { state, dispatch } = useContext(store)
     const [examDeleteResult, setExamDeleteResult] = useState("")
     const [deleting, setDeleting] = useState(true)
-    const tempExamIndex = currentExamIndex
 
     const [open, setOpen] = useState(false)
 
     async function tentinPoistoLogiikka() {
         try {
-            await poistaTentti(dispatch, tempExamIndex, currentDatabaseExamIdChanged)
+            await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged)
                 .then(tiedot => {
                     console.log(tiedot)
                     // Tieto kursseista mihin tentti on liitettynä.
@@ -114,6 +113,9 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                     let poistoviesti = ""
                     if (tiedot.poistettu) {
                         poistoviesti = "Tentti poistettiin onnistuneesti."
+                        // kun tentti on poistettu, asetetaan ja välitetään Admin-sivulla 
+                        // valituksi tentiksi -1 (= tenttiä ei valittuna)
+                        setCurrentExamIndex(-1)
                     } else {
                         if (liitos) {
                             poistoviesti = "Tämän vuoksi tenttiä ei voitu poistaa tietokannasta."
@@ -123,8 +125,6 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                     }
                     setExamDeleteResult(kurssi_id_string + " " + kysymys_id_string + " " + poistoviesti)
                     setDeleting(false)
-                    // kun tentti on poistettu, asetetaan ja välitetään Admin-sivulla valituksi tentiksi -1 (= tenttiä ei valittuna)
-                    setCurrentExamIndex(-1)
                 })
         } catch (err) {
             console.log(err)
@@ -155,7 +155,7 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                 <DialogContent dividers>
                     <Typography gutterBottom>{
                         (examDeleteResult === "") ?
-                            `Haluatko varmasti poistaa tentin ${state[tempExamIndex].nimi}?` :
+                            `Haluatko varmasti poistaa tentin ${state[currentExamIndex].nimi}?` :
                             examDeleteResult
                     }</Typography>
                 </DialogContent>

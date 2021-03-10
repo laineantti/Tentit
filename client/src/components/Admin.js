@@ -70,9 +70,15 @@ function App({ currentUser, setCurrentUser, currentUserName, setCurrentUserName 
                 }}>
                     <Icon>add_circle</Icon>
                 </IconButton>
-                {currentExamIndex >= 0 &&
-                    (
+                {currentExamIndex >= 0
+                    && state
+                    && state[currentExamIndex]
+                    && state[currentExamIndex].id
+                    && state[currentExamIndex].kysymykset
+                    && (
+
                         <>
+                            {/* {setExamName(state[currentExamIndex].nimi)} */}
                             <h2>
                                 <TextField type="text" value={examName} /*value={state[currentExamIndex].nimi}*/ id={state[currentExamIndex].id}
                                     onChange={(event) => {
@@ -86,13 +92,13 @@ function App({ currentUser, setCurrentUser, currentUserName, setCurrentUserName 
                                         muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, examName)
                                     }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
                                 </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
-                                <DeleteExamDialog
-                                    /* tentin poistonappi */
-                                    currentExamIndex={currentExamIndex}
-                                    setCurrentExamIndex={setCurrentExamIndex}
-                                    currentDatabaseExamIdChanged={currentDatabaseExamIdChanged}
-                                />
                             </h2>
+                            <DeleteExamDialog
+                                /* tentin poistonappi */
+                                currentExamIndex={currentExamIndex}
+                                setCurrentExamIndex={setCurrentExamIndex}
+                                currentDatabaseExamIdChanged={currentDatabaseExamIdChanged}
+                            />
 
                             {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
                             {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
