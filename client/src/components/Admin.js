@@ -1,13 +1,13 @@
 import { React, useState, useEffect, useContext } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
-import CustomizedDialogs from './CustomizedDialogs'
 /* import axios from 'axios' */
 import {
     Card, CardContent, Container, List, ListItem, Box, Icon,
     IconButton, CssBaseline, TextField, Input
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
+import DeleteExamDialog from './DeleteExamDialog'
 import { store } from './store.js'
 import {
     fetchUser,
@@ -22,12 +22,11 @@ import {
     muutaKysymys,
     muutaVaihtoehto,
     poistaKysymyksenLiitos,
-    poistaVaihtoehdonLiitos,
-    poistaTentti
+    poistaVaihtoehdonLiitos
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 
-function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
+function App({ currentUser, setCurrentUser, currentUserName, setCurrentUserName }) {
     const { state, dispatch } = useContext(store)
     // const storeContext = useContext(store)
     // const { state } = storeContext
@@ -38,7 +37,6 @@ function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
     const [newCardId, setNewCardId] = useState(-1)
     const [newChoiseId, setNewChoiseId] = useState(-1)
     const [examName, setExamName] = useState("")
-    const [examDeleteResult, setExamDeleteResult] = useState("")
     const classes = useStyles()
 
     useEffect(() => {
@@ -72,112 +70,35 @@ function App({currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
                 }}>
                     <Icon>add_circle</Icon>
                 </IconButton>
-                {currentExamIndex >= 0 &&
-                    (
+                {currentExamIndex >= 0
+                    && state
+                    && state[currentExamIndex]
+                    && state[currentExamIndex].id
+                    && state[currentExamIndex].kysymykset
+                    && (
+
                         <>
-                            {(state[currentExamIndex].nimi) && (<>
-                                <h2>
-                                    <TextField type="text" value={examName} /*value={state[currentExamIndex].nimi}*/ id={state[currentExamIndex].id}
-                                        onChange={(event) => {
-                                            setExamName(event.target.value)
-                                        }}
-                                        onBlur={() => {
-                                            if (examName === "") {
-                                                setExamName("Nimetön")
-                                                muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, "Nimetön")
-                                            }
-                                            muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, examName)
-                                        }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
-                                    </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
-                                    {/* tentin poistonappi */}
-                                    <CustomizedDialogs
-                                        otsikko={"Tentin poistaminen"}
-                                        sisalto={
-                                            (examDeleteResult === "") ?
-                                                ("Haluatko varmasti poistaa tentin " + state[currentExamIndex].nimi + "?"):
-                                                (examDeleteResult)
+                            {/* {setExamName(state[currentExamIndex].nimi)} */}
+                            <h2>
+                                <TextField type="text" value={examName} /*value={state[currentExamIndex].nimi}*/ id={state[currentExamIndex].id}
+                                    onChange={(event) => {
+                                        setExamName(event.target.value)
+                                    }}
+                                    onBlur={() => {
+                                        if (examName === "") {
+                                            setExamName("Nimetön")
+                                            muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, "Nimetön")
                                         }
-                                        napin_teksti={
-                                            (examDeleteResult === "") ?
-                                                ("Poista pysyvästi"):
-                                                ("ok")
-                                        }
-                                        napin_funktio={
-                                            (async () => {
-                                                try {
-                                                    await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged)
-                                                        .then(tiedot => {
-                                                            console.log(tiedot)
-                                                            // Tieto kursseista mihin tentti on liitettynä.
-                                                            let kurssi_id_string = ""
-                                                            let liitos = false
-                                                            if (tiedot.liitokset.kurssi_id.length > 0) {
-                                                                liitos = true
-                                                                if (tiedot.liitokset.kurssi_id.length === 1) {
-                                                                    kurssi_id_string = "Tentti on liitetty kurssiin " +
-                                                                        tiedot.liitokset.kurssi_id[0] + "."
-                                                                } else {
-                                                                    kurssi_id_string = "Tentti on liitetty kursseihin "
-                                                                    tiedot.liitokset.kurssi_id.map((id, index) => {
-                                                                        if (index === tiedot.liitokset.kurssi_id.length - 1) {
-                                                                            kurssi_id_string += id + "."
-                                                                        } else if (index === tiedot.liitokset.kurssi_id.length - 2) {
-                                                                            kurssi_id_string += id + " ja "
-                                                                        } else {
-                                                                            kurssi_id_string += id + ", "
-                                                                        }
-                                                                    })
-                                                                }
-                                                            } else {
-                                                                kurssi_id_string = "Tentti ei ole millään kurssilla."
-                                                            }
-                                                            // Tieto kysymyksistä mihin tentti on liitettynä.
-                                                            let kysymys_id_string = ""
-                                                            if (tiedot.liitokset.kysymys_id.length > 0) {
-                                                                liitos = true
-                                                                if (tiedot.liitokset.kysymys_id.length === 1) {
-                                                                    kysymys_id_string = "Se on myös liitetty kysymykseen " +
-                                                                        tiedot.liitokset.kysymys_id[0] + "."
-                                                                } else {
-                                                                    kysymys_id_string = "Se on myös liitetty kysymyksiin "
-                                                                    tiedot.liitokset.kysymys_id.map((id, index) => {
-                                                                        if (index === tiedot.liitokset.kysymys_id.length - 1) {
-                                                                            kysymys_id_string += id + "."
-                                                                        } else if (index === tiedot.liitokset.kysymys_id.length - 2) {
-                                                                            kysymys_id_string += id + " ja "
-                                                                        } else {
-                                                                            kysymys_id_string += id + ", "
-                                                                        }
-                                                                    })
-                                                                }
-                                                            } else {
-                                                                kysymys_id_string = "Siihen ei ole liitetty yhtään kysymystä."
-                                                            }
-                                                            // tarkistetaan onko oikeasti poistettu
-                                                            let poistettu_teksti = ""
-                                                            if (tiedot.liitokset.poistettu) {
-                                                                poistettu_teksti = "Tentti voitiin poistaa tietokannasta."
-                                                            } else {
-                                                                if (liitos) {
-                                                                    poistettu_teksti = "Tämän vuoksi tenttiä ei voitu poistaa tietokannasta."
-                                                                } else {
-                                                                    poistettu_teksti = "Se on kuitenkin liitettynä mm. käyttäjiin, joten sitä ei voida poistaa (backendistä puuttuu tähän tällä hetkellä logiikka)."
-                                                                }
-                                                            }
-
-                                                            setExamDeleteResult(kurssi_id_string + " " + kysymys_id_string + " " + poistettu_teksti)
-                                                        })
-
-                                                    /* setCurrentExamIndex(-1) */
-                                                } catch (err) {
-                                                    console.log(err)
-                                                    setExamDeleteResult(err)
-                                                }
-                                            })
-                                        }
-                                    />
-                                </h2>
-                            </>)}
+                                        muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, examName)
+                                    }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
+                                </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
+                            </h2>
+                            <DeleteExamDialog
+                                /* tentin poistonappi */
+                                currentExamIndex={currentExamIndex}
+                                setCurrentExamIndex={setCurrentExamIndex}
+                                currentDatabaseExamIdChanged={currentDatabaseExamIdChanged}
+                            />
 
                             {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
                             {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}

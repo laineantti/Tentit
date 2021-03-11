@@ -70,7 +70,7 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
                 tentit_string = path + "oikeus_muokata_tenttia/" + currentUser
             }
         } else {
-            console.log("User-sivulla voit nähdä vain omia tenttejä.")
+            console.log("User-sivulla voit nähdä vain tilaamiasi tenttejä. Luomasi tentit näet vain Admin-sivulla (et täällä!).")
             tentit_string = path + "kayttajan_tentit/" + currentUser
         }
         let tentit_data = await axios.get(tentit_string, headers)
