@@ -128,7 +128,6 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                 })
         } catch (err) {
             console.log(err)
-            setExamDeleteResult(err)
         }
     }
 
