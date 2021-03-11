@@ -25,6 +25,9 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
     }
 
     const allCorrect = (cardChoisesArray) => {
+        cardChoisesArray.forEach((choise, i) =>
+            (choise.oikea_vastaus === null) && (cardChoisesArray[i].oikea_vastaus = false)
+        )
         return (cardChoisesArray.filter(choise => choise.vastaus
             === choise.oikea_vastaus).length === cardChoisesArray.length)
     }
@@ -71,8 +74,8 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <p className="label" style={{ whiteSpace: "pre-wrap" }}> 
-                                                    <CodeComponent questionString={card.lause}/>
+                                                <p className="label" style={{ whiteSpace: "pre-wrap" }}>
+                                                    <CodeComponent questionString={card.lause} />
                                                 </p>
                                                 {Object.values(card.vaihtoehdot).map((listItem, listItemIndex) => (
                                                     <ListItem key={uuid()}>
