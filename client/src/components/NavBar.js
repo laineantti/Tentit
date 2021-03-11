@@ -1,6 +1,7 @@
 import { AppBar, Toolbar, Typography, IconButton, MenuItem, Menu } from '@material-ui/core'
 import AccountCircle from '@material-ui/icons/AccountCircle'
 import EditIcon from '@material-ui/icons/Edit'
+import { Link } from 'react-router-dom';
 import { useStyles, MenuButton } from './Style'
 import { strings } from './Locale'
 import { React, useState, useContext, useEffect } from 'react'
@@ -11,12 +12,12 @@ export function NavBar({
     kirjautunut,setKirjautunut,
     currentUser,setCurrentUser,
     currentUserName,setCurrentUserName,
-    currentExamIndex,setCurrentExamIndex
+    currentExamId,setCurrentExamId,
+    currentExamIndex,setCurrentExamIndex,
+    examEdit,setExamEdit
 }) {
     const classes = useStyles()
-
-    const { state, dispatch } = useContext(store)
-    const [examEdit, setExamEdit] = useState(false); 
+    const { state, dispatch } = useContext(store) 
     const [anchorEl, setAnchorEl] = useState(null);
     const isOpen = Boolean(anchorEl);
     const handleMenu = (event) => {
@@ -39,18 +40,25 @@ export function NavBar({
                                 if (window.location.pathname==="/admin" || window.location.pathname==="/user") {
                                     if (currentExamIndex >=0) {
                                         setCurrentExamIndex(-1)
+                                        setCurrentExamId(-1)
                                     }
                                 } else {
                                     window.location.pathname="/user"
-                                }}                               
+                                    // if (examEdit) {
+                                    //     window.location.pathname="/admin"
+                                    // } else {
+                                    //     window.location.pathname="/user"
+                                    // }
+                                 }
+                            }                               
                             }>{strings.tentit}</MenuButton>
                             {/* {window.location.pathname==="/admin"?
                                 <MenuButton name="tentit" href="/admin">{strings.tentit}</MenuButton>
                             :
                                 <MenuButton name="tentit" href="/user">{strings.tentit}</MenuButton>
                             } */}
-                            <MenuButton name="tilastot" href="/stats">{strings.tilastot}</MenuButton>
-                            <MenuButton name="tiedostonlahetys" href="/upload">{strings.tiedostonlahetys}</MenuButton>
+                            <Link style={{ textDecoration: 'none' }} to="/stats" ><MenuButton name="tilastot">{strings.tilastot}</MenuButton></Link>
+                            <Link style={{ textDecoration: 'none' }} to="/upload"><MenuButton name="tiedostonlahetys">{strings.tiedostonlahetys}</MenuButton></Link>
                             <MenuButton name="tietoa" target="_blank" href="https://www.youtube.com/watch?v=sAqnNWUD79Q">
                                 {strings.tietoa}
                             </MenuButton>
@@ -59,12 +67,16 @@ export function NavBar({
                         <MenuButton name="admin" href="/admin" style={{ backgroundColor: "white", color: "red" }}>{strings.yllapitaja}</MenuButton> */}
                         {/* <MenuButton name="kieli" onClick={() => vaihdetaanKieli()}>{strings.kieli + "(" + strings.getLanguage() + ")"}</MenuButton> */}
                         { window.location.pathname==="/admin"? 
-                            <IconButton color='secondary' href="/user" onClick={() => {setExamEdit(!examEdit)}}>
-                                <EditIcon/>
-                            </IconButton> : 
-                            <IconButton color='inherit' href="/admin" onClick={() => {setExamEdit(!examEdit)}} >
-                                <EditIcon/>
-                            </IconButton>} 
+                            <Link style={{ textDecoration: 'none' }} to="/user" >
+                                <IconButton color='secondary' onClick={() => {
+                                    setExamEdit(!examEdit)}}><EditIcon/>
+                                </IconButton>
+                            </Link> :
+                            <Link style={{ textDecoration: 'none' }} to="/admin" >
+                                <IconButton color='inherit' onClick={() => {
+                                    setExamEdit(!examEdit)}}><EditIcon/>
+                                </IconButton>
+                            </Link>} 
                         <IconButton aria-label="account of current user"
                                 aria-controls="menu-appbar"
                                 aria-haspopup="true" 

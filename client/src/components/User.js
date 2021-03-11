@@ -3,7 +3,7 @@ import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 import {
     Card, CardContent, CardMedia, Container, Button,
-    List, ListItem, Box, Checkbox, CssBaseline
+    List, ListItem, Box, Checkbox, CssBaseline, emphasize
 } from '@material-ui/core'
 import { strings } from './Locale'
 import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
@@ -12,11 +12,10 @@ import { store } from './store.js'
 import { NavBar } from './NavBar'
 
 
-function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
+function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
+    currentUserName,setCurrentUserName,currentExamId,setCurrentExamId,currentExamIndex,setCurrentExamIndex,examEdit,setExamEdit}) {
     const { state, dispatch } = useContext(store) 
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
-    const [currentExamIndex, setCurrentExamIndex] = useState(-1)
-
     const [currentCourse, setCurrentCourse] = useState(1)
     const classes = useStyles()
 
@@ -39,18 +38,30 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserN
         }
     }, [currentUser])           // tekee toisen kierroksen kun käyttäjän arvo asetettu
 
+    const idToIndex = (currentExamId) => {
+        if (currentExamId!==-1){
+            state.map((exam,index)=>{
+                if(exam.id===currentExamId){
+                    setCurrentExamIndex(index)
+                    console.log("ExamIndex löytyi!")
+                } else {
+                    setCurrentExamIndex(-1)
+                    console.log("ExamIndexiä ei löytynyt!")
+                }                
+            })
+        } else {
+            setCurrentExamIndex(-1)
+            console.log("Id:tä ei ole")
+        }
+    }
 
     return (
         <>
-        <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}
-                currentUser={currentUser} setCurrentUser={setCurrentUser} 
-                currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}
-                currentExamIndex={currentExamIndex} setCurrentExamIndex={setCurrentExamIndex}/> 
         <Box>
             <CssBaseline />
             <Container key="container1_user" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
                 component="main">
-
+                {idToIndex()}
                 {currentExamIndex >= 0 ?
                     (
                         <>
@@ -102,7 +113,9 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserN
                 : (
                 <>
                 {Object.values(state).map((exam, examIndex) =>
-                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => currentExamIndexChanged(examIndex)}>
+                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
+                                currentExamIndexChanged(examIndex)
+                                setCurrentExamId(examIndex)}}>
                         {exam.nimi}
                     </ExamButton>
                 )}

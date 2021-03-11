@@ -9,7 +9,6 @@ import { store } from './store.js'
 
 export function NavBarLogin() {
     const classes = useStyles()
-
     const { state, dispatch } = useContext(store)
  
     strings.setLanguage(strings.getInterfaceLanguage())

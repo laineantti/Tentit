@@ -7,13 +7,17 @@ import Upload from './Upload'
 import Register from './Register'
 import Login from './Login'
 import { NavBar } from './NavBar'
+import { NavBarLogin } from './NavBarLogin'
 import { Route, Switch/* , Redirect */ } from 'react-router-dom'
-import {autentikoitu} from './helpers'
+import { autentikoitu } from './helpers'
 
 export const Routes = () => {
     const [kirjautunut, setKirjautunut] = useState(false)
     const [currentUser, setCurrentUser] = useState("")
     const [currentUserName, setCurrentUserName] = useState("")
+    const [currentExamIndex,setCurrentExamIndex] = useState(-1)
+    const [currentExamId, setCurrentExamId] = useState(-1)
+    const [examEdit,setExamEdit] = useState(false)
 
 
     // autentikoidun paluuarvo on joko token tai false
@@ -30,7 +34,14 @@ export const Routes = () => {
 
     return (
         <div>
-            {kirjautunut ? 
+            {kirjautunut ?
+                <>
+                <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}
+                currentUser={currentUser} setCurrentUser={setCurrentUser} 
+                currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}
+                currentExamId={currentExamId} setCurrentExamId={setCurrentExamId}
+                currentExamIndex={currentExamIndex} setCurrentExamIndex={setCurrentExamIndex} 
+                examEdit={examEdit} setExamEdit={setExamEdit}/>
                 <Switch>
                     {/* <Route exact path="/login">
                         <User />
@@ -42,7 +53,12 @@ export const Routes = () => {
                         <User />
                     </Route> */}
                     <Route exact path="/admin">
-                        <Admin kirjautunut={kirjautunut} setKirjautunut={setKirjautunut} currentUser={currentUser} setCurrentUser={setCurrentUser} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
+                        <Admin kirjautunut={kirjautunut} setKirjautunut={setKirjautunut} 
+                        currentUser={currentUser} setCurrentUser={setCurrentUser} 
+                        currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}
+                        currentExamId={currentExamId} setCurrentExamId={setCurrentExamId}
+                        currentExamIndex={currentExamIndex} setCurrentExamIndex={setCurrentExamIndex} 
+                        />
                     </Route>
                     <Route exact path="/stats">
                         <Stats />
@@ -51,10 +67,17 @@ export const Routes = () => {
                         <Upload />
                     </Route>
                     <Route exact path="*">
-                        <User kirjautunut={kirjautunut} setKirjautunut={setKirjautunut} currentUser={currentUser} setCurrentUser={setCurrentUser} currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}/>
+                        <User kirjautunut={kirjautunut} setKirjautunut={setKirjautunut} 
+                        currentUser={currentUser} setCurrentUser={setCurrentUser} 
+                        currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}
+                        currentExamId={currentExamId} setCurrentExamId={setCurrentExamId}
+                        currentExamIndex={currentExamIndex} setCurrentExamIndex={setCurrentExamIndex} 
+                        />
                     </Route>
                 </Switch>
-                : 
+                </>
+                :
+                <>
                 <Switch>
                     <Route exact path="/register">
                         <Register />
@@ -69,6 +92,7 @@ export const Routes = () => {
                         <Login kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>
                     </Route> */}
                 </Switch>
+                </>
             }
         </div>
     )

@@ -28,12 +28,13 @@ import {
 import CodeComponent from './CodeComponent'
 import { NavBar } from './NavBar'
 
-function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserName,setCurrentUserName}) {
+function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
+    currentUserName,setCurrentUserName,currentExamId,setCurrentExamId,currentExamIndex,setCurrentExamIndex,examEdit,setExamEdit}) {
     const { state, dispatch } = useContext(store)
     // const storeContext = useContext(store)
     // const { state } = storeContext
     // const { dispatch } = storeContext
-    const [currentExamIndex, setCurrentExamIndex] = useState(-1)
+    
     const [currentDatabaseExamIdChanged, setCurrentDatabaseExamIdChanged] = useState(-1)
     const [newExamId, setNewExamId] = useState(-1)
     const [newCardId, setNewCardId] = useState(-1)
@@ -52,10 +53,6 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserN
 
     return (
         <>
-        <NavBar kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}
-                 currentUser={currentUser} setCurrentUser={setCurrentUser} 
-                 currentUserName={currentUserName} setCurrentUserName={setCurrentUserName}
-                 currentExamIndex={currentExamIndex} setCurrentExamIndex={setCurrentExamIndex}/> 
         <Box>
             <CssBaseline />
             <Container key="container1_admin" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
@@ -237,6 +234,7 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,currentUserN
                         setCurrentExamIndex(examIndex)
                         if (exam.id) {
                             setCurrentDatabaseExamIdChanged(exam.id)
+                            setCurrentExamId(exam.id)
                             setExamName(exam.nimi)
                         } else {
                             setCurrentDatabaseExamIdChanged(newExamId)
