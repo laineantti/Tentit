@@ -628,89 +628,192 @@ app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
 
 
 // poista tentti
-app.delete('/poista_tentti/:tentti_id', (req, response, next) => {
-  try {
-    let tiedot_poistettavasta_tentista = {
-      poistettu: false,
-      liitokset: {
-        kurssi_id: [],
-        kysymys_id: [],
-        kayttaja_id: []
-      }
+app.delete('/poista_tentti/:tentti_id/:voimalla', (req, response, next) => {
+  // poistoa tekevä käyttäjä:
+  const userId = response.authentication.userId
+  // tehdäänkö poistoa "väkisin/voimalla"
+  // muunnetaan string -> boolean
+  let voimalla = (req.params.voimalla === 'true')
+  
+  // tarkistetaan onko käyttäjä admin
+  db.query('SELECT * FROM kayttaja WHERE id = $1', [userId], (err, res) => {
+    let admin = false
+    if (res.rows[0].rooli === 'admin') {
+      admin = true
     }
-    let saa_poistaa = true
-    // tarkistetaan onko tentti linkattu kurssiin
-    db.query("SELECT * FROM kurssin_tentit WHERE tentti_id = $1 ORDER BY id",
-      [req.params.tentti_id],
-      (err, res) => {
-        if (err) { return next(err) }
-        // jos kursseihin liitoksia; tallennetaan tietoihin kurssi_id:t
-        if (res.rows.length > 0) {
-          saa_poistaa = false
-          res.rows.map((row, i) => {
-            tiedot_poistettavasta_tentista.liitokset.kurssi_id[i] = row.kurssi_id
-          })
+    try {
+      let tiedot_poistettavasta_tentista = {
+        poistettu: false,
+        admin: admin,
+        liitokset: {
+          kurssi_id: [],
+          kysymys_id: [],
+          kayttaja_id_luoja: [],
+          kayttaja_id_tilaaja: [],
+          kayttaja_id_vastaaja: []
         }
-        // tarkistetaan onko tentti linkattu kysymykseen
-        db.query("SELECT * FROM tentin_kysymykset WHERE tentti_id = $1 ORDER BY id",
-          [req.params.tentti_id],
-          (err, res) => {
-            if (err) { return next(err) }
-            // jos kursseihin liitoksia; tallennetaan tietoihin kurssi_id:t
-            if (res.rows.length > 0) {
-              saa_poistaa = false
+      }
+      let saa_poistaa = false
+      // tarkistetaan onko tentti linkattu kurssiin
+      db.query("SELECT * FROM kurssin_tentit WHERE tentti_id = $1 ORDER BY id",
+        [req.params.tentti_id],
+        (err, res) => {
+          if (err) { return next(err) }
+          // jos kursseihin liitoksia; tallennetaan tietoihin kurssi_id:t
+          if (res.rows.length > 0) {
+            if (voimalla) {
+              saa_poistaa = true
+              // poistetaan tentin liitos kurssin_tentit-taulusta
+              db.query("DELETE FROM kurssin_tentit WHERE tentti_id = $1",
+                [req.params.tentti_id],
+                (err) => {
+                  if (err) { return next(err) }
+                }
+              )
+            } else {
               res.rows.map((row, i) => {
-                tiedot_poistettavasta_tentista.liitokset.kysymys_id[i] = row.kysymys_id
+                tiedot_poistettavasta_tentista.liitokset.kurssi_id.push(row.kurssi_id)
               })
             }
-            // tarkistetaan onko tentti linkattu käyttäjään
-            db.query("SELECT * FROM kayttajan_tentit WHERE tentti_id = $1 ORDER BY id",
-              [req.params.tentti_id],
-              (err, res) => {
-                if (err) { return next(err) }
-                // poistetaan käyttäjän liitos ensin
-                if (res.rows.length > 0) {
-                  // poistetaan tentin liitos kayttajan_tentit-taulusta
-                  db.query("DELETE FROM kayttajan_tentit WHERE tentti_id = $1",
+          }
+          // tarkistetaan onko tentti linkattu kysymykseen
+          db.query("SELECT * FROM tentin_kysymykset WHERE tentti_id = $1 ORDER BY id",
+            [req.params.tentti_id],
+            (err, res) => {
+              if (err) { return next(err) }
+              // jos kysymyksiin liitoksia; tallennetaan tietoihin kysymys_id:t
+              if (res.rows.length > 0) {
+                if (voimalla) {
+                  saa_poistaa = true
+                  // poistetaan tentin liitos tentin_kysymykset-taulusta
+                  db.query("DELETE FROM tentin_kysymykset WHERE tentti_id = $1",
                     [req.params.tentti_id],
                     (err) => {
                       if (err) { return next(err) }
-                    })
+                    }
+                  )
+                } else {
+                  res.rows.map((row, i) => {
+                    tiedot_poistettavasta_tentista.liitokset.kysymys_id.push(row.kysymys_id)
+                  })
                 }
-                // jos tenttiä ei ole linkattu, se voidaan poistaa
-                if (saa_poistaa) {
-                  // poistetaan tentin liitos oikeus_muokata_tenttia-taulusta
-                  db.query("DELETE FROM oikeus_muokata_tenttia WHERE tentti_id = $1",
-                    [req.params.tentti_id],
-                    (err) => {
-                      if (err) { return next(err) }
-                      // tentti poistetaan lopullisesti
-                      db.query("DELETE FROM tentti WHERE id = $1",
+              }
+              // tarkistetaan onko tentin "tilannut" joku käyttäjä (onko liitos kayttajan_tentit)
+              db.query("SELECT * FROM kayttajan_tentit WHERE tentti_id = $1 ORDER BY id",
+                [req.params.tentti_id],
+                (err, res) => {
+                  if (err) { return next(err) }
+                  // poistetaan käyttäjän liitos ensin
+                  if (res.rows.length > 0) {
+                    if (voimalla) {
+                      saa_poistaa = true
+                      // poistetaan tentin liitos kayttajan_tentit-taulusta
+                      db.query("DELETE FROM kayttajan_tentit WHERE tentti_id = $1",
                         [req.params.tentti_id],
                         (err) => {
-                          if (err) {
-                            return next(err)
+                          if (err) { return next(err) }
+                        })
+                    } else {
+                      res.rows.map((row) => {
+                        tiedot_poistettavasta_tentista.liitokset.kayttaja_id_tilaaja.push(row.kayttaja_id)
+                      })
+                    }
+                  }
+
+                  // tarkistetaan onko tentti linkattu käyttäjän vastauksiin
+                  db.query("SELECT * FROM kayttajan_vastaus WHERE tentti_id = $1 ORDER BY id",
+                    [req.params.tentti_id],
+                    (err, res) => {
+                      if (err) { return next(err) }
+                      // jos jonkun käyttäjän vastauksiin liitoksia; tallennetaan tietoihin kayttaja_id:t
+                      if (res.rows.length > 0) {
+                        if (voimalla) {
+                          saa_poistaa = true
+                          // poistetaan tentin liitos kayttajan_vastaus-taulusta
+                          db.query("DELETE FROM kayttajan_vastaus WHERE tentti_id = $1",
+                            [req.params.tentti_id],
+                            (err) => {
+                              if (err) { return next(err) }
+                            }
+                          )
+                        } else {
+                          res.rows.map((row, i) => {
+                            // tarkistetaan onko käyttäjä jo vastannut johonkin vaihtoehtoon,
+                            // että samaa käyttäjää ei lisätä taulukkoon uudestaan turhaan
+                            let id_on_jo_taulukossa = false
+                            // käydään map:lla läpi "muistiinpanot" joissa on vastausten käyttäjät, että
+                            // voidaan verrata onko siellä jo sama käyttäjä yhteen kertaan (ei haluta muistiin
+                            // kuin ainoastaan jokainen yksittäinen eri käyttäjä)
+                            tiedot_poistettavasta_tentista.liitokset.kayttaja_id_vastaaja.map((kayttaja_id) => {
+                              // jos vastannut käyttäjä on sama kuin "muistiinpanoissa" oleva käyttäjä
+                              if (row.kayttaja_id === kayttaja_id) {
+                                // käyttäjä on tietenkin jo siellä joten halutaan pois tästä loopista ja
+                                // siirtyä seuraavaan vastaukseen tarkistamaan sitä käyttäjää
+                                id_on_jo_taulukossa = true
+                              }
+                            })
+                            // jos käyttäjä ei ollut ennestään "muistiinpanoissa", lisätään se sinne
+                            if (id_on_jo_taulukossa !== true) {
+                              tiedot_poistettavasta_tentista.liitokset.kayttaja_id_vastaaja.push(row.kayttaja_id)
+                            }
+                          })
+                        }
+                      }
+
+                      // tarkistetaan onko tentti linkattu sen luojaan (käyttäjään)
+                      db.query("SELECT * FROM oikeus_muokata_tenttia WHERE tentti_id = $1 ORDER BY id",
+                        [req.params.tentti_id],
+                        (err, res) => {
+                          if (err) { return next(err) }
+                          // jos johonkin käyttäjään liitoksia; tallennetaan tietoihin kayttaja_id:t
+                          if (res.rows.length > 0) {
+                            // tentti (ja sen oikeus_muokata_tenttia-liitos) poistetaan suoraan,
+                            // jos tentillä ei ole mitään muuta kuin nimi ja luoja (käyttäjä)
+                            if (saa_poistaa || voimalla) {
+                              // poistetaan tentin liitos oikeus_muokata_tenttia-taulusta
+                              db.query("DELETE FROM oikeus_muokata_tenttia WHERE tentti_id = $1",
+                                [req.params.tentti_id],
+                                (err) => {
+                                  if (err) { return next(err) }
+                                })
+                            } else {
+                              res.rows.map((row, i) => {
+                                tiedot_poistettavasta_tentista.liitokset.kayttaja_id_luoja[i] = row.kayttaja_id
+                              })
+                            }
+                          }
+
+                          // jos tenttiä ei ole linkattu, se voidaan poistaa
+                          if (saa_poistaa || voimalla) {
+                            // tentti poistetaan lopullisesti (edelleen olettaen, että liitoksia ei (enää) ole)
+                            db.query("DELETE FROM tentti WHERE id = $1",
+                              [req.params.tentti_id],
+                              (err) => {
+                                if (err) {
+                                  return next(err)
+                                } else {
+                                  tiedot_poistettavasta_tentista.poistettu = true
+                                  // palautetaan tentin tiedot
+                                  response.status(201).send(tiedot_poistettavasta_tentista)
+                                  /* console.log(tiedot_poistettavasta_tentista) */
+                                }
+                              })
                           } else {
-                            tiedot_poistettavasta_tentista.poistettu = true
                             // palautetaan tentin tiedot
                             response.status(201).send(tiedot_poistettavasta_tentista)
                             /* console.log(tiedot_poistettavasta_tentista) */
                           }
                         })
                     })
-                } else {
-                  // palautetaan tentin tiedot
-                  response.status(201).send(tiedot_poistettavasta_tentista)
-                  /* console.log(tiedot_poistettavasta_tentista) */
-                }
-              })
-          })
-      }
-    )
-  }
-  catch (err) {
-    response.send(err)
-  }
+                })
+            }
+          )
+        })
+    }
+    catch (err) {
+      response.send(err)
+    }
+  })
 })
 
 // palauttaa tentin luojan id, tentin id perusteella

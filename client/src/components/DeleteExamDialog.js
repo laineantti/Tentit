@@ -56,17 +56,89 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
     const { state, dispatch } = useContext(store)
     const [examDeleteResult, setExamDeleteResult] = useState("")
     const [deleting, setDeleting] = useState(true)
+    const [force, setForce] = useState(false)
 
     const [open, setOpen] = useState(false)
 
-    async function tentinPoistoLogiikka() {
+    async function tentinPoistoLogiikka(voimalla) {
         try {
-            await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged)
+            await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged, voimalla)
                 .then(tiedot => {
                     console.log(tiedot)
+
+                    // Tieto kayttaja-liitoksista mihin tentti on liitettynä.
+                    let kayttaja_string = ""
+                    let kayttaja_id_luoja_string = ""
+                    let kayttaja_id_tilaaja_string = ""
+                    let kayttaja_id_vastaaja_string = ""
+                    let liitos = false
+
+                    // tentin luoja:
+                    if (!tiedot.poistettu && tiedot.liitokset.kayttaja_id_luoja.length > 0) {
+                        liitos = true
+                        let loppuosa = " luoma."
+                        if (tiedot.liitokset.kayttaja_id_luoja.length === 1) {
+                            kayttaja_id_luoja_string = "Tämä tentti on käyttäjän " +
+                                tiedot.liitokset.kayttaja_id_luoja[0] + loppuosa
+                        } else {
+                            kayttaja_id_luoja_string = "Tätä tenttiä on muokannut käyttäjät "
+                            tiedot.liitokset.kayttaja_id_luoja.forEach((value, i) => {
+                                if (i === tiedot.liitokset.kayttaja_id_luoja.length - 1) {
+                                    kayttaja_id_luoja_string += value + loppuosa
+                                } else if (i === tiedot.liitokset.kayttaja_id_luoja.length - 2) {
+                                    kayttaja_id_luoja_string += value + " ja "
+                                } else {
+                                    kayttaja_id_luoja_string += value + ", "
+                                }
+                            })
+                        }
+                        kayttaja_string += kayttaja_id_luoja_string
+                    }
+                    // tentin tilaaja:
+                    if (!tiedot.poistettu && tiedot.liitokset.kayttaja_id_tilaaja.length > 0) {
+                        liitos = true
+                        let loppuosa = "."
+                        if (tiedot.liitokset.kayttaja_id_tilaaja.length === 1) {
+                            kayttaja_id_tilaaja_string = "Tentin on tilannut käyttäjä " +
+                                tiedot.liitokset.kayttaja_id_tilaaja[0] + loppuosa
+                        } else {
+                            kayttaja_id_tilaaja_string = "Tentin on tilannut käyttäjät "
+                            tiedot.liitokset.kayttaja_id_tilaaja.forEach((value, i) => {
+                                if (i === tiedot.liitokset.kayttaja_id_tilaaja.length - 1) {
+                                    kayttaja_id_tilaaja_string += value + loppuosa
+                                } else if (i === tiedot.liitokset.kayttaja_id_tilaaja.length - 2) {
+                                    kayttaja_id_tilaaja_string += value + " ja "
+                                } else {
+                                    kayttaja_id_tilaaja_string += value + ", "
+                                }
+                            })
+                        }
+                        kayttaja_string += " " + kayttaja_id_tilaaja_string
+                    }
+                    // tentin vastaaja:
+                    if (!tiedot.poistettu && tiedot.liitokset.kayttaja_id_vastaaja.length > 0) {
+                        liitos = true
+                        let loppuosa = "."
+                        if (tiedot.liitokset.kayttaja_id_vastaaja.length === 1) {
+                            kayttaja_id_vastaaja_string = "Tenttiin on vastannut käyttäjä " +
+                                tiedot.liitokset.kayttaja_id_vastaaja[0] + loppuosa
+                        } else {
+                            kayttaja_id_vastaaja_string = "Tenttiin on vastannut käyttäjät "
+                            tiedot.liitokset.kayttaja_id_vastaaja.forEach((value, i) => {
+                                if (i === tiedot.liitokset.kayttaja_id_vastaaja.length - 1) {
+                                    kayttaja_id_vastaaja_string += value + loppuosa
+                                } else if (i === tiedot.liitokset.kayttaja_id_vastaaja.length - 2) {
+                                    kayttaja_id_vastaaja_string += value + " ja "
+                                } else {
+                                    kayttaja_id_vastaaja_string += value + ", "
+                                }
+                            })
+                        }
+                        kayttaja_string += " " + kayttaja_id_vastaaja_string
+                    }
+
                     // Tieto kursseista mihin tentti on liitettynä.
                     let kurssi_id_string = ""
-                    let liitos = false
                     if (!tiedot.poistettu && tiedot.liitokset.kurssi_id.length > 0) {
                         liitos = true
                         if (tiedot.liitokset.kurssi_id.length === 1) {
@@ -118,13 +190,21 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                         setCurrentExamIndex(-1)
                     } else {
                         if (liitos) {
-                            poistoviesti = "Tämän vuoksi tenttiä ei voitu poistaa tietokannasta."
+                            poistoviesti = "Tenttiä ei poistettu, koska muut käyttävät sitä. Voit siitä huolimatta halutessasi poistaa sen LOPULLISESTI."
                         } else {
                             poistoviesti = "Tenttiä ei voitu juuri nyt poistaa. Yritä myöhemmin uudelleen."
                         }
                     }
-                    setExamDeleteResult(kurssi_id_string + " " + kysymys_id_string + " " + poistoviesti)
-                    setDeleting(false)
+
+                    if (force === false) {
+                        setExamDeleteResult(kayttaja_string + " " + kurssi_id_string
+                            + " " + kysymys_id_string + " " + poistoviesti)
+                        setForce(true)
+                    } else {
+                        setExamDeleteResult(poistoviesti)
+                        setForce(false)
+                        setDeleting(false)
+                    }
                 })
         } catch (err) {
             console.log(err)
@@ -134,6 +214,7 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
     const handleClickOpen = () => {
         setExamDeleteResult("")
         setDeleting(true)
+        setForce(false)
         setOpen(true)
     }
     const handleClose = () => {
@@ -161,14 +242,24 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                 <DialogActions>
                     <Button autoFocus onClick={() => {
                         deleting ?
-                            tentinPoistoLogiikka() :
-                            handleClose()
+                            tentinPoistoLogiikka(force)
+                            : handleClose()
 
-                    }} color="primary">
+                    }} color={deleting?"secondary":"default"}>
                         {
                             deleting ?
-                                ("Poista pysyvästi") :
-                                ("ok")
+                                force ?
+                                    ("POISTA LOPULLISESTI") :
+                                    ("Poista")
+                                : ("ok")
+                        }
+                    </Button>
+                    <Button autoFocus onClick={() => {
+                        handleClose()
+
+                    }} color="default">
+                        {
+                            ("Peruuta")
                         }
                     </Button>
                 </DialogActions>
