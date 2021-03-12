@@ -9,20 +9,14 @@ import { strings } from './Locale'
 import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 import { store } from './store.js'
-import { NavBar } from './NavBar'
+import { idToIndex } from './helpers'
 
-
-function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
-    currentUserName,setCurrentUserName,currentExamId,setCurrentExamId,currentExamIndex,setCurrentExamIndex,examEdit,setExamEdit}) {
+function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCurrentExamId,
+    currentExamIndex,setCurrentExamIndex}) {
     const { state, dispatch } = useContext(store) 
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
     const [currentCourse, setCurrentCourse] = useState(1)
     const classes = useStyles()
-
-    const currentExamIndexChanged = (value) => {
-        setCurrentExamIndex(value)
-        setShowCorrectAnswers(false)
-    }
 
     const allCorrect = (cardChoisesArray) => {
         cardChoisesArray.forEach((choise, i) =>
@@ -41,22 +35,6 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
         }
     }, [currentUser])           // tekee toisen kierroksen kun käyttäjän arvo asetettu
 
-    const idToIndex = (currentExamId) => {
-        if (currentExamId!==-1){
-            state.map((exam,index)=>{
-                if(exam.id===currentExamId){
-                    setCurrentExamIndex(index)
-                    console.log("ExamIndex löytyi!")
-                } else {
-                    setCurrentExamIndex(-1)
-                    console.log("ExamIndexiä ei löytynyt!")
-                }                
-            })
-        } else {
-            setCurrentExamIndex(-1)
-            console.log("Id:tä ei ole")
-        }
-    }
 
     return (
         <>
@@ -64,10 +42,13 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
             <CssBaseline />
             <Container key="container1_user" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
                 component="main">
-                {idToIndex()}
-                {currentExamIndex >= 0 ?
-                    (
-                        <>
+                {idToIndex(state,currentExamId,setCurrentExamIndex)}
+                {currentExamIndex >= 0
+                    && state
+                    && state[currentExamIndex]
+                    && state[currentExamIndex].id
+                    && state[currentExamIndex].kysymykset
+                    ? (                        <>
                             <h2>{state[currentExamIndex].nimi}</h2>
                             {Object.values(state[currentExamIndex].kysymykset)
                                 .map((card, cardIndex) =>
@@ -117,8 +98,8 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
                 <>
                 {Object.values(state).map((exam, examIndex) =>
                     <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
-                                currentExamIndexChanged(examIndex)
-                                setCurrentExamId(examIndex)}}>
+                                setCurrentExamIndex(examIndex)
+                                setCurrentExamId(exam.id)}}>
                         {exam.nimi}
                     </ExamButton>
                 )}

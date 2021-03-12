@@ -36,23 +36,21 @@ export function NavBar({
                 <AppBar position="fixed">
                     <Toolbar>
                         <Typography variant="h6" className={classes.title}>
-                            <MenuButton name="tentit" onClick={()=>{
-                                if (window.location.pathname==="/admin" || window.location.pathname==="/user") {
-                                    if (currentExamIndex >=0) {
-                                        setCurrentExamIndex(-1)
-                                        setCurrentExamId(-1)
-                                    }
-                                } else {
-                                    window.location.pathname="/user"
-                                    // if (examEdit) {
-                                    //     window.location.pathname="/admin"
-                                    // } else {
-                                    //     window.location.pathname="/user"
-                                    // }
-                                 }
-                            }                               
-                            }>{strings.tentit}</MenuButton>
-                            {/* {window.location.pathname==="/admin"?
+                            {(examEdit || window.location.pathname==="/admin")?
+                            <Link style={{ textDecoration: 'none' }} to="/admin" ><MenuButton name="tentit" onClick={()=>{
+                                if (currentExamIndex >=0) {
+                                    setCurrentExamIndex(-1)
+                                    setCurrentExamId(-1)
+                                }
+                            }}>{strings.tentit}</MenuButton></Link>
+                            :
+                            <Link style={{ textDecoration: 'none' }} to="/user" ><MenuButton name="tentit" onClick={()=>{
+                                if (currentExamIndex >=0) {
+                                    setCurrentExamIndex(-1)
+                                    setCurrentExamId(-1)
+                                }
+                            }}>{strings.tentit}</MenuButton></Link> }
+                        {/* {window.location.pathname==="/admin"?
                                 <MenuButton name="tentit" href="/admin">{strings.tentit}</MenuButton>
                             :
                                 <MenuButton name="tentit" href="/user">{strings.tentit}</MenuButton>
@@ -66,15 +64,15 @@ export function NavBar({
                         {/* <MenuButton name="user" href="/user" style={{ backgroundColor: "white", color: "blue", marginRight: "10px" }}>{strings.kayttaja}</MenuButton>
                         <MenuButton name="admin" href="/admin" style={{ backgroundColor: "white", color: "red" }}>{strings.yllapitaja}</MenuButton> */}
                         {/* <MenuButton name="kieli" onClick={() => vaihdetaanKieli()}>{strings.kieli + "(" + strings.getLanguage() + ")"}</MenuButton> */}
-                        { window.location.pathname==="/admin"? 
+                        { examEdit || window.location.pathname==="/admin"? 
                             <Link style={{ textDecoration: 'none' }} to="/user" >
                                 <IconButton color='secondary' onClick={() => {
-                                    setExamEdit(!examEdit)}}><EditIcon/>
+                                    setExamEdit(false)}}><EditIcon/>
                                 </IconButton>
                             </Link> :
                             <Link style={{ textDecoration: 'none' }} to="/admin" >
-                                <IconButton color='inherit' onClick={() => {
-                                    setExamEdit(!examEdit)}}><EditIcon/>
+                                <IconButton color="default" onClick={() => {
+                                    setExamEdit(true)}}><EditIcon/>
                                 </IconButton>
                             </Link>} 
                         <IconButton aria-label="account of current user"

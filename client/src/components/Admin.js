@@ -25,10 +25,9 @@ import {
     poistaVaihtoehdonLiitos
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
-import { NavBar } from './NavBar'
+import { idToIndex, hakuId } from './helpers'
 
-function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
-    currentUserName,setCurrentUserName,currentExamId,setCurrentExamId,currentExamIndex,setCurrentExamIndex,examEdit,setExamEdit}) {
+function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCurrentExamId,currentExamIndex,setCurrentExamIndex}) {
     const { state, dispatch } = useContext(store)
     // const storeContext = useContext(store)
     // const { state } = storeContext
@@ -38,7 +37,6 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
     const [newExamId, setNewExamId] = useState(-1)
     const [newCardId, setNewCardId] = useState(-1)
     const [newChoiseId, setNewChoiseId] = useState(-1)
-    const [examName, setExamName] = useState("")
     const classes = useStyles()
 
     useEffect(() => {
@@ -49,41 +47,28 @@ function App({kirjautunut,setKirjautunut,currentUser,setCurrentUser,
         }
     }, [currentUser, newExamId, newCardId, newChoiseId])
 
+
+    const [examName, setExamName] = useState(hakuId(state,currentExamId,currentExamIndex,setCurrentExamIndex))
+
     return (
         <>
         <Box>
             <CssBaseline />
             <Container key="container1_admin" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
                 component="main">
-                {/* {Object.values(state).map((exam, examIndex) =>
-                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
-                        setCurrentExamIndex(examIndex)
-                        if (exam.id) {
-                            setCurrentDatabaseExamIdChanged(exam.id)
-                            setExamName(exam.nimi)
-                        } else {
-                            setCurrentDatabaseExamIdChanged(newExamId)
-                        }
-                    }}>
-                        {exam.nimi}
-                    </ExamButton>
-                )}
-                <IconButton onClick={() => {
-                    setNewExamId(lisaaTentti(dispatch, currentUser))
-                }}>
-                    <Icon>add_circle</Icon>
-                </IconButton> */}
+                {idToIndex(state,currentExamId,setCurrentExamIndex)}
                 {currentExamIndex >= 0
                     && state
                     && state[currentExamIndex]
                     && state[currentExamIndex].id
                     && state[currentExamIndex].kysymykset
+                    && examName
                     ? (
 
                         <>
-                            {/* {setExamName(state[currentExamIndex].nimi)} */}
-                            <h2>
-                                <TextField type="text" value={examName} /*value={state[currentExamIndex].nimi}*/ id={state[currentExamIndex].id}
+                            
+                            <h2> 
+                                <TextField type="text" value={examName} id={state[currentExamIndex].id}
                                     onChange={(event) => {
                                         setExamName(event.target.value)
                                     }}

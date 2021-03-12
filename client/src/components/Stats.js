@@ -4,13 +4,12 @@ import {
 } from '@material-ui/core'
 import HorizontalBarChart from './HorizontalBarChart'
 import DoughnutChart from './DoughnutChart'
-import { NavBar } from './NavBar'
+
 
 function Stats() {
 
     return (
         <>
-        <NavBar/> 
         <Box>
             <CssBaseline />
             <Container key="container1_user" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"

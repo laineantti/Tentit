@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography'
 import FormControl from '@material-ui/core/FormControl'
 import { strings } from './Locale'
 import axios from 'axios'
-import { NavBarLogin } from './NavBarLogin'
+
 
 
 var path = null
@@ -45,7 +45,6 @@ const Login = ({kirjautunut,setKirjautunut}) => {
                 // mistä tallennetaan datasta saatava token localStorageen
                 window.localStorage.setItem('jwtToken', response.data.token);
                 // alert("Kirjautuminen onnistui, tervetuloa "+response.data.sahkoposti+"!")
-                // window.location.pathname="/user"
                 setKirjautunut(true)
             })
         } catch (e) {
@@ -56,7 +55,6 @@ const Login = ({kirjautunut,setKirjautunut}) => {
 
     return (
         <>
-        <NavBarLogin/>
         <div className="container">
             <Typography variant="h2" component="h2" style={{ paddingTop: "60px" }} className="h3 mb-3 font-weight-normal">{strings.kirjaudu}</Typography>
             <Grid container spacing={1}>
