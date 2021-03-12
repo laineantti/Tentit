@@ -3,26 +3,20 @@ import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 import {
     Card, CardContent, CardMedia, Container, Button,
-    List, ListItem, Box, Checkbox, CssBaseline
+    List, ListItem, Box, Checkbox, CssBaseline, emphasize
 } from '@material-ui/core'
 import { strings } from './Locale'
 import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 import { store } from './store.js'
+import { idToIndex } from './helpers'
 
-
-function App({ currentUser, setCurrentUser, currentUserName, setCurrentUserName }) {
-    const { state, dispatch } = useContext(store)
+function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCurrentExamId,
+    currentExamIndex,setCurrentExamIndex}) {
+    const { state, dispatch } = useContext(store) 
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
-    const [currentExamIndex, setCurrentExamIndex] = useState(-1)
-
     const [currentCourse, setCurrentCourse] = useState(1)
     const classes = useStyles()
-
-    const currentExamIndexChanged = (value) => {
-        setCurrentExamIndex(value)
-        setShowCorrectAnswers(false)
-    }
 
     const allCorrect = (cardChoisesArray) => {
         cardChoisesArray.forEach((choise, i) =>
@@ -43,18 +37,18 @@ function App({ currentUser, setCurrentUser, currentUserName, setCurrentUserName 
 
 
     return (
+        <>
         <Box>
             <CssBaseline />
             <Container key="container1_user" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
                 component="main">
-                {Object.values(state).map((exam, examIndex) =>
-                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => currentExamIndexChanged(examIndex)}>
-                        {exam.nimi}
-                    </ExamButton>
-                )}
-                {currentExamIndex >= 0 &&
-                    (
-                        <>
+                {idToIndex(state,currentExamId,setCurrentExamIndex)}
+                {currentExamIndex >= 0
+                    && state
+                    && state[currentExamIndex]
+                    && state[currentExamIndex].id
+                    && state[currentExamIndex].kysymykset
+                    ? (                        <>
                             <h2>{state[currentExamIndex].nimi}</h2>
                             {Object.values(state[currentExamIndex].kysymykset)
                                 .map((card, cardIndex) =>
@@ -100,9 +94,19 @@ function App({ currentUser, setCurrentUser, currentUserName, setCurrentUserName 
                                 )}>{strings.nayta} {strings.vastaukset}</Button>
                         </>
                     )
-                }
+                : (
+                <>
+                {Object.values(state).map((exam, examIndex) =>
+                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
+                                setCurrentExamIndex(examIndex)
+                                setCurrentExamId(exam.id)}}>
+                        {exam.nimi}
+                    </ExamButton>
+                )}
+                </> )}
             </Container>
         </Box>
+    </>
     )
 }
 

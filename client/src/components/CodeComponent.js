@@ -36,7 +36,9 @@ const CodeComponent = ({questionString, background}) => {
     } else {
         return (
             <>
-                {/* {questionString} */}
+            {window.location.pathname!=="/admin" ?
+                questionString 
+            :""}
             </>
         )
     }

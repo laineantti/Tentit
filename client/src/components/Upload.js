@@ -39,6 +39,7 @@ function Upload() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
     return (
+        <>
         <div name="photos" key="photos" style={{ paddingTop: "60px" }} {...getRootProps()}>
             <input {...getInputProps()} />
             {
@@ -47,6 +48,7 @@ function Upload() {
                     <p>Drag 'n' drop some files here, or click to select files</p>
             }
         </div>
+        </>
     )
 }
 export default Upload

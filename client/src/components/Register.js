@@ -72,6 +72,7 @@ const Register = () => {
     }
 
     return (
+        <>
         <div className="container">
             <Typography variant="h2" component="h2" style={{ paddingTop: "60px" }} className="h3 mb-3 font-weight-normal">{strings.rekisteroidy}</Typography>
             <Grid container spacing={1}>
@@ -136,6 +137,7 @@ const Register = () => {
 
             </Grid>
         </div>
+    </>
     )
 }
 export default Register

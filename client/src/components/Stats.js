@@ -5,10 +5,11 @@ import {
 import HorizontalBarChart from './HorizontalBarChart'
 import DoughnutChart from './DoughnutChart'
 
+
 function Stats() {
 
     return (
-
+        <>
         <Box>
             <CssBaseline />
             <Container key="container1_user" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
@@ -25,7 +26,7 @@ function Stats() {
                 </Card>
             </Container>
         </Box>
-
+        </>
     )
 }
 
