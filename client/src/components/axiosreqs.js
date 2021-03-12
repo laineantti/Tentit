@@ -337,12 +337,12 @@ const poistaVaihtoehdonLiitos = async (dispatch, currentExamIndex, vaihtoehto_id
     )
 }
 
-const poistaTentti = async (dispatch, currentExamIndex, tentti_id) => {
+const poistaTentti = async (dispatch, currentExamIndex, tentti_id, voimalla) => {
     let tiedot_poistettavasta_tentista = null
     try {
         let result = await axios({
             method: 'delete',
-            url: `${path}poista_tentti/${tentti_id}`,
+            url: `${path}poista_tentti/${tentti_id}/${voimalla}`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
         tiedot_poistettavasta_tentista = result.data
