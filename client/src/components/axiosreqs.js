@@ -203,6 +203,9 @@ const oikeaValintaMuuttui = async (dispatch, currentExamIndex, kysymys_id, check
 }
 
 const lisaaTentti = async (dispatch, currentUser) => {
+    let body = {
+        
+    }
     try {
         let response = await axios({
             method: 'post',
