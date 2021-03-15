@@ -226,36 +226,43 @@ app.post('/upload', async (req, res) => {
       res.send({
         status: false,
         message: 'No file uploaded'
-      });
+      })
     } else {
-      let data = [];
-
-      // käydään kaikki tiedostot läpi
-      _.forEach(_.keysIn(req.files.photos), (key) => {
-        let photo = req.files.photos[key];
-
-        // siirretään tiedosto uploads-kansioon
-        photo.mv('./uploads/' + photo.name);
-
-        //työnnetään kaikki informaatio
+      let data = []                         // yksittäinen tiedosto ei tule taulukkona
+      if (!Array.isArray(req.files.photos)) { // eli tässä tulee vain yksittäinen tiedosto
+        req.files.photos.mv('./uploads/' + req.files.photos.name)
         data.push({
-          name: photo.name,
-          mimetype: photo.mimetype,
-          size: photo.size
-        });
-      });
+          name: req.files.photos.name,
+          type: req.files.photos.mimetype,
+          size: req.files.photos.size
+        })
+      } else {
+        // käydään kaikki tiedostot läpi
+        _.forEach(_.keysIn(req.files.photos), (key) => {
+          let photo = req.files.photos[key]
 
+          // siirretään tiedosto uploads-kansioon
+          photo.mv('./uploads/' + photo.name)
+
+          //työnnetään kaikki informaatio
+          data.push({
+            name: photo.name,
+            mimetype: photo.mimetype,
+            size: photo.size
+          })
+        })
+      }
       // palautetaan response
       res.send({
         status: true,
         message: 'Files are uploaded',
         data: data
-      });
+      })
     }
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).send(err)
   }
-});
+})
 
 // tehdään uploads-sijainnista staattinen
 app.use(express.static('uploads'));
@@ -634,7 +641,7 @@ app.delete('/poista_tentti/:tentti_id/:voimalla', (req, response, next) => {
   // tehdäänkö poistoa "väkisin/voimalla"
   // muunnetaan string -> boolean
   let voimalla = (req.params.voimalla === 'true')
-  
+
   // tarkistetaan onko käyttäjä admin
   db.query('SELECT * FROM kayttaja WHERE id = $1', [userId], (err, res) => {
     let admin = false
