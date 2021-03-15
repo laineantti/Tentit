@@ -264,8 +264,11 @@ app.post('/upload', async (req, res) => {
   }
 })
 
-// tehdään uploads-sijainnista staattinen
-app.use(express.static('uploads'));
+// tarjotaan /uploads-sijainti ulkomaailmaan (tarvitaaan kuvien jakamiseen)
+// esim. http://localhost:4000/uploads/3FT0OAPBoKw.jpg
+/* app.use(express.static('uploads')) */
+const uploads_directory = path.join(__dirname, 'uploads')
+app.use('/uploads', express.static(uploads_directory))
 
 //----------------------------------------------------------------------------------------------
 // autentikointi, jossa myös kaivetaan käyttäjä id tokenista
