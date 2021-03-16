@@ -229,13 +229,15 @@ app.post('/upload', async (req, res) => {
       })
     } else {
       let data = []                         // yksittäinen tiedosto ei tule taulukkona
+      let tiedostonimet = []
       if (!Array.isArray(req.files.photos)) { // eli tässä tulee vain yksittäinen tiedosto
         req.files.photos.mv('./uploads/' + req.files.photos.name)
         data.push({
           name: req.files.photos.name,
           type: req.files.photos.mimetype,
           size: req.files.photos.size
-        })
+        }) // tallennetaan tiedostonimi sql-queryä varten
+        tiedostonimet.push(req.files.photos.name)
       } else {
         // käydään kaikki tiedostot läpi
         _.forEach(_.keysIn(req.files.photos), (key) => {
@@ -249,9 +251,21 @@ app.post('/upload', async (req, res) => {
             name: photo.name,
             mimetype: photo.mimetype,
             size: photo.size
-          })
+          }) // tallennetaan tiedostonimet sql-queryä varten
+          tiedostonimet.push(photo.name)
         })
       }
+      // lisätään kuvan/kuvien tiedostonimi tietokantaan myöhempää käyttöä varten
+      tiedostonimet.map(tiedostonimi => {
+        db.query("INSERT INTO kuva (tiedostonimi) values ($1)",
+          [tiedostonimi],
+          (err, res) => {
+            if (err) {
+              return next(err)
+            }
+          }
+        )
+      })
       // palautetaan response
       res.send({
         status: true,
@@ -275,6 +289,37 @@ app.use('/uploads', express.static(uploads_directory))
 const isAuthenticated = require('./authentication')
 app.use(isAuthenticated)
 //----------------------------------------------------------------------------------------------
+
+// hae kuva id:n perusteella
+app.get('/kuva/:id', (req, response, next) => {
+  db.query('SELECT * FROM kuva WHERE id = $1 ORDER BY id', [req.params.id], (err, res) => {
+    if (err) {
+      return next(err)
+    }
+    response.send(res.rows[0])
+  })
+})
+
+// otetaan tarvittaessa käyttöön, koska upload-toiminto on
+// kuvien lisäämistä varten
+// lisätään uuden kuvan osoite tietokantaan
+/* app.post('/lisaa_kuva/:tiedostonimi', (req, response, next) => {
+  try {
+    db.query("INSERT INTO kuva (tiedostonimi) values ($1) RETURNING id",
+      [req.params.nimi],
+      (err, res) => {
+        if (err) {
+          return next(err)
+        }
+        response.status(201).send(res.rows[0].id)
+      })
+
+  }
+  catch (err) {
+    response.send(err)
+  }
+}) */
+
 // tarkistetaan onko käyttäjä admin (SAMAN TIEDON SAA ALEMMASTA /kayttaja/)
 /* app.get('/onko_admin/:kayttaja_id', (req, response, next) => {
   db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.kayttaja_id], (err, res) => {
