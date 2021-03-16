@@ -8,6 +8,7 @@ import {
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import DeleteExamDialog from './DeleteExamDialog'
+import { DataGrid } from '@material-ui/data-grid';
 import { store } from './store.js'
 import {
     fetchUser,
@@ -27,6 +28,75 @@ import {
 import CodeComponent from './CodeComponent'
 import { idToIndex, hakuId } from './helpers'
 
+const columns = [
+    { field: 'id', headerName: 'ID', flex: 0.25 },
+    { field: 'lause', headerName: 'Kysymys', flex: 1.5 },
+    { field: 'aihe', headerName: 'Aihealue', flex: 0.75 },
+    // {
+    //   field: 'age',
+    //   headerName: 'Age',
+    //   type: 'number',
+    //   width: 90,
+    // },
+    // {
+    //   field: 'fullName',
+    //   headerName: 'Full name',
+    //   description: 'This column has a value getter and is not sortable.',
+    //   sortable: false,
+    //   width: 160,
+    //   valueGetter: (params) =>
+    //     `${params.getValue('firstName') || ''} ${params.getValue('lastName') || ''}`,
+    // },
+  ];
+  
+  const rows = [
+    { id: 2, lause: 'Onko maa litteä vai pallo?', aihe: 'luonnontieteet' },
+    { id: 3, lause: 'Montako puuta on olemassa?', aihe: 'luonnontieteet' },
+    { id: 4, lause: 'Onko pizzassa yleensä majoneesia?', aihe: 'ravintotieto' },
+    { id: 5, lause: 'Onko herkkusienet hyviä pizzassa?', aihe: 'ravintotieto' },
+    { id: 6, lause: 'Montako planeettaa on olemassa?', aihe: 'tähtitiede' },
+    { id: 7, lause: 'Onko aurinko kuuma?', aihe: 'tähtitiede' },  
+    { id: 32, lause: `Mitä tämä ohjelma tekee? CODE import SyntaxHighlighter from 'react-syntax-highlighter';
+import { vs } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+
+
+const CodeComponent = ({questionString}) => {
+    // tästä on poistettu kommentit
+    let codePos = questionString.search("CODE")
+    if (codePos !== -1) {    
+        let code = questionString.substring(codePos+5)
+        let question = questionString.slice(0,codePos-1)
+        return (
+            <>
+                {question}
+                <SyntaxHighlighter language="javascript" style={vs} wrapLongLines={true}
+                showLineNumbers={true}>
+                    {code}
+                </SyntaxHighlighter>
+            </>
+        )
+    } else {
+        return (
+            <>
+                {questionString}
+            </>
+        )
+    }
+}
+
+export default CodeComponent`, aihe: 'ohjelmointi' },
+
+    // { id: 1, lastName: 'Snow', firstName: 'Jon', age: 35 },
+    // { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 42 },
+    // { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 45 },
+    // { id: 4, lastName: 'Stark', firstName: 'Arya', age: 16 },
+    // { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
+    // { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
+    // { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
+    // { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
+    // { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
+  ];
+
 function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCurrentExamId,currentExamIndex,setCurrentExamIndex}) {
     const { state, dispatch } = useContext(store)
     // const storeContext = useContext(store)
@@ -45,7 +115,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
         } else {
             fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         }
-    }, [currentUser, newExamId, newCardId, newChoiseId])
+    }, [currentUser, newExamId, newCardId, newChoiseId,currentExamIndex])
 
 
     const [examName, setExamName] = useState(hakuId(state,currentExamId,currentExamIndex,setCurrentExamIndex))
@@ -66,9 +136,8 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                     ? (
 
                         <>
-                            
                             <h2> 
-                                <TextField type="text" value={examName} id={state[currentExamIndex].id}
+                                <TextField style={{ width: "85%" }} type="text" value={examName} id={state[currentExamIndex].id}
                                     onChange={(event) => {
                                         setExamName(event.target.value)
                                     }}
@@ -80,14 +149,13 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                         muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, examName)
                                     }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
                                 </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
-                            </h2>
-                            <DeleteExamDialog
+                                <DeleteExamDialog style={{ width : "15%", float: "right" }}
                                 /* tentin poistonappi */
                                 currentExamIndex={currentExamIndex}
                                 setCurrentExamIndex={setCurrentExamIndex}
                                 currentDatabaseExamIdChanged={currentDatabaseExamIdChanged}
                             />
-
+                            </h2>
                             {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
                             {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
                             {state[currentExamIndex].kysymykset
@@ -96,7 +164,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
                                                 <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="darkBlue" />
-                                                <TextField multiline type="text" style={{ minWidth: "93%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
+                                                <TextField multiline type="text" style={{ minWidth: "85%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                                     muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                 }}>
                                                 </TextField>
@@ -144,10 +212,17 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                     </Card>
                                 )
                             }
-                            <IconButton style={{ float: "right" }}
+                             <div style={{ width: '100%', textAlign : 'center' }}>
+                            <IconButton 
                                 onClick={() => setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))}>
                                 <Icon>add_circle</Icon>
                             </IconButton>
+                            </div>
+                            <Card style={{ marginTop: "10px" }}  className={classes.root}>
+                            <div style={{ height: 450, width: '100%' }}>
+                                <DataGrid columns={columns} rows={rows} pageSize={6} checkboxSelection />
+                            </div>
+                            </Card>
                         </>
                     )               
                 : (

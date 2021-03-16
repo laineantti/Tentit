@@ -222,11 +222,11 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
     }
 
     return (
-        <div>
+        <>
             {/* <Button variant="outlined" color="primary" onClick={handleClickOpen}>
         Open dialog
       </Button> */}
-            <IconButton style={{ float: "right" }} label="delete" color="primary"
+            <IconButton label="delete" color="primary"
                 onClick={handleClickOpen}>
                 <DeleteIcon />
             </IconButton >
@@ -241,11 +241,16 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                 </DialogContent>
                 <DialogActions>
                     <Button autoFocus onClick={() => {
-                        deleting ?
+                        if (deleting) {
                             tentinPoistoLogiikka(force)
-                            : handleClose()
-
-                    }} color={deleting?"secondary":"default"}>
+                        } else {
+                            handleClose()
+                        }
+                        // deleting ?
+                        //     tentinPoistoLogiikka(force)
+                        //     : handleClose()
+                         }
+                    } color={deleting?"secondary":"default"}>
                         {
                             deleting ?
                                 force ?
@@ -264,6 +269,6 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                     </Button>
                 </DialogActions>
             </Dialog>
-        </div >
+        </>
     )
 }

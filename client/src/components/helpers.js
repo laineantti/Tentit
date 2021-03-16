@@ -30,7 +30,7 @@ const autentikoitu = () => {
 
 const hakuId = (state,currentExamId,currentExamIndex,setCurrentExamIndex) => { 
   idToIndex(state,currentExamId,setCurrentExamIndex)
-  if (currentExamIndex === -1){
+  if (currentExamIndex === -1 || !state[currentExamIndex]){
       return ""
   } else {
       return state[currentExamIndex].nimi
