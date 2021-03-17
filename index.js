@@ -236,7 +236,7 @@ app.post('/upload', async (req, res) => {
     // luodaan _thumbnail ja lisätään se uploads_thumbnails-kansioon
     console.log('Luodaan esikatselukuva ./uploads_thumbnails/thumbnail_' + tiedostonimi)
     await sharp('./uploads/' + tiedostonimi)
-      .resize({ width: 640 })
+      .resize({ width: 240 })
       .toFile('./uploads_thumbnails/thumbnail_' + tiedostonimi)
       /* .then(info => {
         console.log(info)

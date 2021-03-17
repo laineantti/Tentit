@@ -9,11 +9,14 @@ import MuiDialogActions from '@material-ui/core/DialogActions'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import Typography from '@material-ui/core/Typography'
-import ImageSearch from '@material-ui/icons/ImageSearch';
-import GridList from '@material-ui/core/GridList';
-import GridListTile from '@material-ui/core/GridListTile';
+import ImageSearch from '@material-ui/icons/ImageSearch'
+import GridList from '@material-ui/core/GridList'
+import GridListTile from '@material-ui/core/GridListTile'
+import GridListTileBar from '@material-ui/core/GridListTileBar'
+import HdIcon from '@material-ui/icons/Hd';
 import { fetchImage } from './axiosreqs'
 
+// Dialog
 const styles = (theme) => ({
     root: {
         margin: 0,
@@ -27,6 +30,7 @@ const styles = (theme) => ({
     },
 })
 
+// GridTile
 const useStyles = makeStyles((theme) => ({
     root: {
         display: 'flex',
@@ -39,7 +43,10 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
         height: '100%',
     },
-}));
+    icon: {
+        color: 'rgba(255, 255, 255, 0.54)',
+    },
+}))
 
 const DialogTitle = withStyles(styles)((props) => {
     const { children, classes, onClose, ...other } = props
@@ -71,12 +78,12 @@ const DialogActions = withStyles((theme) => ({
 export default function ImageSelector({ location }) {
     /* const { state, dispatch } = useContext(store) */
     const [tileData, setTileData] = useState([])
-    const [loading, setLoading] = useState(false)
+    /* const [loading, setLoading] = useState(false) */
     const [open, setOpen] = useState(false)
     const classes = useStyles()
 
     const getTileData = async () => {
-        setLoading(true)
+        /* setLoading(true) */
         // hakee kuvat serveriltä ja muuntaa tietokannasta
         // saadun taulun material-ui:n tileData-muotoon
         let kuvat = []
@@ -85,6 +92,7 @@ export default function ImageSelector({ location }) {
         /* console.log(kuvat) */
         for (const kuva of kuvat) {
             kuvatMuunnettu.push({
+                id: kuva.id,
                 img: kuva.tiedostonimi,
                 title: kuva.tiedostonimi,
                 author: 'tentit-app',
@@ -92,7 +100,7 @@ export default function ImageSelector({ location }) {
             })
         }
         setTileData(kuvatMuunnettu)
-        setLoading(false)
+        /* setLoading(false) */
     }
 
     const handleClickOpen = async () => {
@@ -109,7 +117,8 @@ export default function ImageSelector({ location }) {
                 onClick={handleClickOpen}>
                 <ImageSearch />
             </IconButton >
-            <Dialog fullWidth={true} maxWidth={'none'} onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
+            <Dialog fullWidth={true} maxWidth={'xl'} onClose={handleClose}
+                aria-labelledby="customized-dialog-title" open={open}>
                 <DialogTitle id="customized-dialog-title" onClose={handleClose}>
                     Kuvan lisääminen {
                         location === "kysymys" ?
@@ -118,19 +127,27 @@ export default function ImageSelector({ location }) {
                     }.
                 </DialogTitle>
                 <DialogContent dividers>
-                    {/* <Typography gutterBottom>{location}</Typography> */}
                     <div className={classes.root}>
-                        <GridList cellHeight={160} className={classes.gridList} cols={3}>
-                            {loading ?
-                                // kuvien thumbnailien täytyy olla n. 640px leveitä
-                                <img src={"http://localhost:3000/images/selma.gif"} alt={"koira pyörii"} />
-                                : tileData.map((tile) => (
-                                    <GridListTile key={tile.img} cols={tile.cols || 1}>
-                                        <img src={"http://localhost:4000/uploads/" + tile.img} alt={tile.title} />
-                                        {console.log("http://localhost:4000/uploads/" + tile.img)}
-                                    </GridListTile>
-                                ))
-                            }
+                        <GridList cellHeight={180} className={classes.gridList}>
+                            {/* <GridListTile key="Subheader" cols={2} style={{ height: 'auto' }}>
+                                <ListSubheader component="div">December</ListSubheader>
+                            </GridListTile> */}
+                            {tileData.map((tile) => (
+                                <GridListTile key={tile.img}>
+                                    <img src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img} alt={tile.title} />
+                                    <GridListTileBar
+                                        title={tile.title}
+                                        subtitle={<span>id: {tile.id}</span>}
+                                        actionIcon={
+                                            <a href={"//localhost:4000/uploads/" + tile.img} target="_blank" rel="noreferrer">
+                                                <IconButton aria-label={`info about ${tile.title}`} className={classes.icon}>
+                                                    <HdIcon />
+                                                </IconButton>
+                                            </a>
+                                        }
+                                    />
+                                </GridListTile>
+                            ))}
                         </GridList>
                     </div>
                 </DialogContent>
