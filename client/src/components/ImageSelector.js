@@ -1,5 +1,5 @@
-import { React, useState, useContext } from 'react'
-import { store } from './store.js'
+import { React, useState, /* useContext */ } from 'react'
+/* import { store } from './store.js' */
 import { withStyles, makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -36,8 +36,8 @@ const useStyles = makeStyles((theme) => ({
         backgroundColor: theme.palette.background.paper,
     },
     gridList: {
-        width: 500,
-        height: 450,
+        width: '100%',
+        height: '100%',
     },
 }));
 
@@ -109,7 +109,7 @@ export default function ImageSelector({ location }) {
                 onClick={handleClickOpen}>
                 <ImageSearch />
             </IconButton >
-            <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
+            <Dialog fullWidth={true} maxWidth={'none'} onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
                 <DialogTitle id="customized-dialog-title" onClose={handleClose}>
                     Kuvan lisääminen {
                         location === "kysymys" ?
@@ -122,6 +122,7 @@ export default function ImageSelector({ location }) {
                     <div className={classes.root}>
                         <GridList cellHeight={160} className={classes.gridList} cols={3}>
                             {loading ?
+                                // kuvien thumbnailien täytyy olla n. 640px leveitä
                                 <img src={"http://localhost:3000/images/selma.gif"} alt={"koira pyörii"} />
                                 : tileData.map((tile) => (
                                     <GridListTile key={tile.img} cols={tile.cols || 1}>

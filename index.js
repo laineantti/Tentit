@@ -10,6 +10,7 @@ const _ = require('lodash')
 const bcrypt = require('bcrypt')
 const app = express()
 var jwt = require('jsonwebtoken');
+const sharp = require('sharp')
 app.use(express.static('./client/build'))
 
 /* Valmistellaan käytettävät osoitteet oikeaan muotoon sen mukaan ollaanko heroku vai localhost */
@@ -219,57 +220,98 @@ app.post('/kirjaudu', (req, res, next) => {
   })
 })
 
+// tarjotaan /uploads-sijainti ulkomaailmaan (tarvitaaan kuvien jakamiseen)
+// esim. http://localhost:4000/uploads/3FT0OAPBoKw.jpg
+/* app.use(express.static('uploads')) */
+const uploads_directory = path.join(__dirname, 'uploads')
+app.use('/uploads', express.static(uploads_directory))
+
+const uploads_thumbnails_directory = path.join(__dirname, 'uploads_thumbnails')
+app.use('/uploads_thumbnails', express.static(uploads_thumbnails_directory))
+
 // lataa useita tiedostoja serverille
 app.post('/upload', async (req, res) => {
+
+  const createThumbnail = async (tiedostonimi) => {
+    // luodaan _thumbnail ja lisätään se uploads_thumbnails-kansioon
+    console.log('Luodaan esikatselukuva ./uploads_thumbnails/thumbnail_' + tiedostonimi)
+    await sharp('./uploads/' + tiedostonimi)
+      .resize({ width: 640 })
+      .toFile('./uploads_thumbnails/thumbnail_' + tiedostonimi)
+      /* .then(info => {
+        console.log(info)
+      }) */
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  const addImageToDatabase = async (tiedostonimi) => {
+    await db.query("INSERT INTO kuva (tiedostonimi) values ($1)",
+      [tiedostonimi],
+      (err, res) => {
+        if (err) {
+          return next(err)
+        } else {
+          console.log(tiedostonimi + " lisätty.")
+        }
+      }
+    )
+  }
+
   try {
     if (!req.files) {
       res.send({
         status: false,
-        message: 'No file uploaded'
+        message: 'Tiedoston lataus epäonnistui.'
       })
     } else {
       let data = []                         // yksittäinen tiedosto ei tule taulukkona
-      let tiedostonimet = []
       if (!Array.isArray(req.files.photos)) { // eli tässä tulee vain yksittäinen tiedosto
-        req.files.photos.mv('./uploads/' + req.files.photos.name)
+        console.log("Vastaanotetaan yksi kuva.")
+        console.log('Luotiin tiedosto ./uploads/' + req.files.photos.name)
+        await req.files.photos.mv('./uploads/' + req.files.photos.name, (err) => {
+          if (err) {
+            throw err
+          } else {
+            createThumbnail(req.files.photos.name)
+            addImageToDatabase(req.files.photos.name)
+          }
+        })
         data.push({
           name: req.files.photos.name,
           type: req.files.photos.mimetype,
           size: req.files.photos.size
-        }) // tallennetaan tiedostonimi sql-queryä varten
-        tiedostonimet.push(req.files.photos.name)
+        })
       } else {
         // käydään kaikki tiedostot läpi
-        _.forEach(_.keysIn(req.files.photos), (key) => {
+        console.log("Vastaanotetaan " + req.files.photos.length + " kuvaa.")
+        _.forEach(_.keysIn(req.files.photos), async (key) => {
           let photo = req.files.photos[key]
 
           // siirretään tiedosto uploads-kansioon
-          photo.mv('./uploads/' + photo.name)
+          console.log('Luotiin tiedosto ./uploads/' + photo.name)
+          await photo.mv('./uploads/' + photo.name, (err) => {
+            if (err) {
+              throw err
+            } else {
+              createThumbnail(photo.name)
+              addImageToDatabase(photo.name)
+            }
+          })
 
-          //työnnetään kaikki informaatio
+          // työnnetään kaikki informaatio
           data.push({
             name: photo.name,
             mimetype: photo.mimetype,
             size: photo.size
-          }) // tallennetaan tiedostonimet sql-queryä varten
-          tiedostonimet.push(photo.name)
+          })
         })
       }
-      // lisätään kuvan/kuvien tiedostonimi tietokantaan myöhempää käyttöä varten
-      tiedostonimet.map(tiedostonimi => {
-        db.query("INSERT INTO kuva (tiedostonimi) values ($1)",
-          [tiedostonimi],
-          (err, res) => {
-            if (err) {
-              return next(err)
-            }
-          }
-        )
-      })
       // palautetaan response
       res.send({
         status: true,
-        message: 'Files are uploaded',
+        message: 'Tiedostot ladattu palvelimelle.',
         data: data
       })
     }
@@ -277,12 +319,6 @@ app.post('/upload', async (req, res) => {
     res.status(500).send(err)
   }
 })
-
-// tarjotaan /uploads-sijainti ulkomaailmaan (tarvitaaan kuvien jakamiseen)
-// esim. http://localhost:4000/uploads/3FT0OAPBoKw.jpg
-/* app.use(express.static('uploads')) */
-const uploads_directory = path.join(__dirname, 'uploads')
-app.use('/uploads', express.static(uploads_directory))
 
 //----------------------------------------------------------------------------------------------
 // autentikointi, jossa myös kaivetaan käyttäjä id tokenista
