@@ -290,6 +290,16 @@ const isAuthenticated = require('./authentication')
 app.use(isAuthenticated)
 //----------------------------------------------------------------------------------------------
 
+// tulostetaan kaikki kuvien tiedostonimet
+app.get('/kuva', (req, response, next) => {
+  db.query('SELECT * FROM kuva ORDER BY id', (err, res) => {
+    if (err) {
+      return next(err)
+    }
+    response.send(res.rows)
+  })
+})
+
 // hae kuva id:n perusteella
 app.get('/kuva/:id', (req, response, next) => {
   db.query('SELECT * FROM kuva WHERE id = $1 ORDER BY id', [req.params.id], (err, res) => {

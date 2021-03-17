@@ -12,7 +12,7 @@ import Typography from '@material-ui/core/Typography'
 import ImageSearch from '@material-ui/icons/ImageSearch';
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
-/* import tileData from './tileData'; */
+import { fetchImage } from './axiosreqs'
 
 const styles = (theme) => ({
     root: {
@@ -40,23 +40,6 @@ const useStyles = makeStyles((theme) => ({
         height: 450,
     },
 }));
-
-const tileData = []
-
-const fetchTileData = () => {
-
-
-    /* {
-        img: image,
-        title: 'Image',
-        author: 'author',
-        cols: 2,
-    },
-    {
-        [etc...]
-    } */
-}
-
 
 const DialogTitle = withStyles(styles)((props) => {
     const { children, classes, onClose, ...other } = props
@@ -86,26 +69,42 @@ const DialogActions = withStyles((theme) => ({
 }))(MuiDialogActions)
 
 export default function ImageSelector({ location }) {
-    const { state, dispatch } = useContext(store)
+    /* const { state, dispatch } = useContext(store) */
+    const [tileData, setTileData] = useState([])
+    const [loading, setLoading] = useState(false)
     const [open, setOpen] = useState(false)
-    const classes = useStyles();
+    const classes = useStyles()
 
-    const handleClickOpen = () => {
+    const getTileData = async () => {
+        setLoading(true)
+        // hakee kuvat serveriltä ja muuntaa tietokannasta
+        // saadun taulun material-ui:n tileData-muotoon
+        let kuvat = []
+        let kuvatMuunnettu = []
+        kuvat = await fetchImage()
+        /* console.log(kuvat) */
+        for (const kuva of kuvat) {
+            kuvatMuunnettu.push({
+                img: kuva.tiedostonimi,
+                title: kuva.tiedostonimi,
+                author: 'tentit-app',
+                cols: 2,
+            })
+        }
+        setTileData(kuvatMuunnettu)
+        setLoading(false)
+    }
+
+    const handleClickOpen = async () => {
+        await getTileData()
         setOpen(true)
     }
     const handleClose = () => {
         setOpen(false)
     }
 
-    const kuvanValintaLogiikka = () => {
-        console.log("hello world")
-    }
-
     return (
         <div>
-            {/* <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-        Open dialog
-      </Button> */}
             <IconButton style={{ float: "left" }} label="delete" color="primary"
                 onClick={handleClickOpen}>
                 <ImageSearch />
@@ -122,14 +121,17 @@ export default function ImageSelector({ location }) {
                     {/* <Typography gutterBottom>{location}</Typography> */}
                     <div className={classes.root}>
                         <GridList cellHeight={160} className={classes.gridList} cols={3}>
-                            {tileData.map((tile) => (
-                                <GridListTile key={tile.img} cols={tile.cols || 1}>
-                                    <img src={tile.img} alt={tile.title} />
-                                </GridListTile>
-                            ))}
+                            {loading ?
+                                <img src={"http://localhost:3000/images/selma.gif"} alt={"koira pyörii"} />
+                                : tileData.map((tile) => (
+                                    <GridListTile key={tile.img} cols={tile.cols || 1}>
+                                        <img src={"http://localhost:4000/uploads/" + tile.img} alt={tile.title} />
+                                        {console.log("http://localhost:4000/uploads/" + tile.img)}
+                                    </GridListTile>
+                                ))
+                            }
                         </GridList>
                     </div>
-                    <img src="http://localhost:4000/uploads/3FT0OAPBoKw.jpg" alt="image" />
                 </DialogContent>
                 <DialogActions>
                     <Button autoFocus onClick={() => {

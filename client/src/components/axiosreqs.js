@@ -120,6 +120,22 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
     }
 }
 
+const fetchImage = async () => {
+    let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
+    try {
+        // taulukko näyttää tältä:
+        // [{ id: '1', tiedostonimi: 'abc123.jpg'}]
+        let response = await axios.get(path + "kuva", headers)
+        if (response.data[0].id) {
+            return response.data
+        }
+    } catch (exception) {
+        console.log(exception)
+        return exception
+    }
+
+}
+
 const logoutUser = (dispatch) => {
     dispatch({
         type: "LOGOUT_USER",
@@ -204,7 +220,7 @@ const oikeaValintaMuuttui = async (dispatch, currentExamIndex, kysymys_id, check
 
 const lisaaTentti = async (dispatch, currentUser) => {
     let body = {
-        
+
     }
     try {
         let response = await axios({
@@ -368,6 +384,7 @@ const poistaTentti = async (dispatch, currentExamIndex, tentti_id, voimalla) => 
 export {
     fetchUser,
     fetchData,
+    fetchImage,
     logoutUser,
     valintaMuuttui,
     lisaaKysymys,
@@ -380,5 +397,5 @@ export {
     muutaVaihtoehto,
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos,
-    poistaTentti
+    poistaTentti,
 }
