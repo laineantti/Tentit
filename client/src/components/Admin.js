@@ -64,12 +64,14 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
 
     const [examName, setExamName] = useState(hakuId(state,currentExamId,currentExamIndex,setCurrentExamIndex))
 
-    const kysymysLista = () => {
-        let lista=[]
-            state[currentExamIndex].kysymykset.map((item,kysymysIndex) => {
-            kaikkiKysymykset.map((verrokki,verId) => {
-                if (verrokki.id !== item.id) {
-                    lista.push(verrokki) 
+    const kysymysLista = (currentExamIndex) => {
+        console.log(kaikkiKysymykset)
+        console.log(state[currentExamIndex].kysymykset)
+        let lista=kaikkiKysymykset
+        state[currentExamIndex].kysymykset.map((item,kysymysIndex) => {
+            lista.map((listaItem,listaId) => {
+                if (listaItem.id === item.id) {
+                    lista.splice(listaId,1)
                 }
             })
         })
@@ -186,8 +188,9 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                             </IconButton>
                             </div>
                             <Card style={{ marginTop: "10px" }}  className={classes.root}>
+                            {console.log(kysymysLista(currentExamIndex))}
                             <div style={{ height: 450, width: '100%' }}>
-                                <DataGrid columns={columns} rows={kaikkiKysymykset} pageSize={6} checkboxSelection
+                                <DataGrid columns={columns} rows={kysymysLista(currentExamIndex)} pageSize={6} checkboxSelection
                                 onSelectionModelChange={(newSelection)=>{setDataGridSelection(newSelection.selectionModel)}}/>
                             </div>
                             </Card>
