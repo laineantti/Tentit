@@ -27,6 +27,7 @@ const StateProvider = ({ children }) => {
             case "add_card":
                 let newCard = {
                     lause: "Uusi kysymys",
+                    aihe: "muut",
                     vaihtoehdot: []
                 }
                 tempCopy[action.data.examIndex].kysymykset.push(newCard)

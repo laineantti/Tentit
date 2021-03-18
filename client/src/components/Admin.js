@@ -14,7 +14,9 @@ import {
     fetchUser,
     fetchData,
     /* valintaMuuttui, */
+    kysymysJaAihe,
     lisaaKysymys,
+    lisaaKysymysTenttiin,
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
@@ -29,73 +31,11 @@ import CodeComponent from './CodeComponent'
 import { idToIndex, hakuId } from './helpers'
 
 const columns = [
-    { field: 'id', headerName: 'ID', flex: 0.25 },
+    { field: 'id', headerName: 'ID', type: 'number', flex: 0.25 },
     { field: 'lause', headerName: 'Kysymys', flex: 1.5 },
     { field: 'aihe', headerName: 'Aihealue', flex: 0.75 },
-    // {
-    //   field: 'age',
-    //   headerName: 'Age',
-    //   type: 'number',
-    //   width: 90,
-    // },
-    // {
-    //   field: 'fullName',
-    //   headerName: 'Full name',
-    //   description: 'This column has a value getter and is not sortable.',
-    //   sortable: false,
-    //   width: 160,
-    //   valueGetter: (params) =>
-    //     `${params.getValue('firstName') || ''} ${params.getValue('lastName') || ''}`,
-    // },
   ];
   
-  const rows = [
-    { id: 2, lause: 'Onko maa litteä vai pallo?', aihe: 'luonnontieteet' },
-    { id: 3, lause: 'Montako puuta on olemassa?', aihe: 'luonnontieteet' },
-    { id: 4, lause: 'Onko pizzassa yleensä majoneesia?', aihe: 'ravintotieto' },
-    { id: 5, lause: 'Onko herkkusienet hyviä pizzassa?', aihe: 'ravintotieto' },
-    { id: 6, lause: 'Montako planeettaa on olemassa?', aihe: 'tähtitiede' },
-    { id: 7, lause: 'Onko aurinko kuuma?', aihe: 'tähtitiede' },  
-    { id: 32, lause: `Mitä tämä ohjelma tekee? CODE import SyntaxHighlighter from 'react-syntax-highlighter';
-import { vs } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-
-
-const CodeComponent = ({questionString}) => {
-    // tästä on poistettu kommentit
-    let codePos = questionString.search("CODE")
-    if (codePos !== -1) {    
-        let code = questionString.substring(codePos+5)
-        let question = questionString.slice(0,codePos-1)
-        return (
-            <>
-                {question}
-                <SyntaxHighlighter language="javascript" style={vs} wrapLongLines={true}
-                showLineNumbers={true}>
-                    {code}
-                </SyntaxHighlighter>
-            </>
-        )
-    } else {
-        return (
-            <>
-                {questionString}
-            </>
-        )
-    }
-}
-
-export default CodeComponent`, aihe: 'ohjelmointi' },
-
-    // { id: 1, lastName: 'Snow', firstName: 'Jon', age: 35 },
-    // { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 42 },
-    // { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 45 },
-    // { id: 4, lastName: 'Stark', firstName: 'Arya', age: 16 },
-    // { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-    // { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-    // { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
-    // { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
-    // { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
-  ];
 
 function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCurrentExamId,currentExamIndex,setCurrentExamIndex}) {
     const { state, dispatch } = useContext(store)
@@ -107,6 +47,8 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
     const [newExamId, setNewExamId] = useState(-1)
     const [newCardId, setNewCardId] = useState(-1)
     const [newChoiseId, setNewChoiseId] = useState(-1)
+    const [kaikkiKysymykset, setKaikkiKysymykset] = useState([])
+    const [dataGridSelection, setDataGridSelection] = useState([])
     const classes = useStyles()
 
     useEffect(() => {
@@ -114,11 +56,25 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
             fetchUser(setCurrentUser, setCurrentUserName)
         } else {
             fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
+            kysymysJaAihe(setKaikkiKysymykset)
         }
-    }, [currentUser, newExamId, newCardId, newChoiseId,currentExamIndex])
+
+    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex])
 
 
     const [examName, setExamName] = useState(hakuId(state,currentExamId,currentExamIndex,setCurrentExamIndex))
+
+    const kysymysLista = () => {
+        let lista=[]
+            state[currentExamIndex].kysymykset.map((item,kysymysIndex) => {
+            kaikkiKysymykset.map((verrokki,verId) => {
+                if (verrokki.id !== item.id) {
+                    lista.push(verrokki) 
+                }
+            })
+        })
+        return lista
+    }
 
     return (
         <>
@@ -171,7 +127,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
                                                     color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)}>
                                                     <DeleteIcon />
-                                                </IconButton >
+                                                </IconButton ><br/>Aihe: {card.aihe}<br/>
                                                 {card.vaihtoehdot.map((listItem, listItemIndex) => (
                                                     <>
                                                         <ListItem key={uuid()}><CodeComponent style={{ width: "100%" }} questionString={listItem.vaihtoehto} /></ListItem>
@@ -214,13 +170,25 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                             }
                              <div style={{ width: '100%', textAlign : 'center' }}>
                             <IconButton 
-                                onClick={() => setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))}>
+                                onClick={() => {
+                                        if (dataGridSelection.length > 0) {
+                                            console.log(dataGridSelection)
+                                            dataGridSelection.map((item, kysymysIndex) => {
+                                                console.log(kysymysIndex, item)
+                                                setNewCardId(lisaaKysymysTenttiin(item,state[currentExamIndex].id))
+                                            })
+                                        } else {
+                                            setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))
+                                        }
+                                    }
+                                }>
                                 <Icon>add_circle</Icon>
                             </IconButton>
                             </div>
                             <Card style={{ marginTop: "10px" }}  className={classes.root}>
                             <div style={{ height: 450, width: '100%' }}>
-                                <DataGrid columns={columns} rows={rows} pageSize={6} checkboxSelection />
+                                <DataGrid columns={columns} rows={kaikkiKysymykset} pageSize={6} checkboxSelection
+                                onSelectionModelChange={(newSelection)=>{setDataGridSelection(newSelection.selectionModel)}}/>
                             </div>
                             </Card>
                         </>
