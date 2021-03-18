@@ -1,4 +1,4 @@
-import { React, useState, /* useContext */ } from 'react'
+import { React, useEffect, useState, /* useContext */ } from 'react'
 /* import { store } from './store.js' */
 import { withStyles, makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
@@ -13,6 +13,7 @@ import ImageSearch from '@material-ui/icons/ImageSearch'
 import GridList from '@material-ui/core/GridList'
 import GridListTile from '@material-ui/core/GridListTile'
 import GridListTileBar from '@material-ui/core/GridListTileBar'
+import Checkbox from '@material-ui/core/Checkbox'
 import HdIcon from '@material-ui/icons/Hd';
 import { fetchImage } from './axiosreqs'
 
@@ -77,13 +78,14 @@ const DialogActions = withStyles((theme) => ({
 
 export default function ImageSelector({ location }) {
     /* const { state, dispatch } = useContext(store) */
-    const [tileData, setTileData] = useState([])
-    /* const [loading, setLoading] = useState(false) */
+    const [loading, setLoading] = useState(false)
     const [open, setOpen] = useState(false)
+    const [tileData, setTileData] = useState([])
     const classes = useStyles()
+    let selectedImages = []
 
     const getTileData = async () => {
-        /* setLoading(true) */
+        setLoading(true)
         // hakee kuvat serveriltä ja muuntaa tietokannasta
         // saadun taulun material-ui:n tileData-muotoon
         let kuvat = []
@@ -100,21 +102,47 @@ export default function ImageSelector({ location }) {
             })
         }
         setTileData(kuvatMuunnettu)
-        /* setLoading(false) */
+        setLoading(false)
     }
 
-    const handleClickOpen = async () => {
-        await getTileData()
+    const handleClickOpen = () => {
         setOpen(true)
     }
     const handleClose = () => {
         setOpen(false)
     }
 
+    const onkoKuvaValittu = (id) => {
+        let valittu = false
+        if (selectedImages.length > 0) {
+            for (let i in selectedImages) {
+                if (selectedImages[i] === id) {
+                    valittu = true
+                }
+            }
+        }
+        return valittu
+    }
+
+    const asetaValinta = (id) => {
+        selectedImages.push(id)
+    }
+
+    const poistaValinta = (id) => {
+        if (selectedImages.length > 0) {
+            for (let i in selectedImages) {
+                if (selectedImages[i] === id) {
+                    let temp = selectedImages
+                    selectedImages = temp.filter(kuvan_id => kuvan_id !== id)
+                }
+            }
+        }
+    }
+
     return (
         <div>
             <IconButton style={{ float: "left" }} label="delete" color="primary"
-                onClick={handleClickOpen}>
+                onClick={() => { handleClickOpen(); getTileData(); }}>
                 <ImageSearch />
             </IconButton >
             <Dialog fullWidth={true} maxWidth={'xl'} onClose={handleClose}
@@ -129,14 +157,22 @@ export default function ImageSelector({ location }) {
                 <DialogContent dividers>
                     <div className={classes.root}>
                         <GridList cellHeight={180} className={classes.gridList}>
-                            {/* <GridListTile key="Subheader" cols={2} style={{ height: 'auto' }}>
-                                <ListSubheader component="div">December</ListSubheader>
-                            </GridListTile> */}
-                            {tileData.map((tile) => (
+                            {!loading && tileData.map((tile) => (
                                 <GridListTile key={tile.img}>
                                     <img src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img} alt={tile.title} />
                                     <GridListTileBar
-                                        title={tile.title}
+                                        title={<>
+
+                                            <Checkbox
+                                                color="primary"
+                                                inputProps={{ 'aria-label': 'secondary checkbox' }}
+                                                onClick={() => {
+                                                    onkoKuvaValittu(tile.id) ? poistaValinta(tile.id) : asetaValinta(tile.id);
+                                                    console.log(selectedImages)
+                                                }}
+                                            />
+                                            {tile.title}
+                                        </>}
                                         subtitle={<span>id: {tile.id}</span>}
                                         actionIcon={
                                             <a href={"//localhost:4000/uploads/" + tile.img} target="_blank" rel="noreferrer">
