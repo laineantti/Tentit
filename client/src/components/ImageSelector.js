@@ -10,6 +10,8 @@ import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import Typography from '@material-ui/core/Typography'
 import ImageSearch from '@material-ui/icons/ImageSearch'
+import CircularProgress from '@material-ui/core/CircularProgress'
+import Grid from '@material-ui/core/Grid'
 import GridList from '@material-ui/core/GridList'
 import GridListTile from '@material-ui/core/GridListTile'
 import GridListTileBar from '@material-ui/core/GridListTileBar'
@@ -78,20 +80,19 @@ const DialogActions = withStyles((theme) => ({
 
 export default function ImageSelector({ location }) {
     /* const { state, dispatch } = useContext(store) */
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [open, setOpen] = useState(false)
     const [tileData, setTileData] = useState([])
+    const [loaded, setLoaded] = useState([])
     const classes = useStyles()
     let selectedImages = []
 
     const getTileData = async () => {
-        setLoading(true)
         // hakee kuvat serveriltä ja muuntaa tietokannasta
         // saadun taulun material-ui:n tileData-muotoon
         let kuvat = []
         let kuvatMuunnettu = []
         kuvat = await fetchImage()
-        /* console.log(kuvat) */
         for (const kuva of kuvat) {
             kuvatMuunnettu.push({
                 id: kuva.id,
@@ -102,7 +103,6 @@ export default function ImageSelector({ location }) {
             })
         }
         setTileData(kuvatMuunnettu)
-        setLoading(false)
     }
 
     const handleClickOpen = () => {
@@ -139,6 +139,11 @@ export default function ImageSelector({ location }) {
         }
     }
 
+    useEffect(() => {
+        tileData.length > 0
+            && loaded.length === tileData.length && setLoading(false)
+    }, [loaded.length, tileData.length])
+
     return (
         <div>
             <IconButton style={{ float: "left" }} label="delete" color="primary"
@@ -153,13 +158,24 @@ export default function ImageSelector({ location }) {
                             "kysymykseen" :
                             "vaihtoehtoon"
                     }.
+
                 </DialogTitle>
-                <DialogContent dividers>
-                    <div className={classes.root}>
+                <DialogContent style={{display: "flex", justifyContent: "center"}} dividers>
+                    {loading && <CircularProgress
+                        variant="determinate"
+                        value={Math.round(loaded.length * 100 / (tileData.length > 0 ? tileData.length : 1))}
+                    />}
+                    <div style={{ display: loading ? 'none' : 'block' }} className={classes.root}>
                         <GridList cellHeight={180} className={classes.gridList}>
-                            {!loading && tileData.map((tile) => (
+                            {tileData.map((tile) => (
                                 <GridListTile key={tile.img}>
-                                    <img src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img} alt={tile.title} />
+                                    <img
+                                        src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
+                                        alt={tile.title}
+                                        onLoad={() => {
+                                            setLoaded(loaded => [...loaded, tile.id])
+                                        }}
+                                    />
                                     <GridListTileBar
                                         title={<>
 
@@ -168,7 +184,6 @@ export default function ImageSelector({ location }) {
                                                 inputProps={{ 'aria-label': 'secondary checkbox' }}
                                                 onClick={() => {
                                                     onkoKuvaValittu(tile.id) ? poistaValinta(tile.id) : asetaValinta(tile.id);
-                                                    console.log(selectedImages)
                                                 }}
                                             />
                                             {tile.title}
@@ -193,7 +208,9 @@ export default function ImageSelector({ location }) {
 
                     }} color={"secondary"}>
                         {
-                            "Lisää kuva"
+                            selectedImages.length === 1 ?
+                                "Lisää kuva"
+                                : "Lisää kuvat"
                         }
                     </Button>
                     <Button autoFocus onClick={() => {
