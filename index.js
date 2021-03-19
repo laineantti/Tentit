@@ -880,6 +880,16 @@ app.get('/kysymys_aihe/:kysymys_id',(req, response, next) => {
   })
 })
 
+// haetaan aiheet
+app.get('/aihe',(req, response, next) => {
+  db.query('SELECT * FROM aihe ORDER BY aihe', (err, res) => {
+    if (err) {
+      return next(err)
+    }
+    response.send(res.rows)
+  })
+})
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/client/build/index.html'))
 })

@@ -4,7 +4,7 @@ import { useStyles, GreenCheckbox, ExamButton } from './Style'
 /* import axios from 'axios' */
 import {
     Card, CardContent, Container, List, ListItem, Box, Icon,
-    IconButton, CssBaseline, TextField, Input
+    IconButton, CssBaseline, TextField, MenuItem, Input
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import DeleteExamDialog from './DeleteExamDialog'
@@ -15,6 +15,7 @@ import {
     fetchData,
     /* valintaMuuttui, */
     kysymysJaAihe,
+    haeAiheet,
     lisaaKysymys,
     lisaaKysymysTenttiin,
     lisaaVaihtoehto,
@@ -48,6 +49,8 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
     const [newCardId, setNewCardId] = useState(-1)
     const [newChoiseId, setNewChoiseId] = useState(-1)
     const [kaikkiKysymykset, setKaikkiKysymykset] = useState([])
+    const [kaikkiAiheet, setKaikkiAiheet] = useState([])
+    const [aihe, setAihe] = useState("")
     const [dataGridSelection, setDataGridSelection] = useState([])
     const classes = useStyles()
 
@@ -57,6 +60,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
         } else {
             fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
             kysymysJaAihe(setKaikkiKysymykset)
+            haeAiheet(setKaikkiAiheet)
         }
 
     }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex])
@@ -122,14 +126,26 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
                                                 <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="darkBlue" />
-                                                <TextField multiline type="text" style={{ minWidth: "85%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
+                                                <TextField multiline type="text" style={{ minWidth: "70%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                                     muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                 }}>
                                                 </TextField>
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
                                                     color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)}>
                                                     <DeleteIcon />
-                                                </IconButton ><br/>Aihe: {card.aihe}<br/>
+                                                </IconButton >
+                                                    <TextField style={{ minWidth: "15%" }}
+                                                        select 
+                                                        value={card.aihe} 
+                                                        onChange={(event)=>{card.aihe = event.target.value}}
+                                                        >
+                                                        {kaikkiAiheet.map((option)=>(
+                                                            <MenuItem key={option.id} value={option.aihe}>
+                                                                {option.aihe}
+                                                            </MenuItem>
+                                                        ))}
+                                                    </TextField>
+                                                    <br/>
                                                 {card.vaihtoehdot.map((listItem, listItemIndex) => (
                                                     <>
                                                         <ListItem key={uuid()}><CodeComponent style={{ width: "100%" }} questionString={listItem.vaihtoehto} /></ListItem>
@@ -189,8 +205,8 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                             </div>
                             <Card style={{ marginTop: "10px" }}  className={classes.root}>
                             {console.log(kysymysLista(currentExamIndex))}
-                            <div style={{ height: 450, width: '100%' }}>
-                                <DataGrid columns={columns} rows={kysymysLista(currentExamIndex)} pageSize={6} checkboxSelection
+                            <div style={{ height: 460, width: '100%' }}>
+                                <DataGrid columns={columns} rows={kysymysLista(currentExamIndex)} pageSize={7} checkboxSelection
                                 onSelectionModelChange={(newSelection)=>{setDataGridSelection(newSelection.selectionModel)}}/>
                             </div>
                             </Card>

@@ -137,6 +137,17 @@ const kysymysJaAihe = async (setKaikkiKysymykset) => {
     }
 }
 
+const haeAiheet = async (setKaikkiAiheet) => {
+    let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
+    try {
+        let result = await axios.get(path + "aihe", headers) 
+        setKaikkiAiheet(result.data)
+    } catch (exception) {
+        console.log("Virhe tietokantahaussa!")
+    }
+}
+
+
 // /paivita_valinta/:kayttaja_id/:vaihtoehto_id/:tentti_id/:kurssi_id/:vastaus
 const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex, exam_id, currentUser, currentCourse, currentExamIndex, dispatch) => {
     try {
@@ -394,6 +405,7 @@ export {
     fetchData,
     logoutUser,
     kysymysJaAihe,
+    haeAiheet,
     valintaMuuttui,
     lisaaKysymys,
     lisaaKysymysTenttiin,
