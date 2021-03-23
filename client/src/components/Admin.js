@@ -24,6 +24,7 @@ import {
     haeTentinLuojanId,
     muutaTentti,
     muutaKysymys,
+    muutaKysymyksenAihe,
     muutaVaihtoehto,
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos
@@ -50,7 +51,6 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
     const [newChoiseId, setNewChoiseId] = useState(-1)
     const [kaikkiKysymykset, setKaikkiKysymykset] = useState([])
     const [kaikkiAiheet, setKaikkiAiheet] = useState([])
-    const [aihe, setAihe] = useState("")
     const [dataGridSelection, setDataGridSelection] = useState([])
     const classes = useStyles()
 
@@ -125,27 +125,28 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="darkBlue" />
-                                                <TextField multiline type="text" style={{ minWidth: "70%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
+                                                <CodeComponent style={{ width: "82%" }} questionString={card.lause} background="darkBlue" />
+                                                <TextField multiline type="text" style={{ minWidth: "82%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                                     muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                 }}>
                                                 </TextField>
+                                                
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
                                                     color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)}>
                                                     <DeleteIcon />
-                                                </IconButton >
-                                                    <TextField style={{ minWidth: "15%" }}
-                                                        select 
+                                                </IconButton ><br/>
+                                                <span>{card.aihe}</span>
+                                                <TextField style={{ minWidth: "3%"  }}
                                                         value={card.aihe} 
-                                                        onChange={(event)=>{card.aihe = event.target.value}}
-                                                        >
+                                                        select
+                                                        onChange={(event)=>{muutaKysymyksenAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet)}}
+                                                        InputProps={{disableUnderline: true}}>
                                                         {kaikkiAiheet.map((option)=>(
-                                                            <MenuItem key={option.id} value={option.aihe}>
+                                                            <MenuItem key={option.id} value={option.id}>
                                                                 {option.aihe}
                                                             </MenuItem>
                                                         ))}
-                                                    </TextField>
-                                                    <br/>
+                                                    </TextField><br/>
                                                 {card.vaihtoehdot.map((listItem, listItemIndex) => (
                                                     <>
                                                         <ListItem key={uuid()}><CodeComponent style={{ width: "100%" }} questionString={listItem.vaihtoehto} /></ListItem>
@@ -162,7 +163,6 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                                                     muutaVaihtoehto(dispatch, currentExamIndex, event.target.value, listItem.id, cardIndex, listItemIndex)
                                                                 }} />
                                                             <IconButton style={{ float: "right" }} label="delete" color="primary"
-
                                                                 onClick={() => poistaVaihtoehdonLiitos(dispatch, currentExamIndex, listItem.id, cardIndex, card.id, listItemIndex)}>
                                                                 <DeleteIcon /></IconButton >
                                                         </ListItem>

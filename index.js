@@ -880,6 +880,19 @@ app.get('/kysymys_aihe/:kysymys_id',(req, response, next) => {
   })
 })
 
+// päivitetään kysymyksen aihe
+app.put('/paivita_kysymyksen_aihe/:kysymys_id/:aihe_id', (req, response, next) => {
+  db.query("UPDATE aiheiden_joukko SET aihe_id = $2 WHERE kysymys_id = $1",
+    [req.params.kysymys_id, req.params.aihe_id],
+    (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send("Kysymyksen aihe on päivitetty onnistuneesti!")
+    })
+})
+
+
 // haetaan aiheet
 app.get('/aihe',(req, response, next) => {
   db.query('SELECT * FROM aihe ORDER BY aihe', (err, res) => {

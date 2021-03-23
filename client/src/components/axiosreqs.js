@@ -307,6 +307,29 @@ const muutaKysymys = async (dispatch, currentExamIndex, value, id, cardIndex) =>
     })
 }
 
+const muutaKysymyksenAihe = async (dispatch, currentExamIndex, value, id, cardIndex, kaikkiAiheet) => {
+    let newCardAihe = "";
+    kaikkiAiheet.map((aihe, aiheIndex) => {
+        if (aihe.id === value) {
+            newCardAihe = aihe.aihe
+        }
+    })
+    try {
+        await axios({
+            method: 'put',
+            url: `${path}paivita_kysymyksen_aihe/${id}/${value}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+    } catch (exception) {
+        console.log(exception)
+    }
+    dispatch({
+        type: "card_aihe_changed",
+        data: { examIndex: currentExamIndex, cardIndex: cardIndex, newCardAihe: newCardAihe }
+    }) 
+}
+
+
 const muutaVaihtoehto = async (dispatch, currentExamIndex, value, vaihtoehto_id, cardIndex, listItemIndex) => {
     try {
         await axios({
@@ -415,6 +438,7 @@ export {
     haeTentinLuojanId,
     muutaTentti,
     muutaKysymys,
+    muutaKysymyksenAihe,
     muutaVaihtoehto,
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos,
