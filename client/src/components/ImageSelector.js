@@ -141,7 +141,7 @@ export default function ImageSelector({ location }) {
 
     useEffect(() => {
         tileData.length > 0
-            && loaded.length === tileData.length && setLoading(false)
+            && loaded.length === 4 /* tileData.length */ && setLoading(false)
     }, [loaded.length, tileData.length])
 
     return (
@@ -160,10 +160,11 @@ export default function ImageSelector({ location }) {
                     }.
 
                 </DialogTitle>
-                <DialogContent style={{display: "flex", justifyContent: "center"}} dividers>
+                <DialogContent style={{ display: "flex", justifyContent: "center" }} dividers>
                     {loading && <CircularProgress
                         variant="determinate"
-                        value={Math.round(loaded.length * 100 / (tileData.length > 0 ? tileData.length : 1))}
+                        /* value={Math.round(loaded.length * 100 / (tileData.length > 0 ? tileData.length : 1))} */
+                        value={loaded.length * 25}
                     />}
                     <div style={{ display: loading ? 'none' : 'block' }} className={classes.root}>
                         <GridList cellHeight={180} className={classes.gridList}>
@@ -173,7 +174,7 @@ export default function ImageSelector({ location }) {
                                         src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
                                         alt={tile.title}
                                         onLoad={() => {
-                                            setLoaded(loaded => [...loaded, tile.id])
+                                            loaded.length <= 4 && setLoaded(loaded => [...loaded, tile.id])
                                         }}
                                     />
                                     <GridListTileBar
