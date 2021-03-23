@@ -1,5 +1,4 @@
-import { React, useEffect, useState, /* useContext */ } from 'react'
-/* import { store } from './store.js' */
+import { React, useState } from 'react'
 import { withStyles, makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -10,13 +9,12 @@ import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import Typography from '@material-ui/core/Typography'
 import ImageSearch from '@material-ui/icons/ImageSearch'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import Grid from '@material-ui/core/Grid'
 import GridList from '@material-ui/core/GridList'
 import GridListTile from '@material-ui/core/GridListTile'
 import GridListTileBar from '@material-ui/core/GridListTileBar'
 import Checkbox from '@material-ui/core/Checkbox'
-import HdIcon from '@material-ui/icons/Hd';
+import HdIcon from '@material-ui/icons/Hd'
+import Skeleton from '@material-ui/lab/Skeleton'
 import { fetchImage } from './axiosreqs'
 
 // Dialog
@@ -43,8 +41,8 @@ const useStyles = makeStyles((theme) => ({
         backgroundColor: theme.palette.background.paper,
     },
     gridList: {
-        width: '100%',
-        height: '100%',
+        width: '100% !important',
+        height: '100% !important',
     },
     icon: {
         color: 'rgba(255, 255, 255, 0.54)',
@@ -79,13 +77,11 @@ const DialogActions = withStyles((theme) => ({
 }))(MuiDialogActions)
 
 export default function ImageSelector({ location }) {
-    /* const { state, dispatch } = useContext(store) */
-    const [loading, setLoading] = useState(true)
     const [open, setOpen] = useState(false)
     const [tileData, setTileData] = useState([])
-    const [loaded, setLoaded] = useState([])
     const classes = useStyles()
     let selectedImages = []
+    let imageLoaded = []
 
     const getTileData = async () => {
         // hakee kuvat serveriltä ja muuntaa tietokannasta
@@ -139,18 +135,13 @@ export default function ImageSelector({ location }) {
         }
     }
 
-    useEffect(() => {
-        tileData.length > 0
-            && loaded.length === 4 /* tileData.length */ && setLoading(false)
-    }, [loaded.length, tileData.length])
-
     return (
         <div>
             <IconButton style={{ float: "left" }} label="delete" color="primary"
                 onClick={() => { handleClickOpen(); getTileData(); }}>
                 <ImageSearch />
             </IconButton >
-            <Dialog fullWidth={true} maxWidth={'xl'} onClose={handleClose}
+            <Dialog classes={{ paper: classes.dialogPaper }} fullWidth={true} maxWidth={'xl'} onClose={handleClose}
                 aria-labelledby="customized-dialog-title" open={open}>
                 <DialogTitle id="customized-dialog-title" onClose={handleClose}>
                     Kuvan lisääminen {
@@ -161,22 +152,17 @@ export default function ImageSelector({ location }) {
 
                 </DialogTitle>
                 <DialogContent style={{ display: "flex", justifyContent: "center" }} dividers>
-                    {loading && <CircularProgress
-                        variant="determinate"
-                        /* value={Math.round(loaded.length * 100 / (tileData.length > 0 ? tileData.length : 1))} */
-                        value={loaded.length * 25}
-                    />}
-                    <div style={{ display: loading ? 'none' : 'block' }} className={classes.root}>
-                        <GridList cellHeight={180} className={classes.gridList}>
+                    <div className={classes.root}>
+                        <GridList cellHeight={240} className={classes.gridList}>
                             {tileData.map((tile) => (
-                                <GridListTile key={tile.img}>
-                                    <img
+                                <GridListTile key={tile.img} width={240} height={135}>
+                                    <img style={{ overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
                                         src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
                                         alt={tile.title}
-                                        onLoad={() => {
-                                            loaded.length <= 4 && setLoaded(loaded => [...loaded, tile.id])
-                                        }}
+                                        loading="lazy"
+                                        onLoad={() => { imageLoaded.push(tile.id); console.log("Valmis: " + tile.id) }}
                                     />
+                                    {!imageLoaded.includes(tile.id) && <Skeleton variant="rect" width={512} height={512} />}
                                     <GridListTileBar
                                         title={<>
 
