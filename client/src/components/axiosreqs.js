@@ -92,12 +92,19 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
                     for (var j = 0; j < tentit[i].kysymykset.length; j++) {
                         // haetaan kysymyksen vaihtoehdot
                         tentit[i].kysymykset[j].vaihtoehdot = []
+                        tentit[i].kysymykset[j].kuvat = []
                         let vaihtoehdot_taulu =
                             await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id, headers)
+                        let kysymyksen_kuvat_taulu =
+                            await axios.get(path + "kysymyksen_kuvat/" + tentit[i].kysymykset[j].id, headers)
                         tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
+                        tentit[i].kysymykset[j].kuvat = kysymyksen_kuvat_taulu.data
                         // käydään kayttajan_vastaukset läpi
                         for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
                             tentit[i].kysymykset[j].vaihtoehdot[k].vastaus = null
+                            let vaihtoehdon_kuvat_taulu =
+                                await axios.get(path + "vaihtoehdon_kuvat/" + tentit[i].kysymykset[j].vaihtoehdot[k].id, headers)
+                            tentit[i].kysymykset[j].vaihtoehdot[k].kuvat = vaihtoehdon_kuvat_taulu.data
                             if (kayttajan_vastaukset.data.length > 0) {
                                 for (var l = 0; l < kayttajan_vastaukset.data.length; l++) {
                                     if (tentit[i].kysymykset[j].vaihtoehdot[k].id === kayttajan_vastaukset.data[l].vaihtoehto_id) {
@@ -235,6 +242,34 @@ const lisaaTentti = async (dispatch, currentUser) => {
         console.log("Datan päivitäminen ei onnistunut.")
     }
     dispatch({ type: "add_exam" })
+}
+
+const lisaaKuva = async (dispatch, examIndex, cardIndex, listItemIndex, sijainti, selectedImages, kysymys_id, vaihtoehto_id) => {
+    let body = {
+        kysymys_id: kysymys_id,
+        vaihtoehto_id: vaihtoehto_id,
+        sijainti: sijainti,
+        selectedImages: selectedImages
+    }
+    try {
+        await axios({
+            method: 'post',
+            url: `${path}lisaa_kuva/`,
+            data: body,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+
+    } catch (exception) {
+        console.log("Datan päivitäminen ei onnistunut.")
+    }
+    dispatch({
+        type: "add_image",
+        examIndex: examIndex,
+        cardIndex: cardIndex,
+        listItemIndex: listItemIndex,
+        sijainti: sijainti,
+        selectedImages: selectedImages
+    })
 }
 
 const haeTentinLuojanId = async (tentti_id) => {
@@ -391,6 +426,7 @@ export {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
+    lisaaKuva,
     haeTentinLuojanId,
     muutaTentti,
     muutaKysymys,

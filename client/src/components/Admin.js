@@ -4,10 +4,14 @@ import { useStyles, GreenCheckbox, ExamButton } from './Style'
 /* import axios from 'axios' */
 import {
     Card, CardContent, Container, List, ListItem, Box, Icon,
-    IconButton, CssBaseline, TextField, Input
+    IconButton, CssBaseline, TextField
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import DeleteExamDialog from './DeleteExamDialog'
+import GridList from '@material-ui/core/GridList'
+import GridListTile from '@material-ui/core/GridListTile'
+import GridListTileBar from '@material-ui/core/GridListTileBar'
+import ZoomInIcon from '@material-ui/icons/ZoomIn'
 import { store } from './store.js'
 import {
     fetchUser,
@@ -17,7 +21,6 @@ import {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
-    haeTentinLuojanId,
     muutaTentti,
     muutaKysymys,
     muutaVaihtoehto,
@@ -97,7 +100,11 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                             <CardContent style={{ width: "100%" }} className={classes.content}>
                                                 <List>
                                                     <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="darkBlue" />
-                                                    <ImageSelector location="kysymys"/>
+                                                    <ImageSelector
+                                                        examIndex={currentExamIndex}
+                                                        cardIndex={cardIndex}
+                                                        sijainti="kysymys"
+                                                    />
                                                     <TextField multiline type="text" style={{ minWidth: "93%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                                         muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                     }}>
@@ -106,11 +113,42 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                         color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)}>
                                                         <DeleteIcon />
                                                     </IconButton >
+                                                    <div style={{ padding: "25px" }} className={classes.root}>
+                                                        <GridList cellHeight={68} className={classes.gridList}>
+                                                            {card.kuvat.map((tile) => (
+                                                                <GridListTile key={uuid()} width={240} height={240}>
+                                                                    <img
+                                                                        src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
+                                                                        alt={tile.tiedostonimi}
+                                                                        loading="lazy"
+                                                                    />
+                                                                    <GridListTileBar
+                                                                        title={<>
+                                                                            {tile.tiedostonimi}
+                                                                        </>}
+                                                                        subtitle={<span>id: {tile.id}</span>}
+                                                                        actionIcon={
+                                                                            <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
+                                                                                <IconButton aria-label={`info about ${tile.tiedostonimi}`} className={classes.icon}>
+                                                                                    <ZoomInIcon style={{ color: "white" }} />
+                                                                                </IconButton>
+                                                                            </a>
+                                                                        }
+                                                                    />
+                                                                </GridListTile>
+                                                            ))}
+                                                        </GridList>
+                                                    </div>
                                                     {card.vaihtoehdot.map((listItem, listItemIndex) => (
                                                         <>
                                                             <ListItem key={uuid()}><CodeComponent style={{ width: "100%" }} questionString={listItem.vaihtoehto} /></ListItem>
                                                             <ListItem key={uuid()}>
-                                                                <ImageSelector location="vaihtoehto"/>
+                                                                <ImageSelector
+                                                                    examIndex={currentExamIndex}
+                                                                    cardIndex={cardIndex}
+                                                                    listItemIndex={listItemIndex}
+                                                                    sijainti="vaihtoehto"
+                                                                />
                                                                 <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
                                                                     onChange={(event) => {
                                                                         oikeaValintaMuuttui(dispatch, currentExamIndex, cardIndex, event.target.checked, listItem.id, listItemIndex, state[currentExamIndex].id)
@@ -125,7 +163,37 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                 <IconButton style={{ float: "right" }} label="delete" color="primary"
 
                                                                     onClick={() => poistaVaihtoehdonLiitos(dispatch, currentExamIndex, listItem.id, cardIndex, card.id, listItemIndex)}>
-                                                                    <DeleteIcon /></IconButton >
+                                                                    <DeleteIcon />
+                                                                </IconButton >
+                                                            </ListItem>
+                                                            <ListItem key={uuid()}>
+                                                                <div style={{ padding: "25px" }} className={classes.root}>
+                                                                    <GridList cellHeight={68} className={classes.gridList}>
+                                                                        {listItem.kuvat.map((tile) => (
+                                                                            <GridListTile key={uuid()} width={240} height={240}>
+                                                                                {console.log("//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi)}
+                                                                                <img
+                                                                                    src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
+                                                                                    alt={tile.tiedostonimi}
+                                                                                    loading="lazy"
+                                                                                />
+                                                                                <GridListTileBar
+                                                                                    title={<>
+                                                                                        {tile.tiedostonimi}
+                                                                                    </>}
+                                                                                    subtitle={<span>id: {tile.id}</span>}
+                                                                                    actionIcon={
+                                                                                        <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
+                                                                                            <IconButton aria-label={`info about ${tile.tiedostonimi}`} className={classes.icon}>
+                                                                                                <ZoomInIcon style={{ color: "white" }} />
+                                                                                            </IconButton>
+                                                                                        </a>
+                                                                                    }
+                                                                                />
+                                                                            </GridListTile>
+                                                                        ))}
+                                                                    </GridList>
+                                                                </div>
                                                             </ListItem>
                                                         </>
                                                     ))}

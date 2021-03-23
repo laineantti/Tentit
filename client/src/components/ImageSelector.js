@@ -1,4 +1,4 @@
-import { React, useState } from 'react'
+import { React, useState, useContext } from 'react'
 import { withStyles, makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -15,7 +15,8 @@ import GridListTileBar from '@material-ui/core/GridListTileBar'
 import Checkbox from '@material-ui/core/Checkbox'
 import HdIcon from '@material-ui/icons/Hd'
 import Skeleton from '@material-ui/lab/Skeleton'
-import { fetchImage } from './axiosreqs'
+import { fetchImage, lisaaKuva } from './axiosreqs'
+import { store } from './store.js'
 
 // Dialog
 const styles = (theme) => ({
@@ -76,12 +77,13 @@ const DialogActions = withStyles((theme) => ({
     },
 }))(MuiDialogActions)
 
-export default function ImageSelector({ location }) {
+export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sijainti }) {
+    const { state, dispatch } = useContext(store)
     const [open, setOpen] = useState(false)
     const [tileData, setTileData] = useState([])
+    const [imageLoaded, setImageLoaded] = useState([])
+    const [selectedImages, setSelectedImages] = useState([])
     const classes = useStyles()
-    let selectedImages = []
-    let imageLoaded = []
 
     const getTileData = async () => {
         // hakee kuvat serveriltä ja muuntaa tietokannasta
@@ -99,6 +101,7 @@ export default function ImageSelector({ location }) {
             })
         }
         setTileData(kuvatMuunnettu)
+        setImageLoaded([])
     }
 
     const handleClickOpen = () => {
@@ -121,15 +124,16 @@ export default function ImageSelector({ location }) {
     }
 
     const asetaValinta = (id) => {
-        selectedImages.push(id)
+        setSelectedImages(selectedImages => [...selectedImages, id])
+        console.log(selectedImages)
     }
 
     const poistaValinta = (id) => {
         if (selectedImages.length > 0) {
             for (let i in selectedImages) {
                 if (selectedImages[i] === id) {
-                    let temp = selectedImages
-                    selectedImages = temp.filter(kuvan_id => kuvan_id !== id)
+                    const filteredSelectedImages = selectedImages.filter(kuvan_id => kuvan_id !== id)
+                    setSelectedImages(filteredSelectedImages)
                 }
             }
         }
@@ -145,7 +149,7 @@ export default function ImageSelector({ location }) {
                 aria-labelledby="customized-dialog-title" open={open}>
                 <DialogTitle id="customized-dialog-title" onClose={handleClose}>
                     Kuvan lisääminen {
-                        location === "kysymys" ?
+                        sijainti === "kysymys" ?
                             "kysymykseen" :
                             "vaihtoehtoon"
                     }.
@@ -155,12 +159,15 @@ export default function ImageSelector({ location }) {
                     <div className={classes.root}>
                         <GridList cellHeight={240} className={classes.gridList}>
                             {tileData.map((tile) => (
-                                <GridListTile key={tile.img} width={240} height={135}>
+                                <GridListTile key={tile.img} width={240} height={240}>
                                     <img style={{ overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
                                         src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
                                         alt={tile.title}
                                         loading="lazy"
-                                        onLoad={() => { imageLoaded.push(tile.id); console.log("Valmis: " + tile.id) }}
+                                        onLoad={() => {
+                                            !imageLoaded.includes(tile.id)
+                                                && setImageLoaded(imageLoaded => [...imageLoaded, tile.id])
+                                        }}
                                     />
                                     {!imageLoaded.includes(tile.id) && <Skeleton variant="rect" width={512} height={512} />}
                                     <GridListTileBar
@@ -179,7 +186,7 @@ export default function ImageSelector({ location }) {
                                         actionIcon={
                                             <a href={"//localhost:4000/uploads/" + tile.img} target="_blank" rel="noreferrer">
                                                 <IconButton aria-label={`info about ${tile.title}`} className={classes.icon}>
-                                                    <HdIcon />
+                                                    <HdIcon style={{ color: "white" }} />
                                                 </IconButton>
                                             </a>
                                         }
@@ -191,13 +198,35 @@ export default function ImageSelector({ location }) {
                 </DialogContent>
                 <DialogActions>
                     <Button autoFocus onClick={() => {
+                        console.log(selectedImages)
+                        let kysymys_id = state[examIndex].kysymykset[cardIndex].id
+                        if (sijainti === "kysymys") {
+                            lisaaKuva(dispatch,
+                                examIndex,
+                                cardIndex,
+                                listItemIndex,
+                                sijainti,
+                                selectedImages,
+                                kysymys_id
+                            )
+                        } else {
+                            let vaihtoehto_id = state[examIndex].kysymykset[cardIndex].vaihtoehdot[listItemIndex].id
+                            lisaaKuva(dispatch,
+                                examIndex,
+                                cardIndex,
+                                listItemIndex,
+                                sijainti,
+                                selectedImages,
+                                kysymys_id,
+                                vaihtoehto_id
+                            )
+                        }
                         handleClose()
-
                     }} color={"secondary"}>
                         {
-                            selectedImages.length === 1 ?
+                            selectedImages.length <= 1 ?
                                 "Lisää kuva"
-                                : "Lisää kuvat"
+                                : "Lisää kuvat (" + selectedImages.length + ")"
                         }
                     </Button>
                     <Button autoFocus onClick={() => {

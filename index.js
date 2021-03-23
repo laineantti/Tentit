@@ -346,37 +346,6 @@ app.get('/kuva/:id', (req, response, next) => {
   })
 })
 
-// otetaan tarvittaessa käyttöön, koska upload-toiminto on
-// kuvien lisäämistä varten
-// lisätään uuden kuvan osoite tietokantaan
-/* app.post('/lisaa_kuva/:tiedostonimi', (req, response, next) => {
-  try {
-    db.query("INSERT INTO kuva (tiedostonimi) values ($1) RETURNING id",
-      [req.params.nimi],
-      (err, res) => {
-        if (err) {
-          return next(err)
-        }
-        response.status(201).send(res.rows[0].id)
-      })
-
-  }
-  catch (err) {
-    response.send(err)
-  }
-}) */
-
-// tarkistetaan onko käyttäjä admin (SAMAN TIEDON SAA ALEMMASTA /kayttaja/)
-/* app.get('/onko_admin/:kayttaja_id', (req, response, next) => {
-  db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.kayttaja_id], (err, res) => {
-    if (res.rows[0].rooli === 'admin') {
-      next()
-    } else {
-      return res.send(401)
-    }
-  })
-}) */
-
 // haetaan käyttäjä id:n perusteella (id saadaan isAuthenticated-koodista ja tallennetaan userId-muuttujaan)
 app.get('/kayttaja/', (req, response, next) => {
   const userId = response.authentication.userId
@@ -579,6 +548,62 @@ app.get('/kysymyksen_vaihtoehdot', (req, response, next) => {
     }
     response.send(res.rows)
   })
+})
+
+// lisää kuvat kysymykseen
+app.post('/lisaa_kuva/', (req, response, next) => {
+  /* body = {
+    kysymys_id: kysymys_id,
+    vaihtoehto_id: vaihtoehto_id,
+    sijainti: sijainti,
+    selectedImages: selectedImages
+  } */
+
+  let reqBody = req.body
+
+  if (reqBody.sijainti === "kysymys") {
+    req.body.selectedImages.forEach(kuva_id => {
+      db.query("INSERT INTO kysymyksen_kuvat (kuva_id,kysymys_id) values (" + kuva_id + ",$1)",
+        [req.body.kysymys_id],
+        (err) => {
+          if (err) {
+            return next(err)
+          }
+        })
+    })
+  } else if (reqBody.sijainti === "vaihtoehto") {
+    req.body.selectedImages.forEach(kuva_id => {
+      db.query("INSERT INTO vaihtoehdon_kuvat (kuva_id,vaihtoehto_id) values (" + kuva_id + ",$1)",
+        [req.body.vaihtoehto_id],
+        (err) => {
+          if (err) {
+            return next(err)
+          }
+        })
+    })
+  }
+})
+
+// palauttaa kysymyksen kuvat, kysymyksen id perusteella
+app.get('/kysymyksen_kuvat/:kysymys_id', (req, response, next) => {
+  db.query('SELECT * FROM kuva WHERE id IN (SELECT kuva_id FROM kysymyksen_kuvat WHERE kysymys_id = $1 ORDER BY id) ORDER BY id',
+    [req.params.kysymys_id], (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send(res.rows)
+    })
+})
+
+// palauttaa vaihtoehdon kuvat, vaihtoehdon id perusteella
+app.get('/vaihtoehdon_kuvat/:vaihtoehto_id', (req, response, next) => {
+  db.query('SELECT * FROM kuva WHERE id IN (SELECT kuva_id FROM vaihtoehdon_kuvat WHERE vaihtoehto_id = $1 ORDER BY id) ORDER BY id',
+    [req.params.vaihtoehto_id], (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send(res.rows)
+    })
 })
 
 // palauttaa kysymyksen vaihtoehdot, kysymyksen id perusteella

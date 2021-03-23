@@ -54,6 +54,14 @@ const StateProvider = ({ children }) => {
                 tempCopy.push(newExam)
                 return tempCopy
 
+            case "add_image":
+                action.data.sijainti === "kysymys" ?
+                    tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
+                        .selectedImages = action.data.selectedImages
+                    : tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
+                        .vaihtoehdot[action.data.listItemIndex].selectedImages = action.data.selectedImages
+                return tempCopy
+
             case "exam_changed":
                 tempCopy[action.data.examIndex].nimi = action.data.newExam
                 return tempCopy
