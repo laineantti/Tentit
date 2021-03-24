@@ -4,7 +4,7 @@ import { useStyles, GreenCheckbox, ExamButton } from './Style'
 /* import axios from 'axios' */
 import {
     Card, CardContent, Container, List, ListItem, Box, Icon,
-    IconButton, CssBaseline, TextField, MenuItem, Input
+    IconButton, CssBaseline, TextField, MenuItem
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import DeleteExamDialog from './DeleteExamDialog'
@@ -30,7 +30,7 @@ import {
     poistaVaihtoehdonLiitos
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
-import { idToIndex, hakuId } from './helpers'
+import { idToIndex, hakuId, kysymysLista } from './helpers'
 
 const columns = [
     { field: 'id', headerName: 'ID', type: 'number', flex: 0.25 },
@@ -52,7 +52,9 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
     const [kaikkiKysymykset, setKaikkiKysymykset] = useState([])
     const [kaikkiAiheet, setKaikkiAiheet] = useState([])
     const [dataGridSelection, setDataGridSelection] = useState([])
+    const [rows, setRows] = useState([])
     const classes = useStyles()
+    
 
     useEffect(() => {
         if (!currentUser) {
@@ -62,15 +64,12 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
             kysymysJaAihe(setKaikkiKysymykset)
             haeAiheet(setKaikkiAiheet)
         }
-
-    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex])
+    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex, dataGridSelection, rows])
 
 
     const [examName, setExamName] = useState(hakuId(state,currentExamId,currentExamIndex,setCurrentExamIndex))
 
     const kysymysLista = (currentExamIndex) => {
-        console.log(kaikkiKysymykset)
-        console.log(state[currentExamIndex].kysymykset)
         let lista=kaikkiKysymykset
         state[currentExamIndex].kysymykset.map((item,kysymysIndex) => {
             lista.map((listaItem,listaId) => {
@@ -81,6 +80,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
         })
         return lista
     }
+
 
     return (
         <>
@@ -97,7 +97,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                     && examName
                     ? (
 
-                        <>
+                        <> 
                             <h2> 
                                 <TextField style={{ width: "85%" }} type="text" value={examName} id={state[currentExamIndex].id}
                                     onChange={(event) => {
@@ -132,12 +132,16 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                                 </TextField>
                                                 
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
-                                                    color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)}>
+                                                    color="primary" onClick={() => {
+                                                        poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)
+                                                        setRows(kysymysLista(currentExamIndex))
+                                                        setDataGridSelection([])
+                                                    }}>
                                                     <DeleteIcon />
                                                 </IconButton ><br/>
                                                 <span>{card.aihe}</span>
                                                 <TextField style={{ minWidth: "3%"  }}
-                                                        value={card.aihe} 
+                                                        value={''} 
                                                         select
                                                         onChange={(event)=>{muutaKysymyksenAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet)}}
                                                         InputProps={{disableUnderline: true}}>
@@ -186,17 +190,20 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                     </Card>
                                 )
                             }
-                             <div style={{ width: '100%', textAlign : 'center' }}>
+
+                            <div style={{ width: '100%', textAlign : 'center' }}>
                             <IconButton 
                                 onClick={() => {
                                         if (dataGridSelection.length > 0) {
                                             console.log(dataGridSelection)
                                             dataGridSelection.map((item, kysymysIndex) => {
-                                                console.log(kysymysIndex, item)
-                                                setNewCardId(lisaaKysymysTenttiin(item,state[currentExamIndex].id))
+                                                setNewCardId(lisaaKysymysTenttiin(item,state[currentExamIndex].id))                                               
                                             })
+                                            setDataGridSelection([])
+                                            setRows(kysymysLista(currentExamIndex))
                                         } else {
                                             setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))
+                                            setRows(kysymysLista(currentExamIndex))
                                         }
                                     }
                                 }>
@@ -204,10 +211,12 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                             </IconButton>
                             </div>
                             <Card style={{ marginTop: "10px" }}  className={classes.root}>
-                            {console.log(kysymysLista(currentExamIndex))}
                             <div style={{ height: 460, width: '100%' }}>
-                                <DataGrid columns={columns} rows={kysymysLista(currentExamIndex)} pageSize={7} checkboxSelection
-                                onSelectionModelChange={(newSelection)=>{setDataGridSelection(newSelection.selectionModel)}}/>
+                                <DataGrid columns={columns} rows={rows} pageSize={7} checkboxSelection
+                                onSelectionModelChange={(newSelection)=>{
+                                    setDataGridSelection(newSelection.selectionModel)                                   
+                                }}
+                                />
                             </div>
                             </Card>
                         </>
@@ -221,13 +230,14 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                             setCurrentDatabaseExamIdChanged(exam.id)
                             setCurrentExamId(exam.id)
                             setExamName(exam.nimi)
+                            setRows(kysymysLista(examIndex))
                         } else {
                             setCurrentDatabaseExamIdChanged(newExamId)
                         }
                     }}>
                         {exam.nimi}
-                    </ExamButton>
-                )}
+                    </ExamButton> 
+                )} 
                 <IconButton onClick={() => {
                     setNewExamId(lisaaTentti(dispatch, currentUser))
                 }}>
