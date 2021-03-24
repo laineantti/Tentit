@@ -346,6 +346,38 @@ app.get('/kuva/:id', (req, response, next) => {
   })
 })
 
+// poistetaan kuvan liitos kysymykseen ja/tai vaihtoehtoon
+app.delete('/poista_kuvan_liitos/', (req, res, next) => {
+  /* body = {
+        kysymys_id: kysymys_id,
+        vaihtoehto_id: vaihtoehto_id,
+        sijainti: sijainti,
+        kuva_id: kuva_id
+    } */
+
+  let reqBody = req.body
+
+  if (reqBody.sijainti === "kysymys") {
+    db.query('DELETE FROM kysymyksen_kuvat WHERE kuva_id=$1 AND kysymys_id=$2',
+      [req.body.kuva_id, req.body.kysymys_id],
+      (err) => {
+        if (err) {
+          return next(err)
+        }
+      }
+    )
+  } else if (reqBody.sijainti === "vaihtoehto") {
+    db.query('DELETE FROM vaihtoehdon_kuvat WHERE kuva_id=$1 AND vaihtoehto_id=$2',
+      [req.body.kuva_id, req.body.vaihtoehto_id],
+      (err) => {
+        if (err) {
+          return next(err)
+        }
+      }
+    )
+  }
+})
+
 // haetaan käyttäjä id:n perusteella (id saadaan isAuthenticated-koodista ja tallennetaan userId-muuttujaan)
 app.get('/kayttaja/', (req, response, next) => {
   const userId = response.authentication.userId
@@ -551,37 +583,38 @@ app.get('/kysymyksen_vaihtoehdot', (req, response, next) => {
 })
 
 // lisää kuvat kysymykseen
-app.post('/lisaa_kuva/', (req, response, next) => {
-  /* body = {
-    kysymys_id: kysymys_id,
-    vaihtoehto_id: vaihtoehto_id,
-    sijainti: sijainti,
-    selectedImages: selectedImages
-  } */
+app.post('/liita_kuva_kysymykseen/', (req, response, next) => {
 
   let reqBody = req.body
 
-  if (reqBody.sijainti === "kysymys") {
-    req.body.selectedImages.forEach(kuva_id => {
-      db.query("INSERT INTO kysymyksen_kuvat (kuva_id,kysymys_id) values (" + kuva_id + ",$1)",
-        [req.body.kysymys_id],
-        (err) => {
-          if (err) {
-            return next(err)
-          }
-        })
-    })
-  } else if (reqBody.sijainti === "vaihtoehto") {
-    req.body.selectedImages.forEach(kuva_id => {
-      db.query("INSERT INTO vaihtoehdon_kuvat (kuva_id,vaihtoehto_id) values (" + kuva_id + ",$1)",
-        [req.body.vaihtoehto_id],
-        (err) => {
-          if (err) {
-            return next(err)
-          }
-        })
-    })
-  }
+  req.body.selectedImages.forEach(kuva_id => {
+    db.query("INSERT INTO kysymyksen_kuvat (kuva_id,kysymys_id) values (" + kuva_id + ",$1)",
+      [req.body.kysymys_id],
+      (err, res) => {
+        if (err) {
+          return next(err)
+        }
+      })
+  })
+  // Uusi kuva lisätty onnistuneesti!
+  response.status(201).send(kuva_id)
+})
+
+// lisää kuvat vaihtoehtoon
+app.post('/liita_kuva_vaihtoehtoon/', (req, response, next) => {
+
+  let reqBody = req.body
+  req.body.selectedImages.forEach(kuva_id => {
+    db.query("INSERT INTO vaihtoehdon_kuvat (kuva_id,vaihtoehto_id) values (" + kuva_id + ",$1)",
+      [req.body.vaihtoehto_id],
+      (err, res) => {
+        if (err) {
+          return next(err)
+        }
+      })
+  })
+  // Uusi kuva lisätty onnistuneesti!
+  response.status(201).send(kuva_id)
 })
 
 // palauttaa kysymyksen kuvat, kysymyksen id perusteella

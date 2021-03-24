@@ -226,50 +226,114 @@ const oikeaValintaMuuttui = async (dispatch, currentExamIndex, kysymys_id, check
 }
 
 const lisaaTentti = async (dispatch, currentUser) => {
-    let body = {
-
-    }
     try {
         let response = await axios({
             method: 'post',
             url: `${path}lisaa_tentti/${currentUser}`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
+        dispatch({ type: "add_exam" })
         // palauttaa uuden luodun tentin id
         return response.data
 
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
-    dispatch({ type: "add_exam" })
 }
 
-const lisaaKuva = async (dispatch, examIndex, cardIndex, listItemIndex, sijainti, selectedImages, kysymys_id, vaihtoehto_id) => {
+const liitaKuvaKysymykseen = async (dispatch, examIndex, cardIndex, selectedImages, kysymys_id) => {
     let body = {
         kysymys_id: kysymys_id,
-        vaihtoehto_id: vaihtoehto_id,
-        sijainti: sijainti,
         selectedImages: selectedImages
     }
     try {
-        await axios({
+        let response = await axios({
             method: 'post',
-            url: `${path}lisaa_kuva/`,
+            url: `${path}liita_kuva_kysymykseen/`,
             data: body,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
+        // palauttaa uuden luodun kuvan id
+        return response.data
+    } catch (exception) {
+        console.log("Datan päivitäminen ei onnistunut.")
+    }
+    console.log(examIndex)
+    dispatch({
+        type: "add_image_card",
+        data: {
+            examIndex: examIndex,
+            cardIndex: cardIndex,
+            kuvat: selectedImages
+        }
+    })
+}
 
+const liitaKuvaVaihtoehtoon = async (dispatch, examIndex, cardIndex, selectedImages, kysymys_id, listItemIndex, vaihtoehto_id) => {
+    let body = {
+        kysymys_id: kysymys_id,
+        vaihtoehto_id: vaihtoehto_id,
+        selectedImages: selectedImages
+    }
+    try {
+        let response = await axios({
+            method: 'post',
+            url: `${path}liita_kuva_vaihtoehtoon/`,
+            data: body,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        // palauttaa uuden luodun kuvan id
+        return response.data
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
     dispatch({
-        type: "add_image",
-        examIndex: examIndex,
-        cardIndex: cardIndex,
-        listItemIndex: listItemIndex,
-        sijainti: sijainti,
-        selectedImages: selectedImages
+        type: "add_image_choise",
+        data: {
+            examIndex: examIndex,
+            cardIndex: cardIndex,
+            listItemIndex: listItemIndex,
+            kuvat: selectedImages
+        }
     })
+}
+
+const poistaKuvanLiitos = async (dispatch, currentExamIndex, cardIndex, sijainti, kuva_id, kysymys_id, imageIndex, vaihtoehto_id, listItemIndex) => {
+    let body = {
+        kysymys_id: kysymys_id,
+        vaihtoehto_id: vaihtoehto_id,
+        sijainti: sijainti,
+        kuva_id: kuva_id
+    }
+    try {
+        sijainti === "kysymys" ?
+            dispatch({
+                type: "image_deleted_card",
+                data: {
+                    examIndex: currentExamIndex,
+                    cardIndex: cardIndex,
+                    imageIndex: imageIndex
+                }
+            })
+            :
+            dispatch({
+                type: "image_deleted_choise",
+                data: {
+                    examIndex: currentExamIndex,
+                    cardIndex: cardIndex,
+                    listItemIndex: listItemIndex,
+                    imageIndex: imageIndex
+                }
+            })
+        await axios({
+            method: 'delete',
+            url: `${path}poista_kuvan_liitos/`,
+            data: body,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+    } catch (exception) {
+        console.log(exception)
+    }
 }
 
 const haeTentinLuojanId = async (tentti_id) => {
@@ -426,7 +490,9 @@ export {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
-    lisaaKuva,
+    liitaKuvaKysymykseen,
+    liitaKuvaVaihtoehtoon,
+    poistaKuvanLiitos,
     haeTentinLuojanId,
     muutaTentti,
     muutaKysymys,

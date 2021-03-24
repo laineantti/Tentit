@@ -21,6 +21,7 @@ import {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
+    poistaKuvanLiitos,
     muutaTentti,
     muutaKysymys,
     muutaVaihtoehto,
@@ -41,6 +42,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
     const [newExamId, setNewExamId] = useState(-1)
     const [newCardId, setNewCardId] = useState(-1)
     const [newChoiseId, setNewChoiseId] = useState(-1)
+    const [newImageId, setNewImageId] = useState(-1)
     const classes = useStyles()
 
     useEffect(() => {
@@ -49,7 +51,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
         } else {
             fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         }
-    }, [currentUser, newExamId, newCardId, newChoiseId])
+    }, [currentUser, newExamId, newCardId, newChoiseId, newImageId])
 
 
     const [examName, setExamName] = useState(hakuId(state, currentExamId, currentExamIndex, setCurrentExamIndex))
@@ -104,6 +106,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                         examIndex={currentExamIndex}
                                                         cardIndex={cardIndex}
                                                         sijainti="kysymys"
+                                                        setNewImageId={setNewImageId}
                                                     />
                                                     <TextField multiline type="text" style={{ minWidth: "93%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                                         muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
@@ -115,7 +118,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                     </IconButton >
                                                     <div style={{ padding: "25px" }} className={classes.root}>
                                                         <GridList cellHeight={68} className={classes.gridList}>
-                                                            {card.kuvat.map((tile) => (
+                                                            {card.kuvat.map((tile, imageIndex) => (
                                                                 <GridListTile key={uuid()} width={240} height={240}>
                                                                     <img
                                                                         src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
@@ -128,11 +131,21 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                         </>}
                                                                         subtitle={<span>id: {tile.id}</span>}
                                                                         actionIcon={
-                                                                            <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
-                                                                                <IconButton aria-label={`info about ${tile.tiedostonimi}`} className={classes.icon}>
-                                                                                    <ZoomInIcon style={{ color: "white" }} />
-                                                                                </IconButton>
-                                                                            </a>
+                                                                            <>
+                                                                                <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
+                                                                                    <IconButton aria-label={`info about ${tile.tiedostonimi}`} className={classes.icon}>
+                                                                                        <ZoomInIcon style={{ color: "white" }} />
+                                                                                    </IconButton>
+                                                                                </a>
+                                                                                {console.log(state)}
+                                                                                <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
+                                                                                    color="primary" onClick={() =>
+                                                                                        setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "kysymys", tile.id, card.id, imageIndex))
+                                                                                    }>
+                                                                                    {console.log(state)}
+                                                                                    <DeleteIcon />
+                                                                                </IconButton >
+                                                                            </>
                                                                         }
                                                                     />
                                                                 </GridListTile>
@@ -148,6 +161,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                     cardIndex={cardIndex}
                                                                     listItemIndex={listItemIndex}
                                                                     sijainti="vaihtoehto"
+                                                                    setNewImageId={setNewImageId}
                                                                 />
                                                                 <GreenCheckbox checked={listItem.oikea_vastaus} color="primary"
                                                                     onChange={(event) => {
@@ -169,7 +183,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                             <ListItem key={uuid()}>
                                                                 <div style={{ padding: "25px" }} className={classes.root}>
                                                                     <GridList cellHeight={68} className={classes.gridList}>
-                                                                        {listItem.kuvat.map((tile) => (
+                                                                        {listItem.kuvat.map((tile, imageIndex) => (
                                                                             <GridListTile key={uuid()} width={240} height={240}>
                                                                                 {console.log("//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi)}
                                                                                 <img
@@ -183,11 +197,19 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                                     </>}
                                                                                     subtitle={<span>id: {tile.id}</span>}
                                                                                     actionIcon={
-                                                                                        <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
-                                                                                            <IconButton aria-label={`info about ${tile.tiedostonimi}`} className={classes.icon}>
-                                                                                                <ZoomInIcon style={{ color: "white" }} />
-                                                                                            </IconButton>
-                                                                                        </a>
+                                                                                        <>
+                                                                                            <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
+                                                                                                <IconButton aria-label={`info about ${tile.tiedostonimi}`} className={classes.icon}>
+                                                                                                    <ZoomInIcon style={{ color: "white" }} />
+                                                                                                </IconButton>
+                                                                                            </a>
+                                                                                            <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
+                                                                                                color="primary" onClick={() =>
+                                                                                                    setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "vaihtoehto", tile.id, card.id, imageIndex, listItem.id, listItemIndex))
+                                                                                                }>
+                                                                                                <DeleteIcon />
+                                                                                            </IconButton >
+                                                                                        </>
                                                                                     }
                                                                                 />
                                                                             </GridListTile>

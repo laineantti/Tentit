@@ -15,7 +15,7 @@ import GridListTileBar from '@material-ui/core/GridListTileBar'
 import Checkbox from '@material-ui/core/Checkbox'
 import HdIcon from '@material-ui/icons/Hd'
 import Skeleton from '@material-ui/lab/Skeleton'
-import { fetchImage, lisaaKuva } from './axiosreqs'
+import { fetchImage, liitaKuvaKysymykseen, liitaKuvaVaihtoehtoon, } from './axiosreqs'
 import { store } from './store.js'
 
 // Dialog
@@ -77,7 +77,7 @@ const DialogActions = withStyles((theme) => ({
     },
 }))(MuiDialogActions)
 
-export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sijainti }) {
+export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sijainti, setNewImageId }) {
     const { state, dispatch } = useContext(store)
     const [open, setOpen] = useState(false)
     const [tileData, setTileData] = useState([])
@@ -201,25 +201,10 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                         console.log(selectedImages)
                         let kysymys_id = state[examIndex].kysymykset[cardIndex].id
                         if (sijainti === "kysymys") {
-                            lisaaKuva(dispatch,
-                                examIndex,
-                                cardIndex,
-                                listItemIndex,
-                                sijainti,
-                                selectedImages,
-                                kysymys_id
-                            )
+                            setNewImageId(liitaKuvaKysymykseen(dispatch, examIndex, cardIndex, selectedImages, kysymys_id))
                         } else {
                             let vaihtoehto_id = state[examIndex].kysymykset[cardIndex].vaihtoehdot[listItemIndex].id
-                            lisaaKuva(dispatch,
-                                examIndex,
-                                cardIndex,
-                                listItemIndex,
-                                sijainti,
-                                selectedImages,
-                                kysymys_id,
-                                vaihtoehto_id
-                            )
+                            setNewImageId(liitaKuvaVaihtoehtoon(dispatch, examIndex, cardIndex, selectedImages, kysymys_id, listItemIndex, vaihtoehto_id))
                         }
                         handleClose()
                     }} color={"secondary"}>
