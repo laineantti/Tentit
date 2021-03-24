@@ -157,10 +157,10 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                 </DialogTitle>
                 <DialogContent style={{ display: "flex", justifyContent: "center" }} dividers>
                     <div className={classes.root}>
-                        <GridList cellHeight={240} className={classes.gridList}>
+                        <GridList cellHeight={150} className={classes.gridList}>
                             {tileData.map((tile) => (
-                                <GridListTile key={tile.img} width={240} height={240}>
-                                    <img style={{ overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                <GridListTile key={tile.id} style={{ width: "240px", maxHeight: "150" }}>
+                                    <img style={{ width: "240px", height: "auto" }} style={{ overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
                                         src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
                                         alt={tile.title}
                                         loading="lazy"

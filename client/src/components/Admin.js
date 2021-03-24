@@ -116,20 +116,20 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                         color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)}>
                                                         <DeleteIcon />
                                                     </IconButton >
-                                                    <div style={{ padding: "25px" }} className={classes.root}>
-                                                        <GridList cellHeight={68} className={classes.gridList}>
+                                                    <div style={{ paddingTop: "20px" }} className={classes.root}>
+                                                        <GridList cellHeight={150} className={classes.gridList}>
                                                             {card.kuvat.map((tile, imageIndex) => (
-                                                                <GridListTile key={uuid()} width={240} height={240}>
-                                                                    <img
+                                                                <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
+                                                                    <img style={{ width: "240px", height: "auto" }}
                                                                         src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
                                                                         alt={tile.tiedostonimi}
                                                                         loading="lazy"
                                                                     />
                                                                     <GridListTileBar
                                                                         title={<>
-                                                                            {tile.tiedostonimi}
+                                                                            {<span>id: {tile.id}</span>}
                                                                         </>}
-                                                                        subtitle={<span>id: {tile.id}</span>}
+                                                                        subtitle={tile.tiedostonimi}
                                                                         actionIcon={
                                                                             <>
                                                                                 <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
@@ -181,21 +181,20 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                 </IconButton >
                                                             </ListItem>
                                                             <ListItem key={uuid()}>
-                                                                <div style={{ padding: "25px" }} className={classes.root}>
-                                                                    <GridList cellHeight={68} className={classes.gridList}>
+                                                                <div style={{ paddingLeft: "90px" }} className={classes.root}>
+                                                                    <GridList cellHeight={150} className={classes.gridList}>
                                                                         {listItem.kuvat.map((tile, imageIndex) => (
-                                                                            <GridListTile key={uuid()} width={240} height={240}>
-                                                                                {console.log("//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi)}
-                                                                                <img
+                                                                            <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
+                                                                                <img style={{ width: "240px", height: "auto" }}
                                                                                     src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
                                                                                     alt={tile.tiedostonimi}
                                                                                     loading="lazy"
                                                                                 />
                                                                                 <GridListTileBar
                                                                                     title={<>
-                                                                                        {tile.tiedostonimi}
+                                                                                        {<span>id: {tile.id}</span>}
                                                                                     </>}
-                                                                                    subtitle={<span>id: {tile.id}</span>}
+                                                                                    subtitle={tile.tiedostonimi}
                                                                                     actionIcon={
                                                                                         <>
                                                                                             <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
