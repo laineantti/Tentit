@@ -1,4 +1,4 @@
-import { React, useState, useEffect, useContext } from 'react'
+import { React, useState, useEffect, useContext, useCallback } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 /* import axios from 'axios' */
@@ -55,7 +55,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
     const [rows, setRows] = useState([])
     const classes = useStyles()
     
-
+    
     useEffect(() => {
         if (!currentUser) {
             fetchUser(setCurrentUser, setCurrentUserName)
@@ -78,7 +78,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                 }
             })
         })
-        return lista
+        return (lista)
     }
 
 
@@ -134,7 +134,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
                                                     color="primary" onClick={() => {
                                                         poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)
-                                                        setRows(kysymysLista(currentExamIndex))
+                                                        // setRows(kysymysLista(currentExamIndex))
                                                         setDataGridSelection([])
                                                     }}>
                                                     <DeleteIcon />
@@ -197,13 +197,12 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                         if (dataGridSelection.length > 0) {
                                             console.log(dataGridSelection)
                                             dataGridSelection.map((item, kysymysIndex) => {
-                                                setNewCardId(lisaaKysymysTenttiin(item,state[currentExamIndex].id))                                               
+                                                setNewCardId(lisaaKysymysTenttiin(item,state[currentExamIndex].id))                                         
                                             })
+                                            setRows(rows.filter((row)=> !dataGridSelection.includes(row.id)))
                                             setDataGridSelection([])
-                                            setRows(kysymysLista(currentExamIndex))
                                         } else {
                                             setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))
-                                            setRows(kysymysLista(currentExamIndex))
                                         }
                                     }
                                 }>
@@ -214,7 +213,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                             <div style={{ height: 460, width: '100%' }}>
                                 <DataGrid columns={columns} rows={rows} pageSize={7} checkboxSelection
                                 onSelectionModelChange={(newSelection)=>{
-                                    setDataGridSelection(newSelection.selectionModel)                                   
+                                    setDataGridSelection(newSelection.selectionModel) 
                                 }}
                                 />
                             </div>
