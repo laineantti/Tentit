@@ -134,8 +134,8 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
                                                     color="primary" onClick={() => {
                                                         poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)
-                                                        // setRows(kysymysLista(currentExamIndex))
-                                                        setDataGridSelection([])
+                                                        let addRow = kaikkiKysymykset.filter((kysymys)=> kysymys.id===card.id) 
+                                                        setRows([...rows, ...addRow])   
                                                     }}>
                                                     <DeleteIcon />
                                                 </IconButton ><br/>
@@ -203,6 +203,7 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                             setDataGridSelection([])
                                         } else {
                                             setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))
+                                            setRows(rows.filter((row)=> !dataGridSelection.includes(row.id))) 
                                         }
                                     }
                                 }>
