@@ -13,7 +13,6 @@ import GridList from '@material-ui/core/GridList'
 import GridListTile from '@material-ui/core/GridListTile'
 import GridListTileBar from '@material-ui/core/GridListTileBar'
 import Checkbox from '@material-ui/core/Checkbox'
-import HdIcon from '@material-ui/icons/Hd'
 import Skeleton from '@material-ui/lab/Skeleton'
 import { fetchImage, liitaKuvaKysymykseen, liitaKuvaVaihtoehtoon, } from './axiosreqs'
 import { store } from './store.js'
@@ -160,35 +159,30 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                         <GridList cellHeight={150} className={classes.gridList}>
                             {tileData.map((tile) => (
                                 <GridListTile key={tile.id} style={{ width: "240px", maxHeight: "150" }}>
-                                    <img style={{ width: "240px", height: "auto" }} style={{ overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
-                                        src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
-                                        alt={tile.title}
-                                        loading="lazy"
-                                        onLoad={() => {
-                                            !imageLoaded.includes(tile.id)
-                                                && setImageLoaded(imageLoaded => [...imageLoaded, tile.id])
-                                        }}
-                                    />
+                                    <a href={"//localhost:4000/uploads/" + tile.img} target="_blank" rel="noreferrer">
+                                        <img style={{ width: "240px", height: "auto", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                            src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
+                                            alt={tile.title}
+                                            loading="lazy"
+                                            onLoad={() => {
+                                                !imageLoaded.includes(tile.id)
+                                                    && setImageLoaded(imageLoaded => [...imageLoaded, tile.id])
+                                            }}
+                                        />
+                                    </a>
                                     {!imageLoaded.includes(tile.id) && <Skeleton variant="rect" width={512} height={512} />}
                                     <GridListTileBar
-                                        title={<>
-
+                                        title={tile.title}
+                                        subtitle={<span>id: {tile.id}</span>}
+                                        actionIcon={
                                             <Checkbox
+                                                style={{ color: "white" }}
                                                 color="primary"
                                                 inputProps={{ 'aria-label': 'secondary checkbox' }}
                                                 onClick={() => {
                                                     onkoKuvaValittu(tile.id) ? poistaValinta(tile.id) : asetaValinta(tile.id);
                                                 }}
                                             />
-                                            {tile.title}
-                                        </>}
-                                        subtitle={<span>id: {tile.id}</span>}
-                                        actionIcon={
-                                            <a href={"//localhost:4000/uploads/" + tile.img} target="_blank" rel="noreferrer">
-                                                <IconButton aria-label={`info about ${tile.title}`} className={classes.icon}>
-                                                    <HdIcon style={{ color: "white" }} />
-                                                </IconButton>
-                                            </a>
                                         }
                                     />
                                 </GridListTile>

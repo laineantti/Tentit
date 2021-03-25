@@ -6,6 +6,7 @@ import { Routes } from './components/Routes' // where we are going to specify ou
 import io from 'socket.io-client'
 import Swal from 'sweetalert2'
 import { StateProvider } from './components/store.js';
+import { MainProvider } from './components/globalContext.js';
 
 // null
 var path = null
@@ -113,10 +114,12 @@ socket.on('update', function (data) {
 })
 
 ReactDOM.render(
-  <StateProvider>
-    <Router>
-      <Routes />
-    </Router>
-  </StateProvider>,
+  <MainProvider>
+    <StateProvider>
+      <Router>
+        <Routes />
+      </Router>
+    </StateProvider>
+  </MainProvider>,
   document.getElementById('root')
 )

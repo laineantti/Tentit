@@ -2,24 +2,33 @@ import { React, useState, useEffect, useContext } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 import {
-    Card, CardContent, CardMedia, Container, Button,
+    Card, CardContent, CardMedia, Container, Button, Badge,
     List, ListItem, Box, Checkbox, CssBaseline, IconButton
 } from '@material-ui/core'
 import GridList from '@material-ui/core/GridList'
 import GridListTile from '@material-ui/core/GridListTile'
-import GridListTileBar from '@material-ui/core/GridListTileBar'
-import ZoomInIcon from '@material-ui/icons/ZoomIn'
+import ListSubheader from '@material-ui/core/ListSubheader'
+/* import GridListTileBar from '@material-ui/core/GridListTileBar' */
+import Skeleton from '@material-ui/lab/Skeleton'
+import ImageIcon from '@material-ui/icons/Image'
+import CloseIcon from '@material-ui/icons/Close'
 import { strings } from './Locale'
 import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 import { store } from './store.js'
+import { MainContext } from './globalContext.js'
 import { idToIndex } from './helpers'
 
-function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, setCurrentExamId,
-    currentExamIndex, setCurrentExamIndex }) {
+function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, setCurrentExamId, currentExamIndex, setCurrentExamIndex }) {
+
+    const { globalShowAllCardImages, globalShowAllChoiseImages } = useContext(MainContext)
+    const [showAllCardImages, setShowAllCardImages] = globalShowAllCardImages
+    const [showAllChoiseImages, setShowAllChoiseImages] = globalShowAllChoiseImages
+
     const { state, dispatch } = useContext(store)
     const [showCorrectAnswers, setShowCorrectAnswers] = useState(false)
     const [currentCourse, setCurrentCourse] = useState(1)
+    const [imageLoaded, setImageLoaded] = useState([])
     const classes = useStyles()
 
     const allCorrect = (cardChoisesArray) => {
@@ -63,27 +72,42 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                     <CodeComponent questionString={card.lause} />
                                                 </p>
                                                 <div style={{ paddingTop: "30px" }} className={classes.root}>
-                                                    <GridList cellHeight={150} >
-                                                        {card.kuvat.map((tile) => (
-                                                            <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
-                                                                <img style={{ width: "240px", height: "auto" }}
-                                                                    src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
-                                                                    alt={tile.tiedostonimi}
-                                                                    loading="lazy"
-                                                                />
-                                                                <GridListTileBar
-                                                                    title={<>
-                                                                        {<span>id: {tile.id}</span>}
-                                                                    </>}
-                                                                    subtitle={tile.tiedostonimi}
-                                                                    actionIcon={
-                                                                        <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
-                                                                            <IconButton aria-label={`info about ${tile.tiedostonimi}`} className={classes.icon}>
-                                                                                <ZoomInIcon style={{ color: "white" }} />
-                                                                            </IconButton>
-                                                                        </a>
-                                                                    }
-                                                                />
+                                                    <GridList cellHeight={150} style={{ width: "100%" }}>
+                                                        <GridListTile key="Subheader" cols={2} style={{ height: 'auto' }}>
+                                                            <ListSubheader component="div" style={{ width: "100%" }}>
+                                                                {card.kuvat.length > 2 &&
+                                                                    <IconButton style={{ float: "right" }} aria-label="expand"
+                                                                        onClick={() => {
+                                                                            showAllCardImages.includes(cardIndex) ?
+                                                                                setShowAllCardImages(showAllCardImages.filter(index => index !== cardIndex))
+                                                                                : setShowAllCardImages(showAllCardImages => [...showAllCardImages, cardIndex])
+                                                                        }}>
+                                                                        <Badge badgeContent={showAllCardImages.includes(cardIndex) ? 0 : card.kuvat.length - 2} color="primary">
+                                                                            {showAllCardImages.includes(cardIndex) ?
+                                                                                <CloseIcon />
+                                                                                : <ImageIcon />
+                                                                            }
+                                                                        </Badge>
+                                                                    </IconButton>
+                                                                }
+                                                            </ListSubheader>
+                                                        </GridListTile>
+                                                        {card.kuvat.map((tile, tileIndex) => (
+                                                            (tileIndex < 2 || showAllCardImages.includes(cardIndex)) && <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
+                                                                <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
+                                                                    <img
+                                                                        style={{ width: "240px", height: "auto", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                                                        src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
+                                                                        alt={tile.tiedostonimi}
+                                                                        loading="lazy"
+                                                                        onLoad={() => {
+                                                                            !imageLoaded.includes(tile.id)
+                                                                                && setImageLoaded(imageLoaded => [...imageLoaded, tile.id])
+                                                                        }}
+                                                                        onError={(e) => { e.target.onerror = null; e.target.style.display = "none" }}
+                                                                    />
+                                                                </a>
+                                                                {!imageLoaded.includes(tile.id) && <Skeleton variant="rect" width={512} height={512} />}
                                                             </GridListTile>
                                                         ))}
                                                     </GridList>
@@ -107,28 +131,43 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                             </p>
                                                         </ListItem>
                                                         <ListItem key={uuid()}>
-                                                            <div style={{ paddingLeft: "45px" }} className={classes.root}>
-                                                                <GridList cellHeight={150} className={classes.gridList}>
-                                                                    {listItem.kuvat.map((tile) => (
-                                                                        <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
-                                                                            <img style={{ width: "240px", height: "auto" }}
-                                                                                src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
-                                                                                alt={tile.tiedostonimi}
-                                                                                loading="lazy"
-                                                                            />
-                                                                            <GridListTileBar
-                                                                                title={<>
-                                                                                    {<span>id: {tile.id}</span>}
-                                                                                </>}
-                                                                                subtitle={tile.tiedostonimi}
-                                                                                actionIcon={
-                                                                                    <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
-                                                                                        <IconButton aria-label={`info about ${tile.tiedostonimi}`} className={classes.icon}>
-                                                                                            <ZoomInIcon style={{ color: "white" }} />
-                                                                                        </IconButton>
-                                                                                    </a>
-                                                                                }
-                                                                            />
+                                                            <div style={{ paddingLeft: "45px", width: "100%" }} className={classes.root}>
+                                                                <GridList cellHeight={150} style={{ width: "100%" }} className={classes.gridList}>
+                                                                    <GridListTile key="Subheader" cols={2} style={{ height: 'auto' }}>
+                                                                        <ListSubheader component="div" style={{ width: "100%" }}>
+                                                                            {listItem.kuvat.length > 2 &&
+                                                                                <IconButton style={{ float: "right" }} aria-label="expand"
+                                                                                    onClick={() => {
+                                                                                        showAllChoiseImages.includes(listItemIndex) ?
+                                                                                            setShowAllChoiseImages(showAllChoiseImages.filter(index => index !== listItemIndex))
+                                                                                            : setShowAllChoiseImages(showAllChoiseImages => [...showAllChoiseImages, listItemIndex])
+                                                                                    }}>
+                                                                                    <Badge badgeContent={showAllChoiseImages.includes(listItemIndex) ? 0 : listItem.kuvat.length - 2} color="primary">
+                                                                                        {showAllChoiseImages.includes(listItemIndex) ?
+                                                                                            <CloseIcon />
+                                                                                            : <ImageIcon />
+                                                                                        }
+                                                                                    </Badge>
+                                                                                </IconButton>
+                                                                            }
+                                                                        </ListSubheader>
+                                                                    </GridListTile>
+                                                                    {listItem.kuvat.map((tile, tileIndex) => (
+                                                                        (tileIndex < 2 || showAllChoiseImages.includes(listItemIndex)) && <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
+                                                                            <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
+                                                                                <img
+                                                                                    style={{ width: "240px", height: "auto", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                                                                    src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
+                                                                                    alt={tile.tiedostonimi}
+                                                                                    loading="lazy"
+                                                                                    onLoad={() => {
+                                                                                        !imageLoaded.includes(tile.id)
+                                                                                            && setImageLoaded(imageLoaded => [...imageLoaded, tile.id])
+                                                                                    }}
+                                                                                    onError={(e) => { e.target.onerror = null; e.target.style.display = "none" }}
+                                                                                />
+                                                                            </a>
+                                                                            {!imageLoaded.includes(tile.id) && <Skeleton variant="rect" width={512} height={512} />}
                                                                         </GridListTile>
                                                                     ))}
                                                                 </GridList>

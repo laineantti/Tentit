@@ -3,16 +3,20 @@ import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 /* import axios from 'axios' */
 import {
-    Card, CardContent, Container, List, ListItem, Box, Icon,
-    IconButton, CssBaseline, TextField
+    Card, CardContent, TextField, Container, Badge,
+    List, ListItem, Box, Icon, CssBaseline, IconButton
 } from '@material-ui/core'
-import DeleteIcon from '@material-ui/icons/Delete'
-import DeleteExamDialog from './DeleteExamDialog'
 import GridList from '@material-ui/core/GridList'
 import GridListTile from '@material-ui/core/GridListTile'
+import ListSubheader from '@material-ui/core/ListSubheader'
 import GridListTileBar from '@material-ui/core/GridListTileBar'
-import ZoomInIcon from '@material-ui/icons/ZoomIn'
+import Skeleton from '@material-ui/lab/Skeleton'
+import ImageIcon from '@material-ui/icons/Image'
+import CloseIcon from '@material-ui/icons/Close'
+import DeleteIcon from '@material-ui/icons/Delete'
+import DeleteExamDialog from './DeleteExamDialog'
 import { store } from './store.js'
+import { MainContext } from './globalContext.js'
 import {
     fetchUser,
     fetchData,
@@ -33,6 +37,11 @@ import { idToIndex, hakuId } from './helpers'
 import ImageSelector from './ImageSelector'
 
 function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, setCurrentExamId, currentExamIndex, setCurrentExamIndex }) {
+
+    const { globalShowAllCardImages, globalShowAllChoiseImages } = useContext(MainContext)
+    const [showAllCardImages, setShowAllCardImages] = globalShowAllCardImages
+    const [showAllChoiseImages, setShowAllChoiseImages] = globalShowAllChoiseImages
+
     const { state, dispatch } = useContext(store)
     // const storeContext = useContext(store)
     // const { state } = storeContext
@@ -43,6 +52,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
     const [newCardId, setNewCardId] = useState(-1)
     const [newChoiseId, setNewChoiseId] = useState(-1)
     const [newImageId, setNewImageId] = useState(-1)
+    const [imageLoaded, setImageLoaded] = useState([])
     const classes = useStyles()
 
     useEffect(() => {
@@ -116,38 +126,57 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                         color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)}>
                                                         <DeleteIcon />
                                                     </IconButton >
-                                                    <div style={{ paddingTop: "20px" }} className={classes.root}>
-                                                        <GridList cellHeight={150} className={classes.gridList}>
-                                                            {card.kuvat.map((tile, imageIndex) => (
-                                                                <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
-                                                                    <img style={{ width: "240px", height: "auto" }}
-                                                                        src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
-                                                                        alt={tile.tiedostonimi}
-                                                                        loading="lazy"
-                                                                    />
-                                                                    <GridListTileBar
+                                                    <div style={{ paddingTop: "30px" }} className={classes.root}>
+                                                        <GridList cellHeight={150} style={{ width: "100%" }}>
+                                                            <GridListTile key="Subheader" cols={2} style={{ height: 'auto' }}>
+                                                                <ListSubheader component="div" style={{ width: "100%" }}>
+                                                                    {card.kuvat.length > 2 &&
+                                                                        <IconButton style={{ float: "right" }} aria-label="expand"
+                                                                            onClick={() => {
+                                                                                showAllCardImages.includes(cardIndex) ?
+                                                                                    setShowAllCardImages(showAllCardImages.filter(index => index !== cardIndex))
+                                                                                    : setShowAllCardImages(showAllCardImages => [...showAllCardImages, cardIndex])
+                                                                            }}>
+                                                                            <Badge badgeContent={showAllCardImages.includes(cardIndex) ? 0 : card.kuvat.length - 2} color="primary">
+                                                                                {showAllCardImages.includes(cardIndex) ?
+                                                                                    <CloseIcon />
+                                                                                    : <ImageIcon />
+                                                                                }
+                                                                            </Badge>
+                                                                        </IconButton>
+                                                                    }
+                                                                </ListSubheader>
+                                                            </GridListTile>
+                                                            {card.kuvat.map((tile, tileIndex) => (
+                                                                (tileIndex < 2 || showAllCardImages.includes(cardIndex)) && <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
+                                                                    <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
+                                                                        <img
+                                                                            style={{ width: "240px", height: "auto", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                                                            src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
+                                                                            alt={tile.tiedostonimi}
+                                                                            loading="lazy"
+                                                                            onLoad={() => {
+                                                                                !imageLoaded.includes(tile.id)
+                                                                                    && setImageLoaded(imageLoaded => [...imageLoaded, tile.id])
+                                                                            }}
+                                                                            onError={(e) => { e.target.onerror = null; e.target.style.display = "none" }}
+                                                                        />
+                                                                    </a>
+                                                                    {!imageLoaded.includes(tile.id) && <Skeleton variant="rect" width={512} height={512} />}
+                                                                    {imageLoaded.includes(tile.id) && <GridListTileBar
                                                                         title={<>
                                                                             {<span>id: {tile.id}</span>}
                                                                         </>}
                                                                         subtitle={tile.tiedostonimi}
                                                                         actionIcon={
-                                                                            <>
-                                                                                <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
-                                                                                    <IconButton aria-label={`info about ${tile.tiedostonimi}`} className={classes.icon}>
-                                                                                        <ZoomInIcon style={{ color: "white" }} />
-                                                                                    </IconButton>
-                                                                                </a>
-                                                                                {console.log(state)}
-                                                                                <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
-                                                                                    color="primary" onClick={() =>
-                                                                                        setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "kysymys", tile.id, card.id, imageIndex))
-                                                                                    }>
-                                                                                    {console.log(state)}
-                                                                                    <DeleteIcon />
-                                                                                </IconButton >
-                                                                            </>
+                                                                            <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
+                                                                                color="primary" onClick={() =>
+                                                                                    setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "kysymys", tile.id, card.id, tileIndex))
+                                                                                }>
+                                                                                <DeleteIcon />
+                                                                            </IconButton >
                                                                         }
-                                                                    />
+                                                                    />}
                                                                 </GridListTile>
                                                             ))}
                                                         </GridList>
@@ -181,36 +210,57 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                 </IconButton >
                                                             </ListItem>
                                                             <ListItem key={uuid()}>
-                                                                <div style={{ paddingLeft: "90px" }} className={classes.root}>
-                                                                    <GridList cellHeight={150} className={classes.gridList}>
-                                                                        {listItem.kuvat.map((tile, imageIndex) => (
-                                                                            <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
-                                                                                <img style={{ width: "240px", height: "auto" }}
-                                                                                    src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
-                                                                                    alt={tile.tiedostonimi}
-                                                                                    loading="lazy"
-                                                                                />
-                                                                                <GridListTileBar
+                                                                <div style={{ paddingLeft: "45px", width: "100%" }} className={classes.root}>
+                                                                    <GridList cellHeight={150} style={{ width: "100%" }} className={classes.gridList}>
+                                                                        <GridListTile key="Subheader" cols={2} style={{ height: 'auto' }}>
+                                                                            <ListSubheader component="div" style={{ width: "100%" }}>
+                                                                                {listItem.kuvat.length > 2 &&
+                                                                                    <IconButton style={{ float: "right" }} aria-label="expand"
+                                                                                        onClick={() => {
+                                                                                            showAllChoiseImages.includes(listItemIndex) ?
+                                                                                                setShowAllChoiseImages(showAllChoiseImages.filter(index => index !== listItemIndex))
+                                                                                                : setShowAllChoiseImages(showAllChoiseImages => [...showAllChoiseImages, listItemIndex])
+                                                                                        }}>
+                                                                                        <Badge badgeContent={showAllChoiseImages.includes(listItemIndex) ? 0 : listItem.kuvat.length - 2} color="primary">
+                                                                                            {showAllChoiseImages.includes(listItemIndex) ?
+                                                                                                <CloseIcon />
+                                                                                                : <ImageIcon />
+                                                                                            }
+                                                                                        </Badge>
+                                                                                    </IconButton>
+                                                                                }
+                                                                            </ListSubheader>
+                                                                        </GridListTile>
+                                                                        {listItem.kuvat.map((tile, tileIndex) => (
+                                                                            (tileIndex < 2 || showAllChoiseImages.includes(listItemIndex)) && <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
+                                                                                <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
+                                                                                    <img
+                                                                                        style={{ width: "240px", height: "auto", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                                                                        src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
+                                                                                        alt={tile.tiedostonimi}
+                                                                                        loading="lazy"
+                                                                                        onLoad={() => {
+                                                                                            !imageLoaded.includes(tile.id)
+                                                                                                && setImageLoaded(imageLoaded => [...imageLoaded, tile.id])
+                                                                                        }}
+                                                                                        onError={(e) => { e.target.onerror = null; e.target.style.display = "none" }}
+                                                                                    />
+                                                                                </a>
+                                                                                {!imageLoaded.includes(tile.id) && <Skeleton variant="rect" width={512} height={512} />}
+                                                                                {imageLoaded.includes(tile.id) && <GridListTileBar
                                                                                     title={<>
                                                                                         {<span>id: {tile.id}</span>}
                                                                                     </>}
                                                                                     subtitle={tile.tiedostonimi}
                                                                                     actionIcon={
-                                                                                        <>
-                                                                                            <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
-                                                                                                <IconButton aria-label={`info about ${tile.tiedostonimi}`} className={classes.icon}>
-                                                                                                    <ZoomInIcon style={{ color: "white" }} />
-                                                                                                </IconButton>
-                                                                                            </a>
-                                                                                            <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
-                                                                                                color="primary" onClick={() =>
-                                                                                                    setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "vaihtoehto", tile.id, card.id, imageIndex, listItem.id, listItemIndex))
-                                                                                                }>
-                                                                                                <DeleteIcon />
-                                                                                            </IconButton >
-                                                                                        </>
+                                                                                        <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
+                                                                                            color="primary" onClick={() =>
+                                                                                                setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "vaihtoehto", tile.id, card.id, tileIndex, listItem.id, listItemIndex))
+                                                                                            }>
+                                                                                            <DeleteIcon />
+                                                                                        </IconButton >
                                                                                     }
-                                                                                />
+                                                                                />}
                                                                             </GridListTile>
                                                                         ))}
                                                                     </GridList>
