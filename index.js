@@ -323,6 +323,7 @@ app.post('/upload', async (req, res) => {
 //----------------------------------------------------------------------------------------------
 // autentikointi, jossa myös kaivetaan käyttäjä id tokenista
 const isAuthenticated = require('./authentication')
+const { RSA_NO_PADDING } = require('constants')
 app.use(isAuthenticated)
 //----------------------------------------------------------------------------------------------
 
@@ -520,13 +521,34 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
             if (err) {
               return next(err)
             }
+            db.query("INSERT INTO aiheiden_joukko (kysymys_id,aihe_id) values (" + res.rows[0].id + ",9)",
+            (err) => {
+              if (err) {
+                return next(err)
+              }
+            })
           })
-        // "Uusi kysymys lisätty ja liitetty tenttiin onnistuneesti!"
+        })
+        // "Uusi kysymys lisätty ja liitetty tenttiin sekä aiheiden joukkoon onnistuneesti!"
         response.status(201).send(res.rows[0].id)
-      })
-
+  } catch (err) {
+    response.send(err)
   }
-  catch (err) {
+})
+
+// lisää kysymyksen liitos tenttiin
+app.post('/lisaa_kysymys_tenttiin/:kysymys_id/:tentti_id', (req, response, next) => {
+  try {
+      db.query("INSERT INTO tentin_kysymykset (kysymys_id,tentti_id) values ($1,$2)",
+      [req.params.kysymys_id, req.params.tentti_id],
+      (err) => {
+        if (err) {
+          return next(err)
+        }
+      })
+      // "kysymys liitetty tenttiin onnistuneesti!"
+      response.status(201).send(res.rows[0].id)
+  } catch (err) {
     response.send(err)
   }
 })
@@ -719,7 +741,8 @@ app.get('/kysymys/:id', (req, response, next) => {
 
 // palauttaa tentin kysymykset tentin id perusteella
 app.get('/tentin_kysymykset/:tentti_id', (req, response, next) => {
-  db.query('SELECT * FROM kysymys WHERE id IN (SELECT kysymys_id FROM tentin_kysymykset WHERE tentti_id = $1 ORDER BY id) ORDER BY id',
+  db.query('SELECT kysymys.id, kysymys.lause, aihe.aihe FROM (((kysymys INNER JOIN aiheiden_joukko ON kysymys.id=aiheiden_joukko.kysymys_id) INNER JOIN aihe ON aiheiden_joukko.aihe_id=aihe.id)INNER JOIN tentin_kysymykset ON kysymys.id=tentin_kysymykset.kysymys_id) WHERE tentin_kysymykset.tentti_id=$1 ORDER BY kysymys.id',
+  // db.query('SELECT * FROM kysymys WHERE id IN (SELECT kysymys_id FROM tentin_kysymykset WHERE tentti_id = $1 ORDER BY id) ORDER BY id',
     [req.params.tentti_id], (err, res) => {
       if (err) {
         return next(err)
@@ -996,6 +1019,48 @@ app.get('/vaihtoehto', (req, response, next) => {
   })
 })
 
+// kaikki kysymykset ja kysymyksen aihe
+app.get('/kysymys_aihe/',(req, response, next) => {
+  db.query('SELECT kysymys.id, kysymys.lause, aihe.aihe FROM ((kysymys INNER JOIN aiheiden_joukko ON kysymys.id=aiheiden_joukko.kysymys_id) INNER JOIN aihe ON aiheiden_joukko.aihe_id=aihe.id) ORDER BY aihe.aihe, kysymys.lause', (err, res) => {
+    if (err) {
+      return next(err)
+    }
+    response.send(res.rows)
+  })
+})
+
+// haetaan aihe kysymykselle
+app.get('/kysymys_aihe/:kysymys_id',(req, response, next) => {
+  db.query('SELECT aihe FROM ((kysymys INNER JOIN aiheiden_joukko ON kysymys.id=aiheiden_joukko.kysymys_id) INNER JOIN aihe ON aiheiden_joukko.aihe_id=aihe.id) WHERE kysymys_id = $1', [req.params.kysymys_id], (err, res) => {
+    if (err) {
+      return next(err)
+    }
+    response.send(res.rows)
+  })
+})
+
+// päivitetään kysymyksen aihe
+app.put('/paivita_kysymyksen_aihe/:kysymys_id/:aihe_id', (req, response, next) => {
+  db.query("UPDATE aiheiden_joukko SET aihe_id = $2 WHERE kysymys_id = $1",
+    [req.params.kysymys_id, req.params.aihe_id],
+    (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send("Kysymyksen aihe on päivitetty onnistuneesti!")
+    })
+})
+
+
+// haetaan aiheet
+app.get('/aihe',(req, response, next) => {
+  db.query('SELECT * FROM aihe ORDER BY aihe', (err, res) => {
+    if (err) {
+      return next(err)
+    }
+    response.send(res.rows)
+  })
+})
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/client/build/index.html'))
