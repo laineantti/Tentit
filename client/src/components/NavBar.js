@@ -89,8 +89,8 @@ export function NavBar({
                                 transformOrigin={{ vertical: 'top', horizontal: 'right' }} 
                                 open={isOpen} 
                                 onClose={handleClose}>
-                            <MenuItem disabled="true" style={{justifyContent: 'center'}} ><AccountCircle/></MenuItem >
-                            <MenuItem disabled="true"><strong>{currentUserName}</strong></MenuItem>
+                            <MenuItem disabled style={{justifyContent: 'center'}} ><AccountCircle/></MenuItem >
+                            <MenuItem disabled><strong>{currentUserName}</strong></MenuItem>
                             <MenuItem onClick={() =>{} }>{strings.omatTentit}</MenuItem>
                             <MenuItem onClick={() =>{
                                     window.localStorage.removeItem('jwtToken')

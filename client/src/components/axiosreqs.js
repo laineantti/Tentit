@@ -127,6 +127,27 @@ const logoutUser = (dispatch) => {
     })
 }
 
+const kysymysJaAihe = async (setKaikkiKysymykset) => {
+    let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
+    try {
+        let result = await axios.get(path + "kysymys_aihe", headers) 
+        setKaikkiKysymykset(result.data)
+    } catch (exception) {
+        console.log("Virhe tietokantahaussa!")
+    }
+}
+
+const haeAiheet = async (setKaikkiAiheet) => {
+    let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
+    try {
+        let result = await axios.get(path + "aihe", headers) 
+        setKaikkiAiheet(result.data)
+    } catch (exception) {
+        console.log("Virhe tietokantahaussa!")
+    }
+}
+
+
 // /paivita_valinta/:kayttaja_id/:vaihtoehto_id/:tentti_id/:kurssi_id/:vastaus
 const valintaMuuttui = async (kysymys_id, checkedValue, vaihtoehto_id, listItemIndex, exam_id, currentUser, currentCourse, currentExamIndex, dispatch) => {
     try {
@@ -163,6 +184,20 @@ const lisaaKysymys = async (currentDatabaseExamIdChanged, dispatch, currentExamI
         console.log("Datan päivitäminen ei onnistunut.")
     }
     dispatch({ type: "add_card", data: { examIndex: currentExamIndex } })
+}
+
+const lisaaKysymysTenttiin = async(item,currentExamIndex) => {
+    try {
+        console.log(path + "lisaa_kysymys_tenttiin/" + item + "/" + currentExamIndex)
+        let response = await axios({
+            method: 'post',
+            url: `${path}lisaa_kysymys_tenttiin/${item}/${currentExamIndex}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        return response.data
+    } catch (exception) {
+        console.log("Kysymyksen liitos tenttiin epäonnistui!")
+    }
 }
 
 const lisaaVaihtoehto = async (dispatch, cardIndex, kysymys_id, currentExamIndex) => {
@@ -272,6 +307,29 @@ const muutaKysymys = async (dispatch, currentExamIndex, value, id, cardIndex) =>
     })
 }
 
+const muutaKysymyksenAihe = async (dispatch, currentExamIndex, value, id, cardIndex, kaikkiAiheet) => {
+    let newCardAihe = "";
+    kaikkiAiheet.map((aihe, aiheIndex) => {
+        if (aihe.id === value) {
+            newCardAihe = aihe.aihe
+        }
+    })
+    try {
+        await axios({
+            method: 'put',
+            url: `${path}paivita_kysymyksen_aihe/${id}/${value}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+    } catch (exception) {
+        console.log(exception)
+    }
+    dispatch({
+        type: "card_aihe_changed",
+        data: { examIndex: currentExamIndex, cardIndex: cardIndex, newCardAihe: newCardAihe }
+    }) 
+}
+
+
 const muutaVaihtoehto = async (dispatch, currentExamIndex, value, vaihtoehto_id, cardIndex, listItemIndex) => {
     try {
         await axios({
@@ -369,14 +427,18 @@ export {
     fetchUser,
     fetchData,
     logoutUser,
+    kysymysJaAihe,
+    haeAiheet,
     valintaMuuttui,
     lisaaKysymys,
+    lisaaKysymysTenttiin,
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
     haeTentinLuojanId,
     muutaTentti,
     muutaKysymys,
+    muutaKysymyksenAihe,
     muutaVaihtoehto,
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos,

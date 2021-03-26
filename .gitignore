@@ -21,6 +21,7 @@ yarn-debug.log*
 yarn-error.log*
 debug.log*
 uploads/*
+uploads_thumbnails/*
 client/tests_robot_framework/chromedriver.exe
 client/tests_robot_framework/log.html
 client/tests_robot_framework/output.xml

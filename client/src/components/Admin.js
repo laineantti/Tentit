@@ -1,31 +1,43 @@
-import { React, useState, useEffect, useContext } from 'react'
+import { React, useState, useEffect, useContext, useCallback } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 /* import axios from 'axios' */
 import {
     Card, CardContent, Container, List, ListItem, Box, Icon,
-    IconButton, CssBaseline, TextField, Input
+    IconButton, CssBaseline, TextField, MenuItem
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import DeleteExamDialog from './DeleteExamDialog'
+import { DataGrid } from '@material-ui/data-grid';
 import { store } from './store.js'
 import {
     fetchUser,
     fetchData,
     /* valintaMuuttui, */
+    kysymysJaAihe,
+    haeAiheet,
     lisaaKysymys,
+    lisaaKysymysTenttiin,
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
     haeTentinLuojanId,
     muutaTentti,
     muutaKysymys,
+    muutaKysymyksenAihe,
     muutaVaihtoehto,
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
-import { idToIndex, hakuId } from './helpers'
+import { idToIndex, hakuId, kysymysLista } from './helpers'
+
+const columns = [
+    { field: 'id', headerName: 'ID', type: 'number', flex: 0.25 },
+    { field: 'lause', headerName: 'Kysymys', flex: 1.5 },
+    { field: 'aihe', headerName: 'Aihealue', flex: 0.75 },
+  ];
+  
 
 function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCurrentExamId,currentExamIndex,setCurrentExamIndex}) {
     const { state, dispatch } = useContext(store)
@@ -37,18 +49,36 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
     const [newExamId, setNewExamId] = useState(-1)
     const [newCardId, setNewCardId] = useState(-1)
     const [newChoiseId, setNewChoiseId] = useState(-1)
+    const [kaikkiKysymykset, setKaikkiKysymykset] = useState([])
+    const [kaikkiAiheet, setKaikkiAiheet] = useState([])
+    const [dataGridSelection, setDataGridSelection] = useState([])
+    const [rows, setRows] = useState([])
     const classes = useStyles()
-
+    
+    
     useEffect(() => {
         if (!currentUser) {
             fetchUser(setCurrentUser, setCurrentUserName)
         } else {
             fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
+            kysymysJaAihe(setKaikkiKysymykset)
+            haeAiheet(setKaikkiAiheet)
         }
-    }, [currentUser, newExamId, newCardId, newChoiseId])
-
+    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex, dataGridSelection, rows])
 
     const [examName, setExamName] = useState(hakuId(state,currentExamId,currentExamIndex,setCurrentExamIndex))
+
+    const kysymysLista = (currentExamIndex) => {
+        let lista=kaikkiKysymykset
+        state[currentExamIndex].kysymykset.map((item,kysymysIndex) => {
+            lista.map((listaItem,listaId) => {
+                if (listaItem.id === item.id) {
+                    lista.splice(listaId,1)
+                }
+            })
+        })
+        return (lista)
+    }
 
     return (
         <>
@@ -65,10 +95,9 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                     && examName
                     ? (
 
-                        <>
-                            
+                        <> 
                             <h2> 
-                                <TextField type="text" value={examName} id={state[currentExamIndex].id}
+                                <TextField style={{ width: "85%" }} type="text" value={examName} id={state[currentExamIndex].id}
                                     onChange={(event) => {
                                         setExamName(event.target.value)
                                     }}
@@ -80,14 +109,13 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                         muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, examName)
                                     }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
                                 </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
-                            </h2>
-                            <DeleteExamDialog
+                                <DeleteExamDialog style={{ width : "15%", float: "right" }}
                                 /* tentin poistonappi */
                                 currentExamIndex={currentExamIndex}
                                 setCurrentExamIndex={setCurrentExamIndex}
                                 currentDatabaseExamIdChanged={currentDatabaseExamIdChanged}
                             />
-
+                            </h2>
                             {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
                             {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
                             {state[currentExamIndex].kysymykset
@@ -95,15 +123,32 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                     <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
                                         <CardContent style={{ width: "100%" }} className={classes.content}>
                                             <List>
-                                                <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="darkBlue" />
-                                                <TextField multiline type="text" style={{ minWidth: "93%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
+                                                <CodeComponent style={{ width: "82%" }} questionString={card.lause} background="darkBlue" />
+                                                <TextField multiline type="text" style={{ minWidth: "82%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                                     muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                 }}>
                                                 </TextField>
+                                                
                                                 <IconButton key={uuid()} style={{ float: "right" }} label="delete"
-                                                    color="primary" onClick={() => poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)}>
+                                                    color="primary" onClick={() => {
+                                                        poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)
+                                                        let addRow = kaikkiKysymykset.filter((kysymys)=> kysymys.id===card.id) 
+                                                        setRows([...rows, ...addRow])   
+                                                    }}>
                                                     <DeleteIcon />
-                                                </IconButton >
+                                                </IconButton ><br/>
+                                                <span>{card.aihe}</span>
+                                                <TextField style={{ minWidth: "3%"  }}
+                                                        value={''} 
+                                                        select
+                                                        onChange={(event)=>{muutaKysymyksenAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet)}}
+                                                        InputProps={{disableUnderline: true}}>
+                                                        {kaikkiAiheet.map((option)=>(
+                                                            <MenuItem key={option.id} value={option.id}>
+                                                                {option.aihe}
+                                                            </MenuItem>
+                                                        ))}
+                                                    </TextField><br/>
                                                 {card.vaihtoehdot.map((listItem, listItemIndex) => (
                                                     <>
                                                         <ListItem key={uuid()}><CodeComponent style={{ width: "100%" }} questionString={listItem.vaihtoehto} /></ListItem>
@@ -120,7 +165,6 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                                                     muutaVaihtoehto(dispatch, currentExamIndex, event.target.value, listItem.id, cardIndex, listItemIndex)
                                                                 }} />
                                                             <IconButton style={{ float: "right" }} label="delete" color="primary"
-
                                                                 onClick={() => poistaVaihtoehdonLiitos(dispatch, currentExamIndex, listItem.id, cardIndex, card.id, listItemIndex)}>
                                                                 <DeleteIcon /></IconButton >
                                                         </ListItem>
@@ -144,10 +188,35 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                                     </Card>
                                 )
                             }
-                            <IconButton style={{ float: "right" }}
-                                onClick={() => setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))}>
+
+                            <div style={{ width: '100%', textAlign : 'center' }}>
+                            <IconButton 
+                                onClick={() => {
+                                        if (dataGridSelection.length > 0) {
+                                            console.log(dataGridSelection)
+                                            dataGridSelection.map((item, kysymysIndex) => {
+                                                setNewCardId(lisaaKysymysTenttiin(item,state[currentExamIndex].id))                                         
+                                            })
+                                            setRows(rows.filter((row)=> !dataGridSelection.includes(row.id)))
+                                            setDataGridSelection([])
+                                        } else {
+                                            setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))
+                                            setRows(rows.filter((row)=> !dataGridSelection.includes(row.id))) 
+                                        }
+                                    }
+                                }>
                                 <Icon>add_circle</Icon>
                             </IconButton>
+                            </div>
+                            <Card style={{ marginTop: "10px" }}  className={classes.root}>
+                            <div style={{ height: 460, width: '100%' }}>
+                                <DataGrid columns={columns} rows={rows} pageSize={7} checkboxSelection
+                                onSelectionModelChange={(newSelection)=>{
+                                    setDataGridSelection(newSelection.selectionModel) 
+                                }}
+                                />
+                            </div>
+                            </Card>
                         </>
                     )               
                 : (
@@ -159,13 +228,14 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
                             setCurrentDatabaseExamIdChanged(exam.id)
                             setCurrentExamId(exam.id)
                             setExamName(exam.nimi)
+                            setRows(kysymysLista(examIndex))
                         } else {
                             setCurrentDatabaseExamIdChanged(newExamId)
                         }
                     }}>
                         {exam.nimi}
-                    </ExamButton>
-                )}
+                    </ExamButton> 
+                )} 
                 <IconButton onClick={() => {
                     setNewExamId(lisaaTentti(dispatch, currentUser))
                 }}>

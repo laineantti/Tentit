@@ -27,6 +27,7 @@ const StateProvider = ({ children }) => {
             case "add_card":
                 let newCard = {
                     lause: "Uusi kysymys",
+                    aihe: "Muut",
                     vaihtoehdot: []
                 }
                 tempCopy[action.data.examIndex].kysymykset.push(newCard)
@@ -36,6 +37,11 @@ const StateProvider = ({ children }) => {
                 tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex].lause =
                     action.data.newCardLabel
                 return tempCopy
+
+            case "card_aihe_changed":
+                tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex].aihe =
+                    action.data.newCardAihe
+                return tempCopy                
 
             case "card_deleted":
                 tempCopy[action.data.examIndex].kysymykset.splice(action.data.cardIndex, 1)
