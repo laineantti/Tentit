@@ -92,12 +92,19 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
                     for (var j = 0; j < tentit[i].kysymykset.length; j++) {
                         // haetaan kysymyksen vaihtoehdot
                         tentit[i].kysymykset[j].vaihtoehdot = []
+                        tentit[i].kysymykset[j].kuvat = []
                         let vaihtoehdot_taulu =
                             await axios.get(path + "kysymyksen_vaihtoehdot/" + tentit[i].kysymykset[j].id, headers)
+                        let kysymyksen_kuvat_taulu =
+                            await axios.get(path + "kysymyksen_kuvat/" + tentit[i].kysymykset[j].id, headers)
                         tentit[i].kysymykset[j].vaihtoehdot = vaihtoehdot_taulu.data
+                        tentit[i].kysymykset[j].kuvat = kysymyksen_kuvat_taulu.data
                         // käydään kayttajan_vastaukset läpi
                         for (var k = 0; k < tentit[i].kysymykset[j].vaihtoehdot.length; k++) {
                             tentit[i].kysymykset[j].vaihtoehdot[k].vastaus = null
+                            let vaihtoehdon_kuvat_taulu =
+                                await axios.get(path + "vaihtoehdon_kuvat/" + tentit[i].kysymykset[j].vaihtoehdot[k].id, headers)
+                            tentit[i].kysymykset[j].vaihtoehdot[k].kuvat = vaihtoehdon_kuvat_taulu.data
                             if (kayttajan_vastaukset.data.length > 0) {
                                 for (var l = 0; l < kayttajan_vastaukset.data.length; l++) {
                                     if (tentit[i].kysymykset[j].vaihtoehdot[k].id === kayttajan_vastaukset.data[l].vaihtoehto_id) {
@@ -118,6 +125,22 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
     catch (exception) {
         console.log(exception)
     }
+}
+
+const fetchImage = async () => {
+    let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
+    try {
+        // taulukko näyttää tältä:
+        // [{ id: '1', tiedostonimi: 'abc123.jpg'}]
+        let response = await axios.get(path + "kuva", headers)
+        if (response.data[0].id) {
+            return response.data
+        }
+    } catch (exception) {
+        console.log(exception)
+        return exception
+    }
+
 }
 
 const logoutUser = (dispatch) => {
@@ -238,22 +261,114 @@ const oikeaValintaMuuttui = async (dispatch, currentExamIndex, kysymys_id, check
 }
 
 const lisaaTentti = async (dispatch, currentUser) => {
-    let body = {
-        
-    }
     try {
         let response = await axios({
             method: 'post',
             url: `${path}lisaa_tentti/${currentUser}`,
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
+        dispatch({ type: "add_exam" })
         // palauttaa uuden luodun tentin id
         return response.data
 
     } catch (exception) {
         console.log("Datan päivitäminen ei onnistunut.")
     }
-    dispatch({ type: "add_exam" })
+}
+
+const liitaKuvaKysymykseen = async (dispatch, examIndex, cardIndex, selectedImages, kysymys_id) => {
+    let body = {
+        kysymys_id: kysymys_id,
+        selectedImages: selectedImages
+    }
+    try {
+        let response = await axios({
+            method: 'post',
+            url: `${path}liita_kuva_kysymykseen/`,
+            data: body,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        // palauttaa uuden luodun kuvan id
+        return response.data
+    } catch (exception) {
+        console.log("Datan päivitäminen ei onnistunut.")
+    }
+    console.log(examIndex)
+    dispatch({
+        type: "add_image_card",
+        data: {
+            examIndex: examIndex,
+            cardIndex: cardIndex,
+            kuvat: selectedImages
+        }
+    })
+}
+
+const liitaKuvaVaihtoehtoon = async (dispatch, examIndex, cardIndex, selectedImages, kysymys_id, listItemIndex, vaihtoehto_id) => {
+    let body = {
+        kysymys_id: kysymys_id,
+        vaihtoehto_id: vaihtoehto_id,
+        selectedImages: selectedImages
+    }
+    try {
+        let response = await axios({
+            method: 'post',
+            url: `${path}liita_kuva_vaihtoehtoon/`,
+            data: body,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        // palauttaa uuden luodun kuvan id
+        return response.data
+    } catch (exception) {
+        console.log("Datan päivitäminen ei onnistunut.")
+    }
+    dispatch({
+        type: "add_image_choise",
+        data: {
+            examIndex: examIndex,
+            cardIndex: cardIndex,
+            listItemIndex: listItemIndex,
+            kuvat: selectedImages
+        }
+    })
+}
+
+const poistaKuvanLiitos = async (dispatch, currentExamIndex, cardIndex, sijainti, kuva_id, kysymys_id, imageIndex, vaihtoehto_id, listItemIndex) => {
+    let body = {
+        kysymys_id: kysymys_id,
+        vaihtoehto_id: vaihtoehto_id,
+        sijainti: sijainti,
+        kuva_id: kuva_id
+    }
+    try {
+        sijainti === "kysymys" ?
+            dispatch({
+                type: "image_deleted_card",
+                data: {
+                    examIndex: currentExamIndex,
+                    cardIndex: cardIndex,
+                    imageIndex: imageIndex
+                }
+            })
+            :
+            dispatch({
+                type: "image_deleted_choise",
+                data: {
+                    examIndex: currentExamIndex,
+                    cardIndex: cardIndex,
+                    listItemIndex: listItemIndex,
+                    imageIndex: imageIndex
+                }
+            })
+        await axios({
+            method: 'delete',
+            url: `${path}poista_kuvan_liitos/`,
+            data: body,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+    } catch (exception) {
+        console.log(exception)
+    }
 }
 
 const haeTentinLuojanId = async (tentti_id) => {
@@ -426,6 +541,7 @@ const poistaTentti = async (dispatch, currentExamIndex, tentti_id, voimalla) => 
 export {
     fetchUser,
     fetchData,
+    fetchImage,
     logoutUser,
     kysymysJaAihe,
     haeAiheet,
@@ -435,6 +551,9 @@ export {
     lisaaVaihtoehto,
     oikeaValintaMuuttui,
     lisaaTentti,
+    liitaKuvaKysymykseen,
+    liitaKuvaVaihtoehtoon,
+    poistaKuvanLiitos,
     haeTentinLuojanId,
     muutaTentti,
     muutaKysymys,
@@ -442,5 +561,5 @@ export {
     muutaVaihtoehto,
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos,
-    poistaTentti
+    poistaTentti,
 }

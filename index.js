@@ -10,6 +10,7 @@ const _ = require('lodash')
 const bcrypt = require('bcrypt')
 const app = express()
 var jwt = require('jsonwebtoken');
+const sharp = require('sharp')
 app.use(express.static('./client/build'))
 
 /* Valmistellaan käytettävät osoitteet oikeaan muotoon sen mukaan ollaanko heroku vai localhost */
@@ -219,46 +220,105 @@ app.post('/kirjaudu', (req, res, next) => {
   })
 })
 
+// tarjotaan /uploads-sijainti ulkomaailmaan (tarvitaaan kuvien jakamiseen)
+// esim. http://localhost:4000/uploads/3FT0OAPBoKw.jpg
+/* app.use(express.static('uploads')) */
+const uploads_directory = path.join(__dirname, 'uploads')
+app.use('/uploads', express.static(uploads_directory))
+
+const uploads_thumbnails_directory = path.join(__dirname, 'uploads_thumbnails')
+app.use('/uploads_thumbnails', express.static(uploads_thumbnails_directory))
+
 // lataa useita tiedostoja serverille
 app.post('/upload', async (req, res) => {
+
+  const createThumbnail = async (tiedostonimi) => {
+    // luodaan _thumbnail ja lisätään se uploads_thumbnails-kansioon
+    console.log('Luodaan esikatselukuva ./uploads_thumbnails/thumbnail_' + tiedostonimi)
+    await sharp('./uploads/' + tiedostonimi)
+      .resize({ width: 240 })
+      .toFile('./uploads_thumbnails/thumbnail_' + tiedostonimi)
+      /* .then(info => {
+        console.log(info)
+      }) */
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  const addImageToDatabase = async (tiedostonimi) => {
+    await db.query("INSERT INTO kuva (tiedostonimi) values ($1)",
+      [tiedostonimi],
+      (err, res) => {
+        if (err) {
+          return next(err)
+        } else {
+          console.log(tiedostonimi + " lisätty.")
+        }
+      }
+    )
+  }
+
   try {
     if (!req.files) {
       res.send({
         status: false,
-        message: 'No file uploaded'
-      });
+        message: 'Tiedoston lataus epäonnistui.'
+      })
     } else {
-      let data = [];
-
-      // käydään kaikki tiedostot läpi
-      _.forEach(_.keysIn(req.files.photos), (key) => {
-        let photo = req.files.photos[key];
-
-        // siirretään tiedosto uploads-kansioon
-        photo.mv('./uploads/' + photo.name);
-
-        //työnnetään kaikki informaatio
+      let data = []                         // yksittäinen tiedosto ei tule taulukkona
+      if (!Array.isArray(req.files.photos)) { // eli tässä tulee vain yksittäinen tiedosto
+        console.log("Vastaanotetaan yksi kuva.")
+        console.log('Luotiin tiedosto ./uploads/' + req.files.photos.name)
+        await req.files.photos.mv('./uploads/' + req.files.photos.name, (err) => {
+          if (err) {
+            throw err
+          } else {
+            createThumbnail(req.files.photos.name)
+            addImageToDatabase(req.files.photos.name)
+          }
+        })
         data.push({
-          name: photo.name,
-          mimetype: photo.mimetype,
-          size: photo.size
-        });
-      });
+          name: req.files.photos.name,
+          type: req.files.photos.mimetype,
+          size: req.files.photos.size
+        })
+      } else {
+        // käydään kaikki tiedostot läpi
+        console.log("Vastaanotetaan " + req.files.photos.length + " kuvaa.")
+        _.forEach(_.keysIn(req.files.photos), async (key) => {
+          let photo = req.files.photos[key]
 
+          // siirretään tiedosto uploads-kansioon
+          console.log('Luotiin tiedosto ./uploads/' + photo.name)
+          await photo.mv('./uploads/' + photo.name, (err) => {
+            if (err) {
+              throw err
+            } else {
+              createThumbnail(photo.name)
+              addImageToDatabase(photo.name)
+            }
+          })
+
+          // työnnetään kaikki informaatio
+          data.push({
+            name: photo.name,
+            mimetype: photo.mimetype,
+            size: photo.size
+          })
+        })
+      }
       // palautetaan response
       res.send({
         status: true,
-        message: 'Files are uploaded',
+        message: 'Tiedostot ladattu palvelimelle.',
         data: data
-      });
+      })
     }
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).send(err)
   }
-});
-
-// tehdään uploads-sijainnista staattinen
-app.use(express.static('uploads'));
+})
 
 //----------------------------------------------------------------------------------------------
 // autentikointi, jossa myös kaivetaan käyttäjä id tokenista
@@ -266,16 +326,58 @@ const isAuthenticated = require('./authentication')
 const { RSA_NO_PADDING } = require('constants')
 app.use(isAuthenticated)
 //----------------------------------------------------------------------------------------------
-// tarkistetaan onko käyttäjä admin (SAMAN TIEDON SAA ALEMMASTA /kayttaja/)
-/* app.get('/onko_admin/:kayttaja_id', (req, response, next) => {
-  db.query('SELECT * FROM kayttaja WHERE id = $1', [req.params.kayttaja_id], (err, res) => {
-    if (res.rows[0].rooli === 'admin') {
-      next()
-    } else {
-      return res.send(401)
+
+// tulostetaan kaikki kuvien tiedostonimet
+app.get('/kuva', (req, response, next) => {
+  db.query('SELECT * FROM kuva ORDER BY id', (err, res) => {
+    if (err) {
+      return next(err)
     }
+    response.send(res.rows)
   })
-}) */
+})
+
+// hae kuva id:n perusteella
+app.get('/kuva/:id', (req, response, next) => {
+  db.query('SELECT * FROM kuva WHERE id = $1 ORDER BY id', [req.params.id], (err, res) => {
+    if (err) {
+      return next(err)
+    }
+    response.send(res.rows[0])
+  })
+})
+
+// poistetaan kuvan liitos kysymykseen ja/tai vaihtoehtoon
+app.delete('/poista_kuvan_liitos/', (req, res, next) => {
+  /* body = {
+        kysymys_id: kysymys_id,
+        vaihtoehto_id: vaihtoehto_id,
+        sijainti: sijainti,
+        kuva_id: kuva_id
+    } */
+
+  let reqBody = req.body
+
+  if (reqBody.sijainti === "kysymys") {
+    db.query('DELETE FROM kysymyksen_kuvat WHERE kuva_id=$1 AND kysymys_id=$2',
+      [req.body.kuva_id, req.body.kysymys_id],
+      (err) => {
+        if (err) {
+          return next(err)
+        }
+      }
+    )
+  } else if (reqBody.sijainti === "vaihtoehto") {
+    db.query('DELETE FROM vaihtoehdon_kuvat WHERE kuva_id=$1 AND vaihtoehto_id=$2',
+      [req.body.kuva_id, req.body.vaihtoehto_id],
+      (err) => {
+        if (err) {
+          return next(err)
+        }
+      }
+    )
+  }
+})
 
 // haetaan käyttäjä id:n perusteella (id saadaan isAuthenticated-koodista ja tallennetaan userId-muuttujaan)
 app.get('/kayttaja/', (req, response, next) => {
@@ -502,6 +604,63 @@ app.get('/kysymyksen_vaihtoehdot', (req, response, next) => {
   })
 })
 
+// lisää kuvat kysymykseen
+app.post('/liita_kuva_kysymykseen/', (req, response, next) => {
+
+  let reqBody = req.body
+
+  req.body.selectedImages.forEach(kuva_id => {
+    db.query("INSERT INTO kysymyksen_kuvat (kuva_id,kysymys_id) values (" + kuva_id + ",$1)",
+      [req.body.kysymys_id],
+      (err, res) => {
+        if (err) {
+          return next(err)
+        }
+      })
+  })
+  // Uusi kuva lisätty onnistuneesti!
+  response.status(201).send(kuva_id)
+})
+
+// lisää kuvat vaihtoehtoon
+app.post('/liita_kuva_vaihtoehtoon/', (req, response, next) => {
+
+  let reqBody = req.body
+  req.body.selectedImages.forEach(kuva_id => {
+    db.query("INSERT INTO vaihtoehdon_kuvat (kuva_id,vaihtoehto_id) values (" + kuva_id + ",$1)",
+      [req.body.vaihtoehto_id],
+      (err, res) => {
+        if (err) {
+          return next(err)
+        }
+      })
+  })
+  // Uusi kuva lisätty onnistuneesti!
+  response.status(201).send(kuva_id)
+})
+
+// palauttaa kysymyksen kuvat, kysymyksen id perusteella
+app.get('/kysymyksen_kuvat/:kysymys_id', (req, response, next) => {
+  db.query('SELECT * FROM kuva WHERE id IN (SELECT kuva_id FROM kysymyksen_kuvat WHERE kysymys_id = $1 ORDER BY id) ORDER BY id',
+    [req.params.kysymys_id], (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send(res.rows)
+    })
+})
+
+// palauttaa vaihtoehdon kuvat, vaihtoehdon id perusteella
+app.get('/vaihtoehdon_kuvat/:vaihtoehto_id', (req, response, next) => {
+  db.query('SELECT * FROM kuva WHERE id IN (SELECT kuva_id FROM vaihtoehdon_kuvat WHERE vaihtoehto_id = $1 ORDER BY id) ORDER BY id',
+    [req.params.vaihtoehto_id], (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send(res.rows)
+    })
+})
+
 // palauttaa kysymyksen vaihtoehdot, kysymyksen id perusteella
 app.get('/kysymyksen_vaihtoehdot/:kysymys_id', (req, response, next) => {
   db.query('SELECT * FROM vaihtoehto WHERE id IN (SELECT vaihtoehto_id FROM kysymyksen_vaihtoehdot WHERE kysymys_id = $1 ORDER BY id) ORDER BY id',
@@ -657,7 +816,7 @@ app.delete('/poista_tentti/:tentti_id/:voimalla', (req, response, next) => {
   // tehdäänkö poistoa "väkisin/voimalla"
   // muunnetaan string -> boolean
   let voimalla = (req.params.voimalla === 'true')
-  
+
   // tarkistetaan onko käyttäjä admin
   db.query('SELECT * FROM kayttaja WHERE id = $1', [userId], (err, res) => {
     let admin = false

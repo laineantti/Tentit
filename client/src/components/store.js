@@ -18,7 +18,8 @@ const StateProvider = ({ children }) => {
             case "add_choise":
                 let newChoise = {
                     oikea_vastaus: false,
-                    vaihtoehto: "Uusi vaihtoehto"
+                    vaihtoehto: "Uusi vaihtoehto",
+                    kuvat: []
                 }
                 tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex].vaihtoehdot
                     .push(newChoise)
@@ -27,8 +28,9 @@ const StateProvider = ({ children }) => {
             case "add_card":
                 let newCard = {
                     lause: "Uusi kysymys",
+                    vaihtoehdot: [],
+                    kuvat: [],
                     aihe: "Muut",
-                    vaihtoehdot: []
                 }
                 tempCopy[action.data.examIndex].kysymykset.push(newCard)
                 return tempCopy
@@ -58,6 +60,25 @@ const StateProvider = ({ children }) => {
 
                 }
                 tempCopy.push(newExam)
+                return tempCopy
+
+            case "add_image_card":
+                tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
+                    .kuvat = action.data.kuvat
+                return tempCopy
+
+            case "add_image_choise":
+                tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
+                    .vaihtoehdot[action.data.listItemIndex].kuvat = action.data.kuvat
+                return tempCopy
+
+            case "image_deleted_card":
+                tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex].kuvat.splice(action.data.imageIndex, 1)
+                return tempCopy
+
+            case "image_deleted_choise":
+                tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
+                    .vaihtoehdot[action.data.listItemIndex].kuvat.splice(action.data.imageIndex, 1)
                 return tempCopy
 
             case "exam_changed":
