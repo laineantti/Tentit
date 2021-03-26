@@ -90,14 +90,16 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
         let kuvat = []
         let kuvatMuunnettu = []
         kuvat = await fetchImage()
-        for (const kuva of kuvat) {
-            kuvatMuunnettu.push({
-                id: kuva.id,
-                img: kuva.tiedostonimi,
-                title: kuva.tiedostonimi,
-                author: 'tentit-app',
-                cols: 2,
-            })
+        if (kuvat.length > 0) {
+            for (const kuva of kuvat) {
+                kuvatMuunnettu.push({
+                    id: kuva.id,
+                    img: kuva.tiedostonimi,
+                    title: kuva.tiedostonimi,
+                    author: 'tentit-app',
+                    cols: 2,
+                })
+            }
         }
         setTileData(kuvatMuunnettu)
         setImageLoaded([])
