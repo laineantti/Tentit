@@ -66,7 +66,6 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
         }
     }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex, dataGridSelection, rows])
 
-
     const [examName, setExamName] = useState(hakuId(state,currentExamId,currentExamIndex,setCurrentExamIndex))
 
     const kysymysLista = (currentExamIndex) => {
@@ -80,7 +79,6 @@ function App({currentUser,setCurrentUser,setCurrentUserName,currentExamId,setCur
         })
         return (lista)
     }
-
 
     return (
         <>
