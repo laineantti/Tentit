@@ -160,7 +160,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                             {tileData.map((tile) => (
                                 <GridListTile key={tile.id} style={{ width: "240px", maxHeight: "150" }}>
                                     <a href={"//localhost:4000/uploads/" + tile.img} target="_blank" rel="noreferrer">
-                                        <img style={{ width: "240px", height: "auto", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                        <img style={{ width: "100%", height: "100%", objectFit: "cover", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
                                             src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
                                             alt={tile.title}
                                             loading="lazy"
@@ -170,21 +170,23 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                                             }}
                                         />
                                     </a>
-                                    {!imageLoaded.includes(tile.id) && <Skeleton variant="rect" width={512} height={512} />}
-                                    <GridListTileBar
-                                        title={tile.title}
-                                        subtitle={<span>id: {tile.id}</span>}
-                                        actionIcon={
-                                            <Checkbox
-                                                style={{ color: "white" }}
-                                                color="primary"
-                                                inputProps={{ 'aria-label': 'secondary checkbox' }}
-                                                onClick={() => {
-                                                    onkoKuvaValittu(tile.id) ? poistaValinta(tile.id) : asetaValinta(tile.id);
-                                                }}
-                                            />
-                                        }
-                                    />
+                                    {!imageLoaded.includes(tile.id) ?
+                                        <Skeleton variant="rect" width={512} height={512} />
+                                        : <GridListTileBar
+                                            title={tile.title}
+                                            subtitle={<span>id: {tile.id}</span>}
+                                            actionIcon={
+                                                <Checkbox
+                                                    style={{ color: "white" }}
+                                                    color="primary"
+                                                    inputProps={{ 'aria-label': 'secondary checkbox' }}
+                                                    onClick={() => {
+                                                        onkoKuvaValittu(tile.id) ? poistaValinta(tile.id) : asetaValinta(tile.id);
+                                                    }}
+                                                />
+                                            }
+                                        />
+                                    }
                                 </GridListTile>
                             ))}
                         </GridList>

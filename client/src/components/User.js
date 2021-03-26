@@ -96,7 +96,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                             (tileIndex < 2 || showAllCardImages.includes(cardIndex)) && <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
                                                                 <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
                                                                     <img
-                                                                        style={{ width: "240px", height: "auto", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                                                        style={{ width: "100%", height: "100%", objectFit: "cover", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
                                                                         src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
                                                                         alt={tile.tiedostonimi}
                                                                         loading="lazy"
@@ -156,7 +156,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                         (tileIndex < 2 || showAllChoiseImages.includes(listItemIndex)) && <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
                                                                             <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
                                                                                 <img
-                                                                                    style={{ width: "240px", height: "auto", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                                                                    style={{ width: "100%", height: "100%", objectFit: "cover", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
                                                                                     src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
                                                                                     alt={tile.tiedostonimi}
                                                                                     loading="lazy"

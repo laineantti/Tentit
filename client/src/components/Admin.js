@@ -151,7 +151,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                 (tileIndex < 2 || showAllCardImages.includes(cardIndex)) && <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
                                                                     <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
                                                                         <img
-                                                                            style={{ width: "240px", height: "auto", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                                                            style={{ width: "100%", height: "100%", objectFit: "cover", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
                                                                             src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
                                                                             alt={tile.tiedostonimi}
                                                                             loading="lazy"
@@ -162,21 +162,22 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                             onError={(e) => { e.target.onerror = null; e.target.style.display = "none" }}
                                                                         />
                                                                     </a>
-                                                                    {!imageLoaded.includes(tile.id) && <Skeleton variant="rect" width={512} height={512} />}
-                                                                    {imageLoaded.includes(tile.id) && <GridListTileBar
-                                                                        title={<>
-                                                                            {<span>id: {tile.id}</span>}
-                                                                        </>}
-                                                                        subtitle={tile.tiedostonimi}
-                                                                        actionIcon={
-                                                                            <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
-                                                                                color="primary" onClick={() =>
-                                                                                    setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "kysymys", tile.id, card.id, tileIndex))
-                                                                                }>
-                                                                                <DeleteIcon />
-                                                                            </IconButton >
-                                                                        }
-                                                                    />}
+                                                                    {!imageLoaded.includes(tile.id) ?
+                                                                        <Skeleton variant="rect" width={512} height={512} />
+                                                                        : <GridListTileBar
+                                                                            title={<>
+                                                                                {<span>id: {tile.id}</span>}
+                                                                            </>}
+                                                                            subtitle={tile.tiedostonimi}
+                                                                            actionIcon={
+                                                                                <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
+                                                                                    color="primary" onClick={() =>
+                                                                                        setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "kysymys", tile.id, card.id, tileIndex))
+                                                                                    }>
+                                                                                    <DeleteIcon />
+                                                                                </IconButton >
+                                                                            }
+                                                                        />}
                                                                 </GridListTile>
                                                             ))}
                                                         </GridList>
@@ -235,7 +236,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                             (tileIndex < 2 || showAllChoiseImages.includes(listItemIndex)) && <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
                                                                                 <a href={"//localhost:4000/uploads/" + tile.tiedostonimi} target="_blank" rel="noreferrer">
                                                                                     <img
-                                                                                        style={{ width: "240px", height: "auto", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
+                                                                                        style={{ width: "100%", height: "100%", objectFit: "cover", overflow: imageLoaded.includes(tile.id) ? "visible" : "hidden" }}
                                                                                         src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.tiedostonimi}
                                                                                         alt={tile.tiedostonimi}
                                                                                         loading="lazy"
@@ -246,21 +247,22 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                                         onError={(e) => { e.target.onerror = null; e.target.style.display = "none" }}
                                                                                     />
                                                                                 </a>
-                                                                                {!imageLoaded.includes(tile.id) && <Skeleton variant="rect" width={512} height={512} />}
-                                                                                {imageLoaded.includes(tile.id) && <GridListTileBar
-                                                                                    title={<>
-                                                                                        {<span>id: {tile.id}</span>}
-                                                                                    </>}
-                                                                                    subtitle={tile.tiedostonimi}
-                                                                                    actionIcon={
-                                                                                        <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
-                                                                                            color="primary" onClick={() =>
-                                                                                                setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "vaihtoehto", tile.id, card.id, tileIndex, listItem.id, listItemIndex))
-                                                                                            }>
-                                                                                            <DeleteIcon />
-                                                                                        </IconButton >
-                                                                                    }
-                                                                                />}
+                                                                                {!imageLoaded.includes(tile.id) ?
+                                                                                    <Skeleton variant="rect" width={512} height={512} />
+                                                                                    : <GridListTileBar
+                                                                                        title={<>
+                                                                                            {<span>id: {tile.id}</span>}
+                                                                                        </>}
+                                                                                        subtitle={tile.tiedostonimi}
+                                                                                        actionIcon={
+                                                                                            <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
+                                                                                                color="primary" onClick={() =>
+                                                                                                    setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "vaihtoehto", tile.id, card.id, tileIndex, listItem.id, listItemIndex))
+                                                                                                }>
+                                                                                                <DeleteIcon />
+                                                                                            </IconButton >
+                                                                                        }
+                                                                                    />}
                                                                             </GridListTile>
                                                                         ))}
                                                                     </GridList>
