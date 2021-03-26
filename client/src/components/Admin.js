@@ -38,7 +38,6 @@ import {
     poistaVaihtoehdonLiitos
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
-import { idToIndex, hakuId } from './helpers'
 import ImageSelector from './ImageSelector'
 import { idToIndex, hakuId, kysymysLista } from './helpers'
 
@@ -161,6 +160,18 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                         }}>
                                                         <DeleteIcon />
                                                     </IconButton >
+                                                    <span>{card.aihe}</span>
+                                                    <TextField style={{ minWidth: "3%" }}
+                                                        value={''}
+                                                        select
+                                                        onChange={(event) => { muutaKysymyksenAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet) }}
+                                                        InputProps={{ disableUnderline: true }}>
+                                                        {kaikkiAiheet.map((option) => (
+                                                            <MenuItem key={option.id} value={option.id}>
+                                                                {option.aihe}
+                                                            </MenuItem>
+                                                        ))}
+                                                    </TextField><br />
                                                     <div style={{ paddingTop: "30px" }} className={classes.root}>
                                                         <GridList cellHeight={150} style={{ width: "100%" }}>
                                                             <GridListTile key="Subheader" cols={2} style={{ height: 'auto' }}>
@@ -315,71 +326,71 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
 
                                                         setNewChoiseId(lisaaVaihtoehto(dispatch, cardIndex, kysymys_id, currentExamIndex))
 
-                                                }}>
-                                                    <Icon>add_circle</Icon>
-                                                </IconButton>
-                                            </List>
-                                        </CardContent>
-                                    </Card>
-                                )
-                            }
+                                                    }}>
+                                                        <Icon>add_circle</Icon>
+                                                    </IconButton>
+                                                </List>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                }
 
-                            <div style={{ width: '100%', textAlign : 'center' }}>
-                            <IconButton
-                                onClick={() => {
-                                        if (dataGridSelection.length > 0) {
-                                            console.log(dataGridSelection)
-                                            dataGridSelection.map((item, kysymysIndex) => {
-                                                setNewCardId(lisaaKysymysTenttiin(item,state[currentExamIndex].id))
-                                            })
-                                            setRows(rows.filter((row)=> !dataGridSelection.includes(row.id)))
-                                            setDataGridSelection([])
-                                        } else {
-                                            setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))
-                                            setRows(rows.filter((row)=> !dataGridSelection.includes(row.id)))
+                                <div style={{ width: '100%', textAlign: 'center' }}>
+                                    <IconButton
+                                        onClick={() => {
+                                            if (dataGridSelection.length > 0) {
+                                                console.log(dataGridSelection)
+                                                dataGridSelection.map((item, kysymysIndex) => {
+                                                    setNewCardId(lisaaKysymysTenttiin(item, state[currentExamIndex].id))
+                                                })
+                                                setRows(rows.filter((row) => !dataGridSelection.includes(row.id)))
+                                                setDataGridSelection([])
+                                            } else {
+                                                setNewCardId(lisaaKysymys(currentDatabaseExamIdChanged, dispatch, currentExamIndex))
+                                                setRows(rows.filter((row) => !dataGridSelection.includes(row.id)))
+                                            }
                                         }
-                                    }
-                                }>
-                                <Icon>add_circle</Icon>
-                            </IconButton>
-                            </div>
-                            <Card style={{ marginTop: "10px" }}  className={classes.root}>
-                            <div style={{ height: 460, width: '100%' }}>
-                                <DataGrid columns={columns} rows={rows} pageSize={7} checkboxSelection
-                                onSelectionModelChange={(newSelection)=>{
-                                    setDataGridSelection(newSelection.selectionModel)
-                                }}
-                                />
-                            </div>
-                            </Card>
-                        </>
-                    )
-                : (
-                <>
-                {Object.values(state).map((exam, examIndex) =>
-                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
-                        setCurrentExamIndex(examIndex)
-                        if (exam.id) {
-                            setCurrentDatabaseExamIdChanged(exam.id)
-                            setCurrentExamId(exam.id)
-                            setExamName(exam.nimi)
-                            setRows(kysymysLista(examIndex))
-                        } else {
-                            setCurrentDatabaseExamIdChanged(newExamId)
-                        }
-                    }}>
-                        {exam.nimi}
-                    </ExamButton>
-                )}
-                <IconButton onClick={() => {
-                    setNewExamId(lisaaTentti(dispatch, currentUser))
-                }}>
-                    <Icon>add_circle</Icon>
-                </IconButton>
-                </> )}
-            </Container>
-        </Box >
-    </>
+                                        }>
+                                        <Icon>add_circle</Icon>
+                                    </IconButton>
+                                </div>
+                                <Card style={{ marginTop: "10px" }} className={classes.root}>
+                                    <div style={{ height: 460, width: '100%' }}>
+                                        <DataGrid columns={columns} rows={rows} pageSize={7} checkboxSelection
+                                            onSelectionModelChange={(newSelection) => {
+                                                setDataGridSelection(newSelection.selectionModel)
+                                            }}
+                                        />
+                                    </div>
+                                </Card>
+                            </>
+                        )
+                        : (
+                            <>
+                                {Object.values(state).map((exam, examIndex) =>
+                                    <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
+                                        setCurrentExamIndex(examIndex)
+                                        if (exam.id) {
+                                            setCurrentDatabaseExamIdChanged(exam.id)
+                                            setCurrentExamId(exam.id)
+                                            setExamName(exam.nimi)
+                                            setRows(kysymysLista(examIndex))
+                                        } else {
+                                            setCurrentDatabaseExamIdChanged(newExamId)
+                                        }
+                                    }}>
+                                        {exam.nimi}
+                                    </ExamButton>
+                                )}
+                                <IconButton onClick={() => {
+                                    setNewExamId(lisaaTentti(dispatch, currentUser))
+                                }}>
+                                    <Icon>add_circle</Icon>
+                                </IconButton>
+                            </>)}
+                </Container>
+            </Box >
+        </>
     )
 }
 
