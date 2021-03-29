@@ -32,9 +32,10 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
     const classes = useStyles()
 
     const allCorrect = (cardChoisesArray) => {
-        cardChoisesArray.forEach((choise, i) =>
-            (choise.oikea_vastaus === null) && (cardChoisesArray[i].oikea_vastaus = false)
-        )
+        cardChoisesArray.forEach((choise, i) => {
+            (choise.oikea_vastaus === null) && (cardChoisesArray[i].oikea_vastaus = false);
+            (choise.vastaus === null) && (cardChoisesArray[i].vastaus = false);
+        })
         return (cardChoisesArray.filter(choise => choise.vastaus
             === choise.oikea_vastaus).length === cardChoisesArray.length)
     }
