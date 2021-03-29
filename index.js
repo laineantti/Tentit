@@ -232,6 +232,16 @@ app.use('/uploads_thumbnails', express.static(uploads_thumbnails_directory))
 // lataa useita tiedostoja serverille
 app.post('/upload', async (req, res) => {
 
+  const makeid = (length) => {
+    var result = ''
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    var charactersLength = characters.length
+    for (var i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength))
+    }
+    return result
+  }
+
   const createThumbnail = async (tiedostonimi) => {
     // luodaan _thumbnail ja lisätään se uploads_thumbnails-kansioon
     console.log('Luodaan esikatselukuva ./uploads_thumbnails/thumbnail_' + tiedostonimi)
@@ -268,18 +278,19 @@ app.post('/upload', async (req, res) => {
     } else {
       let data = []                         // yksittäinen tiedosto ei tule taulukkona
       if (!Array.isArray(req.files.photos)) { // eli tässä tulee vain yksittäinen tiedosto
+        let filename = makeid(5) + req.files.photos.name
         console.log("Vastaanotetaan yksi kuva.")
-        console.log('Luotiin tiedosto ./uploads/' + req.files.photos.name)
-        await req.files.photos.mv('./uploads/' + req.files.photos.name, (err) => {
+        console.log('Luotiin tiedosto ./uploads/' + filename)
+        await req.files.photos.mv('./uploads/' + filename, (err) => {
           if (err) {
             throw err
           } else {
-            createThumbnail(req.files.photos.name)
-            addImageToDatabase(req.files.photos.name)
+            createThumbnail(filename)
+            addImageToDatabase(filename)
           }
         })
         data.push({
-          name: req.files.photos.name,
+          name: filename,
           type: req.files.photos.mimetype,
           size: req.files.photos.size
         })
@@ -288,21 +299,22 @@ app.post('/upload', async (req, res) => {
         console.log("Vastaanotetaan " + req.files.photos.length + " kuvaa.")
         _.forEach(_.keysIn(req.files.photos), async (key) => {
           let photo = req.files.photos[key]
+          let filename = makeid(5) + photo.name
 
           // siirretään tiedosto uploads-kansioon
-          console.log('Luotiin tiedosto ./uploads/' + photo.name)
-          await photo.mv('./uploads/' + photo.name, (err) => {
+          console.log('Luotiin tiedosto ./uploads/' + filename)
+          await photo.mv('./uploads/' + filename, (err) => {
             if (err) {
               throw err
             } else {
-              createThumbnail(photo.name)
-              addImageToDatabase(photo.name)
+              createThumbnail(filename)
+              addImageToDatabase(filename)
             }
           })
 
           // työnnetään kaikki informaatio
           data.push({
-            name: photo.name,
+            name: filename,
             mimetype: photo.mimetype,
             size: photo.size
           })
@@ -522,15 +534,15 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
               return next(err)
             }
             db.query("INSERT INTO aiheiden_joukko (kysymys_id,aihe_id) values (" + res.rows[0].id + ",9)",
-            (err) => {
-              if (err) {
-                return next(err)
-              }
-            })
+              (err) => {
+                if (err) {
+                  return next(err)
+                }
+              })
           })
-        })
-        // "Uusi kysymys lisätty ja liitetty tenttiin sekä aiheiden joukkoon onnistuneesti!"
-        response.status(201).send(res.rows[0].id)
+      })
+    // "Uusi kysymys lisätty ja liitetty tenttiin sekä aiheiden joukkoon onnistuneesti!"
+    response.status(201).send(res.rows[0].id)
   } catch (err) {
     response.send(err)
   }
@@ -539,15 +551,15 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
 // lisää kysymyksen liitos tenttiin
 app.post('/lisaa_kysymys_tenttiin/:kysymys_id/:tentti_id', (req, response, next) => {
   try {
-      db.query("INSERT INTO tentin_kysymykset (kysymys_id,tentti_id) values ($1,$2)",
+    db.query("INSERT INTO tentin_kysymykset (kysymys_id,tentti_id) values ($1,$2)",
       [req.params.kysymys_id, req.params.tentti_id],
       (err) => {
         if (err) {
           return next(err)
         }
       })
-      // "kysymys liitetty tenttiin onnistuneesti!"
-      response.status(201).send(res.rows[0].id)
+    // "kysymys liitetty tenttiin onnistuneesti!"
+    response.status(201).send(res.rows[0].id)
   } catch (err) {
     response.send(err)
   }
@@ -742,7 +754,7 @@ app.get('/kysymys/:id', (req, response, next) => {
 // palauttaa tentin kysymykset tentin id perusteella
 app.get('/tentin_kysymykset/:tentti_id', (req, response, next) => {
   db.query('SELECT kysymys.id, kysymys.lause, aihe.aihe FROM (((kysymys INNER JOIN aiheiden_joukko ON kysymys.id=aiheiden_joukko.kysymys_id) INNER JOIN aihe ON aiheiden_joukko.aihe_id=aihe.id)INNER JOIN tentin_kysymykset ON kysymys.id=tentin_kysymykset.kysymys_id) WHERE tentin_kysymykset.tentti_id=$1 ORDER BY kysymys.id',
-  // db.query('SELECT * FROM kysymys WHERE id IN (SELECT kysymys_id FROM tentin_kysymykset WHERE tentti_id = $1 ORDER BY id) ORDER BY id',
+    // db.query('SELECT * FROM kysymys WHERE id IN (SELECT kysymys_id FROM tentin_kysymykset WHERE tentti_id = $1 ORDER BY id) ORDER BY id',
     [req.params.tentti_id], (err, res) => {
       if (err) {
         return next(err)
@@ -1020,7 +1032,7 @@ app.get('/vaihtoehto', (req, response, next) => {
 })
 
 // kaikki kysymykset ja kysymyksen aihe
-app.get('/kysymys_aihe/',(req, response, next) => {
+app.get('/kysymys_aihe/', (req, response, next) => {
   db.query('SELECT kysymys.id, kysymys.lause, aihe.aihe FROM ((kysymys INNER JOIN aiheiden_joukko ON kysymys.id=aiheiden_joukko.kysymys_id) INNER JOIN aihe ON aiheiden_joukko.aihe_id=aihe.id) ORDER BY aihe.aihe, kysymys.lause', (err, res) => {
     if (err) {
       return next(err)
@@ -1030,7 +1042,7 @@ app.get('/kysymys_aihe/',(req, response, next) => {
 })
 
 // haetaan aihe kysymykselle
-app.get('/kysymys_aihe/:kysymys_id',(req, response, next) => {
+app.get('/kysymys_aihe/:kysymys_id', (req, response, next) => {
   db.query('SELECT aihe FROM ((kysymys INNER JOIN aiheiden_joukko ON kysymys.id=aiheiden_joukko.kysymys_id) INNER JOIN aihe ON aiheiden_joukko.aihe_id=aihe.id) WHERE kysymys_id = $1', [req.params.kysymys_id], (err, res) => {
     if (err) {
       return next(err)
@@ -1053,7 +1065,7 @@ app.put('/paivita_kysymyksen_aihe/:kysymys_id/:aihe_id', (req, response, next) =
 
 
 // haetaan aiheet
-app.get('/aihe',(req, response, next) => {
+app.get('/aihe', (req, response, next) => {
   db.query('SELECT * FROM aihe ORDER BY aihe', (err, res) => {
     if (err) {
       return next(err)
