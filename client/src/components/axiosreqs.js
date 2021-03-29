@@ -63,14 +63,11 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
         let tentit_string = ""
         if (admin_sivulla) { // admin_sivulla? --> true/false
             if (adminOikeus) {
-                console.log("Admin-sivulla voit muokata kaikkia tenttejä.")
                 tentit_string = path + "tentti"
             } else {
-                console.log("Admin-sivulla voit muokata vain luomiasi tenttejä.")
                 tentit_string = path + "oikeus_muokata_tenttia/" + currentUser
             }
         } else {
-            console.log("User-sivulla voit nähdä vain tilaamiasi tenttejä. Luomasi tentit näet vain Admin-sivulla (et täällä!).")
             tentit_string = path + "kayttajan_tentit/" + currentUser
         }
         let tentit_data = await axios.get(tentit_string, headers)
@@ -519,7 +516,6 @@ const poistaTentti = async (dispatch, currentExamIndex, tentti_id, voimalla) => 
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
         tiedot_poistettavasta_tentista = result.data
-        /* console.log(tiedot_poistettavasta_tentista) */
         if (tiedot_poistettavasta_tentista.poistettu) {
             console.log("Tentti_id " + tentti_id + ", poistettu!")
             dispatch(

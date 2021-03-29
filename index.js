@@ -244,7 +244,6 @@ app.post('/upload', async (req, res) => {
 
   const createThumbnail = async (tiedostonimi) => {
     // luodaan _thumbnail ja lisätään se uploads_thumbnails-kansioon
-    console.log('Luodaan esikatselukuva ./uploads_thumbnails/thumbnail_' + tiedostonimi)
     await sharp('./uploads/' + tiedostonimi)
       .resize({ width: 240 })
       .toFile('./uploads_thumbnails/thumbnail_' + tiedostonimi)
@@ -262,8 +261,6 @@ app.post('/upload', async (req, res) => {
       (err, res) => {
         if (err) {
           return next(err)
-        } else {
-          console.log(tiedostonimi + " lisätty.")
         }
       }
     )
@@ -279,8 +276,6 @@ app.post('/upload', async (req, res) => {
       let data = []                         // yksittäinen tiedosto ei tule taulukkona
       if (!Array.isArray(req.files.photos)) { // eli tässä tulee vain yksittäinen tiedosto
         let filename = makeid(5) + req.files.photos.name
-        console.log("Vastaanotetaan yksi kuva.")
-        console.log('Luotiin tiedosto ./uploads/' + filename)
         await req.files.photos.mv('./uploads/' + filename, (err) => {
           if (err) {
             throw err
@@ -326,6 +321,7 @@ app.post('/upload', async (req, res) => {
         message: 'Tiedostot ladattu palvelimelle.',
         data: data
       })
+      console.log("Kuvat lisätty palvelimelle!")
     }
   } catch (err) {
     res.status(500).send(err)
@@ -989,13 +985,11 @@ app.delete('/poista_tentti/:tentti_id/:voimalla', (req, response, next) => {
                                   tiedot_poistettavasta_tentista.poistettu = true
                                   // palautetaan tentin tiedot
                                   response.status(201).send(tiedot_poistettavasta_tentista)
-                                  /* console.log(tiedot_poistettavasta_tentista) */
                                 }
                               })
                           } else {
                             // palautetaan tentin tiedot
                             response.status(201).send(tiedot_poistettavasta_tentista)
-                            /* console.log(tiedot_poistettavasta_tentista) */
                           }
                         })
                     })

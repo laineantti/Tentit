@@ -92,7 +92,6 @@ const StateProvider = ({ children }) => {
             case "correct_checked_changed":
                 tempCopy[action.data.examIndex].kysymykset[action.data.cardIndex]
                     .vaihtoehdot[action.data.listItemIndex].oikea_vastaus = action.data.checkedValue
-                console.log(tempCopy)
                 return tempCopy
 
             case "checked_changed":

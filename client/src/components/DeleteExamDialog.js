@@ -64,8 +64,6 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
         try {
             await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged, voimalla)
                 .then(tiedot => {
-                    console.log(tiedot)
-
                     // Tieto kayttaja-liitoksista mihin tentti on liitettynä.
                     let kayttaja_string = ""
                     let kayttaja_id_luoja_string = ""

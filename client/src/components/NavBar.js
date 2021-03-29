@@ -28,8 +28,6 @@ export function NavBar({
     };
 
     strings.setLanguage(strings.getInterfaceLanguage())
-    console.log("Browser language in Settings: " + strings.getInterfaceLanguage())
-    console.log("React App language: " + strings.getLanguage())
 
         return (
             <>

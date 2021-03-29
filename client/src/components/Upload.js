@@ -23,13 +23,10 @@ switch (environment) {
 
 function Upload() {
     const onDrop = useCallback(files => {
-
-        console.log(files);
         const req = request.post(path+"upload");
 
         files.forEach(file => {
-            req.attach('photos', file);
-            console.log(file);
+            req.attach('photos', file)
         });
         req.end((err, res) => {
             console.log(res)

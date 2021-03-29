@@ -1,4 +1,4 @@
-import { React, useState, useEffect, useContext, useCallback } from 'react'
+import { React, useState, useEffect, useContext } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 /* import axios from 'axios' */
@@ -39,7 +39,7 @@ import {
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 import ImageSelector from './ImageSelector'
-import { idToIndex, hakuId, kysymysLista } from './helpers'
+import { idToIndex, hakuId, /* kysymysLista */ } from './helpers'
 
 function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, setCurrentExamId, currentExamIndex, setCurrentExamIndex }) {
 
@@ -133,9 +133,6 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                     setCurrentExamIndex={setCurrentExamIndex}
                                     currentDatabaseExamIdChanged={currentDatabaseExamIdChanged}
                                 />
-
-                                {/* {console.log("state[currentExamIndex].id (tietokannan tentin id): ", state[currentExamIndex].id)}
-                            {console.log("currentExamIndex (taulukon index): ", currentExamIndex)} */}
                                 {state[currentExamIndex].kysymykset
                                     .map((card, cardIndex) =>
                                         <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>

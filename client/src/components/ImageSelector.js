@@ -126,7 +126,6 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
 
     const asetaValinta = (id) => {
         setSelectedImages(selectedImages => [...selectedImages, id])
-        console.log(selectedImages)
     }
 
     const poistaValinta = (id) => {
@@ -194,7 +193,6 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                 </DialogContent>
                 <DialogActions>
                     <Button autoFocus onClick={() => {
-                        console.log(selectedImages)
                         let kysymys_id = state[examIndex].kysymykset[cardIndex].id
                         if (sijainti === "kysymys") {
                             setNewImageId(liitaKuvaKysymykseen(dispatch, examIndex, cardIndex, selectedImages, kysymys_id))
