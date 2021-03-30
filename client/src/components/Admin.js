@@ -164,7 +164,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                         onChange={(event) => { muutaKysymyksenAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet) }}
                                                         InputProps={{ disableUnderline: true }}>
                                                         {kaikkiAiheet.map((option) => (
-                                                            <MenuItem key={option.id} value={option.id}>
+                                                            <MenuItem key={uuid()} value={option.id}>
                                                                 {option.aihe}
                                                             </MenuItem>
                                                         ))}
@@ -226,7 +226,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                         </GridList>
                                                     </div>
                                                     {card.vaihtoehdot.map((listItem, listItemIndex) => (
-                                                        <>
+                                                        <div key={uuid()}>
                                                             <ListItem key={uuid()}><CodeComponent style={{ width: "100%" }} questionString={listItem.vaihtoehto} /></ListItem>
                                                             <ListItem key={uuid()}>
                                                                 <ImageSelector
@@ -311,7 +311,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                     </GridList>
                                                                 </div>
                                                             </ListItem>
-                                                        </>
+                                                        </div>
                                                     ))}
                                                     <IconButton onClick={() => {
                                                         let kysymys_id = null

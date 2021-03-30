@@ -114,7 +114,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                     </GridList>
                                                 </div>
                                                 {Object.values(card.vaihtoehdot).map((listItem, listItemIndex) => (
-                                                    <>
+                                                    <div key={uuid()}>
                                                         <ListItem key={uuid()}>
                                                             <Checkbox checked={listItem.vastaus} disabled={showCorrectAnswers}
                                                                 onChange={(event) => {
@@ -134,7 +134,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                         <ListItem key={uuid()}>
                                                             <div style={{ paddingLeft: "45px", width: "100%" }} className={classes.root}>
                                                                 <GridList cellHeight={150} style={{ width: "100%" }} className={classes.gridList}>
-                                                                    <GridListTile key="Subheader" cols={2} style={{ height: 'auto' }}>
+                                                                    <GridListTile key={uuid()} cols={2} style={{ height: 'auto' }}>
                                                                         <ListSubheader component="div" style={{ width: "100%" }}>
                                                                             {listItem.kuvat.length > 2 &&
                                                                                 <IconButton style={{ float: "right" }} aria-label="expand"
@@ -174,7 +174,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                                 </GridList>
                                                             </div>
                                                         </ListItem>
-                                                    </>
+                                                    </div>
                                                 ))}
                                             </List>
                                         </CardContent>

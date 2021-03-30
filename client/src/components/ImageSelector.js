@@ -16,6 +16,7 @@ import Checkbox from '@material-ui/core/Checkbox'
 import Skeleton from '@material-ui/lab/Skeleton'
 import { fetchImage, liitaKuvaKysymykseen, liitaKuvaVaihtoehtoon, } from './axiosreqs'
 import { store } from './store.js'
+import uuid from 'react-uuid'
 
 // Dialog
 const styles = (theme) => ({
@@ -159,7 +160,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                     <div className={classes.root}>
                         <GridList cellHeight={150} className={classes.gridList}>
                             {tileData.map((tile) => (
-                                <GridListTile key={tile.id} style={{ width: "240px", maxHeight: "150" }}>
+                                <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
                                     <a href={"//localhost:4000/uploads/" + tile.img} target="_blank" rel="noreferrer">
                                         <img style={{ width: "100%", height: "100%", objectFit: "cover", display: imageLoaded.includes(tile.id) ? "block" : "none" }}
                                             src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
