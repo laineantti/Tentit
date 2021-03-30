@@ -19,8 +19,9 @@ switch (environment) {
         throw default_error
 }
 
-const fetchUser = async (setCurrentUser, setCurrentUserName) => {
-    let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
+const fetchUser = async (setCurrentUser, setCurrentUserName, paluuarvo) => {
+    // let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
+    let headers = { headers: { Authorization: `bearer ${paluuarvo}` }, }
     try {
         let userData = await axios.get(path + "kayttaja/", headers)
         if (userData.data.id) {

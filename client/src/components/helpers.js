@@ -56,23 +56,10 @@ const idToIndex = (state,currentExamId,setCurrentExamIndex) => {
   console.log(viesti)
 }
 
-const kysymysLista = (currentExamIndex, kaikkiKysymykset, tentinKysymykset, setRows) => {
-  let lista=kaikkiKysymykset
-  tentinKysymykset.map((item,kysymysIndex) => {
-      lista.map((listaItem,listaId) => {
-          if (listaItem.id === item.id) {
-              lista.splice(listaId,1)
-          }
-      })
-  })
-  setRows(lista)
-}
-
   export {
       tarkistaSahkoposti, 
       tarkistaSalasana,
       autentikoitu,
       hakuId,
       idToIndex,
-      kysymysLista
   }

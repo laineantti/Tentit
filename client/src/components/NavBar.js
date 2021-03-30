@@ -9,12 +9,15 @@ import { logoutUser } from './axiosreqs'
 import { store } from './store.js'
 
 export function NavBar({
-    kirjautunut,setKirjautunut,
-    currentUser,setCurrentUser,
-    currentUserName,setCurrentUserName,
-    currentExamId,setCurrentExamId,
+    setKirjautunut,
+    currentUser,
+    setCurrentUser,
+    currentUserName,
+    setCurrentUserName,
+    setCurrentExamId,
     currentExamIndex,setCurrentExamIndex,
-    examEdit,setExamEdit
+    examEdit,setExamEdit,
+    kaikkiKysymykset, rows, setRows
 }) {
     const classes = useStyles()
     const { state, dispatch } = useContext(store) 
@@ -41,6 +44,7 @@ export function NavBar({
                                 if (currentExamIndex >=0) {
                                     setCurrentExamIndex(-1)
                                     setCurrentExamId(-1)
+                                    setRows(kaikkiKysymykset)
                                 }
                             }}>{strings.tentit}</MenuButton></Link>
                             :
@@ -48,6 +52,7 @@ export function NavBar({
                                 if (currentExamIndex >=0) {
                                     setCurrentExamIndex(-1)
                                     setCurrentExamId(-1)
+                                    setRows(kaikkiKysymykset)
                                 }
                             }}>{strings.tentit}</MenuButton></Link> }
                         {/* {window.location.pathname==="/admin"?
