@@ -15,6 +15,7 @@ import ImageIcon from '@material-ui/icons/Image'
 import CloseIcon from '@material-ui/icons/Close'
 import DeleteIcon from '@material-ui/icons/Delete'
 import DeleteExamDialog from './DeleteExamDialog'
+import DeleteCardDialog from './DeleteCardDialog'
 import { DataGrid } from '@material-ui/data-grid';
 import { store } from './store.js'
 import { MainContext } from './globalContext.js'
@@ -149,14 +150,14 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                         muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                     }}>
                                                     </TextField>
-                                                    <IconButton key={uuid()} style={{ float: "right" }} label="delete"
-                                                        color="primary" onClick={() => {
-                                                            poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)
-                                                            let addRow = kaikkiKysymykset.filter((kysymys) => kysymys.id === card.id)
-                                                            setRows([...rows, ...addRow])
-                                                        }}>
-                                                        <DeleteIcon />
-                                                    </IconButton >
+                                                    <DeleteCardDialog
+                                                        /* kysymyksen poistonappi */
+                                                        currentExamIndex={currentExamIndex}
+                                                        setCurrentExamIndex={setCurrentExamIndex}
+                                                        cardIndex={cardIndex}
+                                                        examIndex={currentExamIndex}
+                                                        kysymys_id={card.id}
+                                                    />
                                                     <span>{card.aihe}</span>
                                                     <TextField style={{ minWidth: "3%" }}
                                                         value={''}

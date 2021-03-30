@@ -534,6 +534,34 @@ const poistaTentti = async (dispatch, currentExamIndex, tentti_id, voimalla) => 
     }
 }
 
+const poistaKysymys = async (dispatch, kysymys_id, cardIndex, examIndex, voimalla) => {
+    let tiedot_poistettavasta_kysymyksesta = null
+    try {
+        let result = await axios({
+            method: 'delete',
+            url: `${path}poista_kysymys/${kysymys_id}/${voimalla}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        tiedot_poistettavasta_kysymyksesta = result.data
+        if (tiedot_poistettavasta_kysymyksesta.poistettu) {
+            console.log("Kysymys_id " + kysymys_id + ", poistettu!")
+            dispatch(
+                {
+                    type: "card_deleted", data: {
+                        cardIndex: cardIndex,
+                        examIndex: examIndex
+                    }
+                }
+            )
+        } else {
+            console.log("Kysymys_id " + kysymys_id + ", poistaminen epäonnistui liitoksien takia!")
+        }
+        return tiedot_poistettavasta_kysymyksesta
+    } catch (exception) {
+        console.log(exception)
+    }
+}
+
 export {
     fetchUser,
     fetchData,
@@ -558,4 +586,5 @@ export {
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos,
     poistaTentti,
+    poistaKysymys
 }

@@ -815,8 +815,6 @@ app.put('/paivita_tentti/:id/:nimi', (req, response, next) => {
     })
 })
 
-
-
 // poista tentti
 app.delete('/poista_tentti/:tentti_id/:voimalla', (req, response, next) => {
   // poistoa tekevä käyttäjä:
@@ -837,7 +835,10 @@ app.delete('/poista_tentti/:tentti_id/:voimalla', (req, response, next) => {
         admin: admin,
         liitokset: {
           kurssi_id: [],
+          tentti_id: [],
           kysymys_id: [],
+          aihe_id: [],
+          kuva_id: [],
           kayttaja_id_luoja: [],
           kayttaja_id_tilaaja: [],
           kayttaja_id_vastaaja: []
@@ -884,7 +885,7 @@ app.delete('/poista_tentti/:tentti_id/:voimalla', (req, response, next) => {
                   )
                 } else {
                   res.rows.map((row, i) => {
-                    tiedot_poistettavasta_tentista.liitokset.kysymys_id.push(row.kysymys_id)
+                    tiedot_poistettavasta_tentista.liitokset.tentti_id.push(row.tentti_id)
                   })
                 }
               }
@@ -996,6 +997,313 @@ app.delete('/poista_tentti/:tentti_id/:voimalla', (req, response, next) => {
                 })
             }
           )
+        })
+    }
+    catch (err) {
+      response.send(err)
+    }
+  })
+})
+
+// poista kysymys
+app.delete('/poista_kysymys/:kysymys_id/:voimalla', (req, response, next) => {
+  // poistoa tekevä käyttäjä:
+  const userId = response.authentication.userId
+  // tehdäänkö poistoa "väkisin/voimalla"
+  // muunnetaan string -> boolean
+  let voimalla = (req.params.voimalla === 'true')
+
+  // tarkistetaan onko käyttäjä admin
+  db.query('SELECT * FROM kayttaja WHERE id = $1', [userId], (err, res) => {
+    let admin = false
+    if (res.rows[0].rooli === 'admin') {
+      admin = true
+    }
+    try {
+      let tiedot_poistettavasta_kysymyksesta = {
+        poistettu: false,
+        admin: admin,
+        liitokset: {
+          kurssi_id: [],
+          tentti_id: [],
+          vaihtoehto_id: [],
+          aihe_id: [],
+          kuva_id: [],
+          kayttaja_id_luoja: [],
+          kayttaja_id_tilaaja: [],
+          kayttaja_id_vastaaja: []
+        }
+      }
+      let saa_poistaa = false
+      // tarkistetaan onko kysymys linkattu tenttiin
+      db.query("SELECT * FROM tentin_kysymykset WHERE kysymys_id = $1 ORDER BY id",
+        [req.params.kysymys_id],
+        (err, res) => {
+          if (err) { return next(err) }
+          // jos tentteihin liitoksia; tallennetaan tietoihin tentti_id:t
+          if (res.rows.length > 0) {
+            if (voimalla) {
+              saa_poistaa = true
+              // poistetaan kysymyksen liitos tentin_kysymykset-taulusta
+              db.query("DELETE FROM tentin_kysymykset WHERE kysymys_id = $1",
+                [req.params.kysymys_id],
+                (err) => {
+                  if (err) { return next(err) }
+                }
+              )
+            } else {
+              res.rows.map((row, i) => {
+                tiedot_poistettavasta_kysymyksesta.liitokset.tentti_id.push(row.tentti_id)
+              })
+            }
+          }
+          // tarkistetaan onko kuva linkattu vaihtoehtoon
+          db.query("SELECT * FROM vaihtoehdon_kuvat WHERE vaihtoehto_id = ANY(SELECT vaihtoehto_id FROM kysymyksen_vaihtoehdot WHERE kysymys_id = $1) ORDER BY id",
+            [req.params.kysymys_id],
+            (err, res) => {
+              if (err) { return next(err) }
+              // jos kuviin liitoksia; tallennetaan tietoihin kuva_id:t
+              if (res.rows.length > 0) {
+                if (voimalla) {
+                  saa_poistaa = true
+                  // poistetaan kuvan liitos vaihtoehdon_kuvat-taulusta
+                  db.query("DELETE FROM vaihtoehdon_kuvat WHERE vaihtoehto_id = ANY(SELECT vaihtoehto_id FROM kysymyksen_vaihtoehdot WHERE kysymys_id = $1)",
+                    [req.params.kysymys_id],
+                    (err) => {
+                      if (err) { return next(err) }
+                    }
+                  )
+                } else {
+                  res.rows.map((row, i) => {
+                    // tarkistetaan onko vaihtoehto jo ennestään taulukossa,
+                    // että samaa vaihtoehtoa ei lisätä taulukkoon uudestaan turhaan
+                    let id_on_jo_taulukossa = false
+                    // käydään map:lla läpi "muistiinpanot" joissa on kysymysten vaihtoehdot, että
+                    // voidaan verrata onko siellä jo sama vaihtoehto_id yhteen kertaan (ei haluta muistiin
+                    // kuin ainoastaan jokainen yksittäinen eri vaihtoehto)
+                    tiedot_poistettavasta_kysymyksesta.liitokset.kuva_id.map((kuva_id) => {
+                      // jos vastannut vaihtoehto on sama kuin "muistiinpanoissa" oleva vaihtoehto
+                      if (row.kuva_id === kuva_id) {
+                        // vaihtoehto_id on tietenkin jo siellä joten halutaan pois tästä loopista ja
+                        // siirtyä seuraavaan tarkistamaan sitä vaihtoehtoa
+                        id_on_jo_taulukossa = true
+                      }
+                    })
+                    // jos vaihtoehto ei ollut ennestään "muistiinpanoissa", lisätään se sinne
+                    if (id_on_jo_taulukossa !== true) {
+                      tiedot_poistettavasta_kysymyksesta.liitokset.kuva_id.push(row.kuva_id)
+                    }
+                  })
+                }
+              }
+              // tarkistetaan onko aihe linkattu kysymykseen
+              db.query("SELECT * FROM aiheiden_joukko WHERE kysymys_id = $1 ORDER BY id",
+                [req.params.kysymys_id],
+                (err, res) => {
+                  if (err) { return next(err) }
+                  // jos aiheisiin liitoksia; tallennetaan tietoihin aihe_id:t
+                  if (res.rows.length > 0) {
+                    if (voimalla) {
+                      saa_poistaa = true
+                      // poistetaan aiheen liitos aiheiden_joukko-taulusta
+                      db.query("DELETE FROM aiheiden_joukko WHERE kysymys_id = $1",
+                        [req.params.kysymys_id],
+                        (err) => {
+                          if (err) { return next(err) }
+                        }
+                      )
+                    } else {
+                      res.rows.map((row, i) => {
+                        if (row.aihe_id > 0) {
+                          tiedot_poistettavasta_kysymyksesta.liitokset.aihe_id.push(row.aihe_id)
+                        }
+                      })
+                    }
+                  }
+                  // tarkistetaan onko kuva linkattu kysymykseen
+                  db.query("SELECT * FROM kysymyksen_kuvat WHERE kysymys_id = $1 ORDER BY id",
+                    [req.params.kysymys_id],
+                    (err, res) => {
+                      if (err) { return next(err) }
+                      // jos kuviin liitoksia; tallennetaan tietoihin kuva_id:t
+                      if (res.rows.length > 0) {
+                        if (voimalla) {
+                          saa_poistaa = true
+                          // poistetaan kuvan liitos kysymyksen_kuvat-taulusta
+                          db.query("DELETE FROM kysymyksen_kuvat WHERE kysymys_id = $1",
+                            [req.params.kysymys_id],
+                            (err) => {
+                              if (err) { return next(err) }
+                            }
+                          )
+                        } else {
+                          res.rows.map((row, i) => {
+                            if (row.vaihtoehto_id > 0) {
+                              tiedot_poistettavasta_kysymyksesta.liitokset.kuva_id.push(row.kuva_id)
+                            }
+                          })
+                        }
+                      }
+                      // tarkistetaan onko kysymyksen sisältävän tentin "tilannut" joku käyttäjä (onko liitos kayttajan_tentit)
+                      db.query("SELECT * FROM tentin_kysymykset WHERE kysymys_id = $1 ORDER BY id",
+                        [req.params.kysymys_id],
+                        (err, res) => {
+                          if (err) { return next(err) }
+                          // tallennetaan tentit joihin kysymyksen poistaminen tentistä vaikuttaa
+                          if (res.rows.length > 0) {
+                            if (!voimalla) {
+                              res.rows.map((row, i) => {
+                                // tarkistetaan onko kysymys jo ennestään taulukossa,
+                                // että samaa kysymystä ei lisätä taulukkoon uudestaan turhaan
+                                let id_on_jo_taulukossa = false
+                                // käydään map:lla läpi "muistiinpanot" joissa on kysymysten tentit, että
+                                // voidaan verrata onko siellä jo sama tentti yhteen kertaan (ei haluta muistiin
+                                // kuin ainoastaan jokainen yksittäinen eri tentti)
+                                tiedot_poistettavasta_kysymyksesta.liitokset.tentti_id.map((tentti_id) => {
+                                  // jos vastannut käyttäjä on sama kuin "muistiinpanoissa" oleva käyttäjä
+                                  if (row.tentti_id === tentti_id) {
+                                    // käyttäjä on tietenkin jo siellä joten halutaan pois tästä loopista ja
+                                    // siirtyä seuraavaan vastaukseen tarkistamaan sitä käyttäjää
+                                    id_on_jo_taulukossa = true
+                                  }
+                                })
+                                // jos käyttäjä ei ollut ennestään "muistiinpanoissa", lisätään se sinne
+                                if (id_on_jo_taulukossa !== true) {
+                                  tiedot_poistettavasta_kysymyksesta.liitokset.tentti_id.push(row.tentti_id)
+                                }
+                              })
+                            }
+                          }
+                          db.query("SELECT * FROM kayttajan_tentit WHERE tentti_id = $1 ORDER BY id",
+                            [req.params.tentti_id],
+                            (err, res) => {
+                              if (err) { return next(err) }
+                              // tallennetaan käyttäjät joihin kysymyksen poistaminen tentistä vaikuttaa
+                              if (res.rows.length > 0) {
+                                if (!voimalla) {
+                                  res.rows.map((row) => {
+                                    tiedot_poistettavasta_kysymyksesta.liitokset.kayttaja_id_tilaaja.push(row.kayttaja_id)
+                                  })
+                                }
+                              }
+                              // tarkistetaan onko kysymys linkattu käyttäjän vastauksiin (vaihtoehtojen valinta)
+                              db.query("SELECT * FROM kayttajan_vastaus ORDER BY id",
+                                (err, res) => {
+                                  if (err) { return next(err) }
+                                  // jos jonkun käyttäjän vastauksiin liitoksia; tallennetaan tietoihin kayttaja_id:t
+                                  if (res.rows.length > 0) {
+                                    if (voimalla) {
+                                      saa_poistaa = true
+                                      // poistetaan vaihtoehdon vastauksen liitos kayttajan_vastaus-taulusta
+                                      tiedot_poistettavasta_kysymyksesta.liitokset.vaihtoehto_id.map(v_id => {
+                                        db.query("DELETE FROM kayttajan_vastaus WHERE vaihtoehto_id = $1",
+                                          [v_id],
+                                          (err) => {
+                                            if (err) { return next(err) }
+                                          }
+                                        )
+                                      })
+                                    } else {
+                                      res.rows.map((row, i) => {
+                                        // tarkistetaan onko käyttäjä jo vastannut johonkin vaihtoehtoon,
+                                        // että samaa käyttäjää ei lisätä taulukkoon uudestaan turhaan
+                                        let id_on_jo_taulukossa = false
+                                        // käydään map:lla läpi "muistiinpanot" joissa on vastausten käyttäjät, että
+                                        // voidaan verrata onko siellä jo sama käyttäjä yhteen kertaan (ei haluta muistiin
+                                        // kuin ainoastaan jokainen yksittäinen eri käyttäjä)
+                                        tiedot_poistettavasta_kysymyksesta.liitokset.kayttaja_id_vastaaja.map((kayttaja_id) => {
+                                          // jos vastannut käyttäjä on sama kuin "muistiinpanoissa" oleva käyttäjä
+                                          if (row.kayttaja_id === kayttaja_id) {
+                                            // käyttäjä on tietenkin jo siellä joten halutaan pois tästä loopista ja
+                                            // siirtyä seuraavaan vastaukseen tarkistamaan sitä käyttäjää
+                                            id_on_jo_taulukossa = true
+                                          }
+                                        })
+                                        // jos käyttäjä ei ollut ennestään "muistiinpanoissa", lisätään se sinne
+                                        if (id_on_jo_taulukossa !== true) {
+                                          tiedot_poistettavasta_kysymyksesta.liitokset.kayttaja_id_vastaaja.push(row.kayttaja_id)
+                                        }
+                                      })
+                                    }
+                                  }
+                                  // tarkistetaan onko kysymys linkattu vaihtoehtoihin
+                                  db.query("SELECT * FROM kysymyksen_vaihtoehdot WHERE kysymys_id = $1 ORDER BY id",
+                                    [req.params.kysymys_id],
+                                    (err, res) => {
+                                      if (err) { return next(err) }
+                                      // jos vaihtoehtoihin liitoksia; tallennetaan tietoihin vaihtoehto_id:t
+                                      if (res.rows.length > 0) {
+                                        if (voimalla) {
+                                          saa_poistaa = true
+                                          // poistetaan kysymyksen liitos kysymyksen_vaihtoehdot-taulusta
+                                          db.query("DELETE FROM kysymyksen_vaihtoehdot WHERE kysymys_id = $1",
+                                            [req.params.kysymys_id],
+                                            async (err) => {
+                                              if (err) { return next(err) }
+                                              // vaihtoehto poistetaan lopullisesti (edelleen olettaen, että liitoksia ei (enää) ole)
+                                              /* let vaihtoehto_string = ""
+                                              res.rows.map((row, i) => {
+                                                (i > 0 && i < res.rows.length + 1) ? vaihtoehto_string += "," : "";
+                                                vaihtoehto_string += row.vaihtoehto_id;
+                                              })
+                                              console.log(vaihtoehto_string)
+                                              db.query("DELETE FROM vaihtoehto WHERE id = IN (?))", [vaihtoehto_string],
+                                                (err) => {
+                                                  if (err) {
+                                                    return next(err)
+                                                  } else console.log('sended');
+                                                }
+                                              ) */
+                                            }
+                                          )
+                                        } else {
+                                          res.rows.map((row, i) => {
+                                            // tarkistetaan onko vaihtoehto jo ennestään taulukossa,
+                                            // että samaa vaihtoehtoa ei lisätä taulukkoon uudestaan turhaan
+                                            let id_on_jo_taulukossa = false
+                                            // käydään map:lla läpi "muistiinpanot" joissa on kysymysten vaihtoehdot, että
+                                            // voidaan verrata onko siellä jo sama vaihtoehto_id yhteen kertaan (ei haluta muistiin
+                                            // kuin ainoastaan jokainen yksittäinen eri vaihtoehto)
+                                            tiedot_poistettavasta_kysymyksesta.liitokset.vaihtoehto_id.map((vaihtoehto_id) => {
+                                              // jos vastannut vaihtoehto on sama kuin "muistiinpanoissa" oleva vaihtoehto
+                                              if (row.vaihtoehto_id === vaihtoehto_id) {
+                                                // vaihtoehto_id on tietenkin jo siellä joten halutaan pois tästä loopista ja
+                                                // siirtyä seuraavaan tarkistamaan sitä vaihtoehtoa
+                                                id_on_jo_taulukossa = true
+                                              }
+                                            })
+                                            // jos vaihtoehto ei ollut ennestään "muistiinpanoissa", lisätään se sinne
+                                            if (id_on_jo_taulukossa !== true) {
+                                              tiedot_poistettavasta_kysymyksesta.liitokset.vaihtoehto_id.push(row.vaihtoehto_id)
+                                            }
+                                          })
+                                        }
+                                      }
+                                      // jos kysymystä ei ole linkattu, se voidaan poistaa
+                                      if (saa_poistaa || voimalla) {
+                                        // kysymys poistetaan lopullisesti (edelleen olettaen, että liitoksia ei (enää) ole)
+                                        db.query("DELETE FROM kysymys WHERE id = $1",
+                                          [req.params.kysymys_id],
+                                          (err) => {
+                                            if (err) {
+                                              return next(err)
+                                            } else {
+                                              tiedot_poistettavasta_kysymyksesta.poistettu = true
+                                              // palautetaan kysymyksen tiedot
+                                              response.status(201).send(tiedot_poistettavasta_kysymyksesta)
+                                            }
+                                          })
+                                      } else {
+                                        // palautetaan kysymyksen tiedot
+                                        response.status(201).send(tiedot_poistettavasta_kysymyksesta)
+                                      }
+                                    })
+                                })
+                            })
+                        })
+                    })
+                })
+            })
         })
     }
     catch (err) {
