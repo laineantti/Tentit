@@ -153,7 +153,6 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                     <DeleteCardDialog
                                                         /* kysymyksen poistonappi */
                                                         currentExamIndex={currentExamIndex}
-                                                        setCurrentExamIndex={setCurrentExamIndex}
                                                         cardIndex={cardIndex}
                                                         examIndex={currentExamIndex}
                                                         kysymys_id={card.id}
