@@ -61,6 +61,7 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
     const [open, setOpen] = useState(false)
 
     async function tentinPoistoLogiikka(voimalla) {
+        let isMounted = true
         try {
             await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged, voimalla)
                 .then(tiedot => {
@@ -194,19 +195,22 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                         }
                     }
 
-                    if (force === false) {
-                        setExamDeleteResult(kayttaja_string + " " + kurssi_id_string
-                            + " " + kysymys_id_string + " " + poistoviesti)
-                        setForce(true)
-                    } else {
-                        setExamDeleteResult(poistoviesti)
-                        setForce(false)
-                        setDeleting(false)
+                    if (isMounted === true) {
+                        if (force === false) {
+                            setExamDeleteResult(kayttaja_string + " " + kurssi_id_string
+                                + " " + kysymys_id_string + " " + poistoviesti)
+                            setForce(true)
+                        } else {
+                            setExamDeleteResult(poistoviesti)
+                            setForce(false)
+                            setDeleting(false)
+                        }
                     }
                 })
         } catch (err) {
             console.log(err)
         }
+        return () => { isMounted = false }
     }
 
     const handleClickOpen = () => {
@@ -247,8 +251,8 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                         // deleting ?
                         //     tentinPoistoLogiikka(force)
                         //     : handleClose()
-                         }
-                    } color={deleting?"secondary":"default"}>
+                    }
+                    } color={deleting ? "secondary" : "default"}>
                         {
                             deleting ?
                                 force ?

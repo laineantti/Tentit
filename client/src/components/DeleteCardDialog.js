@@ -61,6 +61,7 @@ export default function DeleteCardDialog({ currentExamIndex, setCurrentExamIndex
     const [open, setOpen] = useState(false)
 
     async function kysymyksenPoistoLogiikka(voimalla) {
+        let isMounted = true
         try {
             await poistaKysymys(dispatch, kysymys_id, cardIndex, examIndex, voimalla)
                 .then(tiedot => {
@@ -239,20 +240,22 @@ export default function DeleteCardDialog({ currentExamIndex, setCurrentExamIndex
                             poistoviesti = "Kysymystä ei voitu juuri nyt poistaa. Yritä myöhemmin uudelleen."
                         }
                     }
-
-                    if (force === false) {
-                        setCardDeleteResult(kayttaja_string + " " + kurssi_id_string
-                            + " " + vaihtoehto_id_string + " " + kuva_id_string + " " + aihe_id_string + " " + poistoviesti)
-                        setForce(true)
-                    } else {
-                        setCardDeleteResult(poistoviesti)
-                        setForce(false)
-                        setDeleting(false)
+                    if (isMounted === true) {
+                        if (force === false) {
+                            setCardDeleteResult(kayttaja_string + " " + kurssi_id_string
+                                + " " + vaihtoehto_id_string + " " + kuva_id_string + " " + aihe_id_string + " " + poistoviesti)
+                            setForce(true)
+                        } else {
+                            setCardDeleteResult(poistoviesti)
+                            setForce(false)
+                            setDeleting(false)
+                        }
                     }
                 })
         } catch (err) {
             console.log(err)
         }
+        return () => { isMounted = false }
     }
 
     const handleClickOpen = () => {
