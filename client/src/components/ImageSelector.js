@@ -83,6 +83,9 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
     const [tileData, setTileData] = useState([])
     const [imageLoaded, setImageLoaded] = useState([])
     const [selectedImages, setSelectedImages] = useState([])
+    const [limit/* , setLimit */] = useState(6)
+    const [offset, setOffset] = useState(0)
+    const [fullCount, setFullCount] = useState(0)
     const classes = useStyles()
 
     const getTileData = async () => {
@@ -90,7 +93,10 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
         // saadun taulun material-ui:n tileData-muotoon
         let kuvat = []
         let kuvatMuunnettu = []
-        kuvat = await fetchImage()
+        kuvat = await fetchImage(limit, offset)
+        if (fullCount === 0) {
+            setFullCount(kuvat[0].full_count)
+        }
         if (kuvat.length > 0) {
             for (const kuva of kuvat) {
                 kuvatMuunnettu.push({
@@ -193,6 +199,26 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                     </div>
                 </DialogContent>
                 <DialogActions>
+                    <Typography>Sivu {(offset / limit)+1}/{Math.ceil(fullCount / limit)+1}</Typography>
+                    <Button disabled={offset > 0 ? false : true} autoFocus onClick={() => {
+                        setOffset(offset - limit)
+                        getTileData()
+                        console.log("limit: " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".")
+                    }} color="default">
+                        {
+                            ("Edellinen")
+                        }
+                    </Button>
+                    <Button disabled={offset < fullCount ? false : true} autoFocus onClick={() => {
+                        setOffset(offset + limit)
+                        getTileData()
+                        console.log("limit: " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".")
+
+                    }} color="default">
+                        {
+                            ("Seuraava")
+                        }
+                    </Button>
                     <Button autoFocus onClick={() => {
                         let kysymys_id = state[examIndex].kysymykset[cardIndex].id
                         if (sijainti === "kysymys") {

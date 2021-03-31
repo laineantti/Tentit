@@ -335,6 +335,17 @@ const { RSA_NO_PADDING } = require('constants')
 app.use(isAuthenticated)
 //----------------------------------------------------------------------------------------------
 
+// tulostetaan kaikki kuvien tiedostonimet sivuttain X määrä kerrallaan
+app.get('/kuva/:maara/:poikkeama', (req, response, next) => {
+  db.query('SELECT *, count(*) OVER() AS full_count FROM kuva ORDER BY id LIMIT $1 OFFSET $2',
+    [req.params.maara, req.params.poikkeama], (err, res) => {
+      if (err) {
+        return next(err)
+      }
+      response.send(res.rows)
+    })
+})
+
 // tulostetaan kaikki kuvien tiedostonimet
 app.get('/kuva', (req, response, next) => {
   db.query('SELECT * FROM kuva ORDER BY id', (err, res) => {

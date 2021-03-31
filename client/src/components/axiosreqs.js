@@ -124,12 +124,12 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
     }
 }
 
-const fetchImage = async () => {
+const fetchImage = async (maara, poikkeama) => {
     let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
     try {
         // taulukko näyttää tältä:
         // [{ id: '1', tiedostonimi: 'abc123.jpg'}]
-        let response = await axios.get(path + "kuva", headers)
+        let response = await axios.get(path + "kuva/" + maara + "/" + poikkeama, headers)
         if (response.data[0].id) {
             return response.data
         }
@@ -150,7 +150,7 @@ const logoutUser = (dispatch) => {
 const kysymysJaAihe = async (setKaikkiKysymykset) => {
     let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
     try {
-        let result = await axios.get(path + "kysymys_aihe", headers) 
+        let result = await axios.get(path + "kysymys_aihe", headers)
         setKaikkiKysymykset(result.data)
     } catch (exception) {
         console.log("Virhe tietokantahaussa!")
@@ -160,7 +160,7 @@ const kysymysJaAihe = async (setKaikkiKysymykset) => {
 const haeAiheet = async (setKaikkiAiheet) => {
     let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
     try {
-        let result = await axios.get(path + "aihe", headers) 
+        let result = await axios.get(path + "aihe", headers)
         setKaikkiAiheet(result.data)
     } catch (exception) {
         console.log("Virhe tietokantahaussa!")
@@ -206,7 +206,7 @@ const lisaaKysymys = async (currentDatabaseExamIdChanged, dispatch, currentExamI
     dispatch({ type: "add_card", data: { examIndex: currentExamIndex } })
 }
 
-const lisaaKysymysTenttiin = async(item,currentExamIndex) => {
+const lisaaKysymysTenttiin = async (item, currentExamIndex) => {
     try {
         console.log(path + "lisaa_kysymys_tenttiin/" + item + "/" + currentExamIndex)
         let response = await axios({
@@ -438,7 +438,7 @@ const muutaKysymyksenAihe = async (dispatch, currentExamIndex, value, id, cardIn
     dispatch({
         type: "card_aihe_changed",
         data: { examIndex: currentExamIndex, cardIndex: cardIndex, newCardAihe: newCardAihe }
-    }) 
+    })
 }
 
 
