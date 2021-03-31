@@ -536,6 +536,24 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
   }
 })
 
+// // lisätään uusi aihe ja liitetään se kysymykselle
+// app.post('/lisaa_aihe/:kysymys_id',(req, response, next) => {
+//   const body = req.body
+//   if (body.aihe == undefined) {
+//     return response.status(400).json({
+//       error: 'Aihe puuttuu!'
+//     })
+//   try {
+//     db.query("INSERT INTO aihe (aihe) values (body.aihe)
+//   }
+// })
+// db.query("INSERT INTO aiheiden_joukko (kysymys_id,aihe_id) values (" + res.rows[0].id + ",9)",
+// (err) => {
+//   if (err) {
+//     return next(err)
+//   }
+// })
+
 // lisää kysymyksen liitos tenttiin
 app.post('/lisaa_kysymys_tenttiin/:kysymys_id/:tentti_id', (req, response, next) => {
   try {

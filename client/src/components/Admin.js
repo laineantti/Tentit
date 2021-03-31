@@ -1,4 +1,4 @@
-import { React, useState, useEffect, useContext, useCallback } from 'react'
+import { React, useState, useEffect, useContext } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 /* import axios from 'axios' */
@@ -39,6 +39,7 @@ import {
 import CodeComponent from './CodeComponent'
 import ImageSelector from './ImageSelector'
 import { idToIndex, hakuId } from './helpers'
+import { findLastIndex } from 'lodash'
 
 function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, setCurrentExamIndex, kaikkiKysymykset, setKaikkiKysymykset, rows, setRows }) {
 
@@ -67,6 +68,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
     // const [kaikkiKysymykset, setKaikkiKysymykset] = useState([])
     const [kaikkiAiheet, setKaikkiAiheet] = useState([])
     const [dataGridSelection, setDataGridSelection] = useState([])
+    const [lisaaAihe, setLisaaAihe] = useState(false)
     // const [rows, setRows] = useState([])
     const classes = useStyles()
 
@@ -90,6 +92,8 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
         })
         return (lista)
     }
+
+    
 
     return (
         <>
@@ -156,17 +160,35 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                                         }}>
                                                         <DeleteIcon />
                                                     </IconButton >
-                                                    <span>{card.aihe}</span>
+                                                    {lisaaAihe ? 
+                                                        <TextField type="input" defaultValue="" inputLabelProps={{focused : true}} onBlur={() =>{
+                                                                setLisaaAihe(false)
+                                                            }}>
+
+                                                        </TextField>
+                                                        : 
+                                                        <span>{card.aihe}</span>
+                                                    }
                                                     <TextField style={{ minWidth: "3%" }}
                                                         value={''}
                                                         select
-                                                        onChange={(event) => { muutaKysymyksenAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet) }}
+                                                        onChange={(event) => {
+                                                            if (event.target.value) {
+                                                                muutaKysymyksenAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet)
+                                                            } else {
+                                                                setLisaaAihe(true)
+                                                            }
+                                                        }}
                                                         InputProps={{ disableUnderline: true }}>
                                                         {kaikkiAiheet.map((option) => (
                                                             <MenuItem key={option.id} value={option.id}>
                                                                 {option.aihe}
                                                             </MenuItem>
                                                         ))}
+                                                        <MenuItem>
+                                                            ...lisää aihe
+                                                        </MenuItem>
+ 
                                                     </TextField><br />
                                                     <div style={{ paddingTop: "30px" }} className={classes.root}>
                                                         <GridList cellHeight={150} style={{ width: "100%" }}>
