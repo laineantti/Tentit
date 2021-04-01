@@ -1,4 +1,4 @@
-import { React, useState, useEffect, useContext } from 'react'
+import { React, useState, useEffect, useContext, useRef } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 /* import axios from 'axios' */
@@ -68,7 +68,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
     // const [kaikkiKysymykset, setKaikkiKysymykset] = useState([])
     const [kaikkiAiheet, setKaikkiAiheet] = useState([])
     const [dataGridSelection, setDataGridSelection] = useState([])
-    const [lisaaAihe, setLisaaAihe] = useState(false)
+    const [lisaaAihe, setLisaaAihe] = useState([])
     // const [rows, setRows] = useState([])
     const classes = useStyles()
 
@@ -93,7 +93,11 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
         return (lista)
     }
 
-    
+    useEffect(() => {
+        setLisaaAihe([])
+    },[])
+
+    let textInput = useRef(null)
 
     return (
         <>
@@ -160,23 +164,32 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                                         }}>
                                                         <DeleteIcon />
                                                     </IconButton >
-                                                    {lisaaAihe ? 
-                                                        <TextField type="input" defaultValue="" inputLabelProps={{focused : true}} onBlur={() =>{
-                                                                setLisaaAihe(false)
+                                                    {lisaaAihe.includes(card.id) ? 
+                                                        <TextField 
+                                                            type="text" 
+                                                            defaultValue={""} 
+                                                            inputRef={textInput}
+                                                            onBlur={(event) =>{
+                                                                if (event.target.value) {
+                                                                    console.log("Ja eikun uusi aihe talteen!")
+                                                                } else {
+                                                                    setLisaaAihe([])
+                                                                }
                                                             }}>
 
                                                         </TextField>
                                                         : 
                                                         <span>{card.aihe}</span>
                                                     }
-                                                    <TextField style={{ minWidth: "3%" }}
+                                                    <TextField style={{ minWidth: "2%" }}
                                                         value={''}
                                                         select
                                                         onChange={(event) => {
                                                             if (event.target.value) {
                                                                 muutaKysymyksenAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet)
                                                             } else {
-                                                                setLisaaAihe(true)
+                                                                setLisaaAihe(lisaaAihe => [...lisaaAihe, card.id])
+                                                                setTimeout(()=> {textInput.current.focus()},100)
                                                             }
                                                         }}
                                                         InputProps={{ disableUnderline: true }}>
@@ -188,7 +201,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                                         <MenuItem>
                                                             ...lisää aihe
                                                         </MenuItem>
- 
+                                                        Focus TextField
                                                     </TextField><br />
                                                     <div style={{ paddingTop: "30px" }} className={classes.root}>
                                                         <GridList cellHeight={150} style={{ width: "100%" }}>

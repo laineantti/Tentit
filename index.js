@@ -536,23 +536,41 @@ app.post('/lisaa_kysymys/:tentti_id', (req, response, next) => {
   }
 })
 
-// // lisätään uusi aihe ja liitetään se kysymykselle
-// app.post('/lisaa_aihe/:kysymys_id',(req, response, next) => {
-//   const body = req.body
-//   if (body.aihe == undefined) {
-//     return response.status(400).json({
-//       error: 'Aihe puuttuu!'
-//     })
-//   try {
-//     db.query("INSERT INTO aihe (aihe) values (body.aihe)
-//   }
-// })
-// db.query("INSERT INTO aiheiden_joukko (kysymys_id,aihe_id) values (" + res.rows[0].id + ",9)",
-// (err) => {
-//   if (err) {
-//     return next(err)
-//   }
-// })
+// lisätään uusi aihe ja liitetään se kysymykselle
+app.post('/lisaa_aihe/:kysymys_id',(req, response, next) => {
+  const body = req.body
+  if (body.aihe == undefined) {
+    return response.status(400).json({
+      error: 'Aihe puuttuu!'
+    })
+  }
+  try {
+    db.query('SELECT * FROM aihe WHERE aihe = $1 ORDER BY id', [body.aihe], (err, result) => {
+      if (err) {
+        return next(err)
+      }
+      if (result.rows.length > 0) {
+        return response.status(400).json({ error: 'Aihe on jo tietokannassa!' })
+      } else {
+        db.query("INSERT INTO aihe (aihe) values ($1) RETURNING id",[body.aihe],
+        (err, res) => {
+          if (err) {
+            return next(err)
+          }    
+          db.query("INSERT INTO aiheiden_joukko (kysymys_id,aihe_id) values ($1,$2)",[req.params.kysymys_id,res.rows[0].id],
+          (err) => {
+            if (err) {
+              return next(err)
+            }
+          })
+        })
+        response.status(201).send("Tietokantaan on tallennettu uusi aihe ja liitetty kysymykselle!")
+      }
+    }) 
+  } catch (err) {
+      response.send(err)
+  } 
+})
 
 // lisää kysymyksen liitos tenttiin
 app.post('/lisaa_kysymys_tenttiin/:kysymys_id/:tentti_id', (req, response, next) => {
