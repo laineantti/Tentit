@@ -42,8 +42,8 @@ const useStyles = makeStyles((theme) => ({
         backgroundColor: theme.palette.background.paper,
     },
     gridList: {
-        width: '100% !important',
-        height: '100% !important',
+        width: 500,
+        height: 470,
     },
     icon: {
         color: 'rgba(255, 255, 255, 0.54)',
@@ -152,7 +152,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                 onClick={() => { handleClickOpen(); getTileData(); }}>
                 <ImageSearch />
             </IconButton >
-            <Dialog classes={{ paper: classes.dialogPaper }} fullWidth={true} maxWidth={'xl'} onClose={handleClose}
+            <Dialog classes={{ paper: classes.dialogPaper }} fullWidth={true} maxWidth={'sm'} onClose={handleClose}
                 aria-labelledby="customized-dialog-title" open={open}>
                 <DialogTitle id="customized-dialog-title" onClose={handleClose}>
                     Kuvan lisääminen {
@@ -162,11 +162,11 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                     }.
 
                 </DialogTitle>
-                <DialogContent style={{ display: "flex", justifyContent: "center" }} dividers>
+                <DialogContent dividers>
                     <div className={classes.root}>
-                        <GridList cellHeight={150} className={classes.gridList}>
+                        <GridList cellHeight={150} className={classes.gridList} cols={4}>
                             {tileData.map((tile) => (
-                                <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }}>
+                                <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }} cols={tile.cols || 1}>
                                     <a href={"//localhost:4000/uploads/" + tile.img} target="_blank" rel="noreferrer">
                                         <img style={{ width: "100%", height: "100%", objectFit: "cover", display: imageLoaded.includes(tile.id) ? "block" : "none" }}
                                             src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
@@ -199,11 +199,11 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                     </div>
                 </DialogContent>
                 <DialogActions>
-                    <Typography>Sivu {(offset / limit)+1}/{Math.ceil(fullCount / limit)+1}</Typography>
+                    <Typography>Sivu {(offset / limit) + 1}/{Math.ceil(fullCount / limit) + 1}</Typography>
                     <Button disabled={offset > 0 ? false : true} autoFocus onClick={() => {
                         setOffset(offset - limit)
                         getTileData()
-                        console.log("limit: " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".")
+                        console.log("Edellinen: limit : " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".")
                     }} color="default">
                         {
                             ("Edellinen")
@@ -212,7 +212,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                     <Button disabled={offset < fullCount ? false : true} autoFocus onClick={() => {
                         setOffset(offset + limit)
                         getTileData()
-                        console.log("limit: " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".")
+                        console.log("Seuraava: limit " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".")
 
                     }} color="default">
                         {
@@ -244,7 +244,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                         }
                     </Button>
                 </DialogActions>
-            </Dialog>
+            </Dialog >
         </div >
     )
 }
