@@ -1,4 +1,4 @@
-import { React, useState, useEffect, useContext } from 'react'
+import { React, useState, useEffect, useContext, useRef } from 'react'
 import uuid from 'react-uuid'
 import { useStyles, GreenCheckbox, ExamButton } from './Style'
 /* import axios from 'axios' */
@@ -20,10 +20,9 @@ import { DataGrid } from '@material-ui/data-grid';
 import { store } from './store.js'
 import { MainContext } from './globalContext.js'
 import {
-    fetchUser,
     fetchData,
-    /* valintaMuuttui, */
     kysymysJaAihe,
+    /* valintaMuuttui, */
     haeAiheet,
     lisaaKysymys,
     lisaaKysymysTenttiin,
@@ -34,15 +33,17 @@ import {
     muutaTentti,
     muutaKysymys,
     muutaKysymyksenAihe,
+    lisaaKysymykselleUusiAihe,
     muutaVaihtoehto,
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 import ImageSelector from './ImageSelector'
-import { idToIndex, hakuId, /* kysymysLista */ } from './helpers'
+import { idToIndex, hakuId } from './helpers'
+import { findLastIndex } from 'lodash'
 
-function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, setCurrentExamId, currentExamIndex, setCurrentExamIndex }) {
+function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, setCurrentExamIndex, kaikkiKysymykset, setKaikkiKysymykset, rows, setRows }) {
 
     const { globalShowAllCardImages, globalShowAllChoiseImages } = useContext(MainContext)
     const [showAllCardImages, setShowAllCardImages] = globalShowAllCardImages
@@ -66,22 +67,19 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
     const [newChoiseId, setNewChoiseId] = useState(-1)
     const [newImageId, setNewImageId] = useState(-1)
     const [imageLoaded, setImageLoaded] = useState([])
-    const [kaikkiKysymykset, setKaikkiKysymykset] = useState([])
+    // const [kaikkiKysymykset, setKaikkiKysymykset] = useState([])
     const [kaikkiAiheet, setKaikkiAiheet] = useState([])
     const [dataGridSelection, setDataGridSelection] = useState([])
-    const [rows, setRows] = useState([])
+    const [lisaaAihe, setLisaaAihe] = useState([])
+    // const [rows, setRows] = useState([])
     const classes = useStyles()
 
 
     useEffect(() => {
-        if (!currentUser) {
-            fetchUser(setCurrentUser, setCurrentUserName)
-        } else {
-            fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
-            kysymysJaAihe(setKaikkiKysymykset)
-            haeAiheet(setKaikkiAiheet)
-        }
-    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex, dataGridSelection, rows, newImageId])
+        fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
+        kysymysJaAihe(setKaikkiKysymykset)
+        haeAiheet(setKaikkiAiheet)
+    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex, rows, newImageId, lisaaAihe])
 
     const [examName, setExamName] = useState(hakuId(state, currentExamId, currentExamIndex, setCurrentExamIndex))
 
@@ -96,6 +94,12 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
         })
         return (lista)
     }
+
+    useEffect(() => {
+        setLisaaAihe([])
+    }, [])
+
+    let textInput = useRef(null)
 
     return (
         <>
@@ -115,7 +119,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                             <>
 
                                 <h2>
-                                    <TextField type="text" value={examName} id={state[currentExamIndex].id}
+                                    <TextField type="text" style={{ width: "85%" }} value={examName} id={state[currentExamIndex].id}
                                         onChange={(event) => {
                                             setExamName(event.target.value)
                                         }}
@@ -127,13 +131,13 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                             muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, examName)
                                         }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
                                     </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
+                                    <DeleteExamDialog
+                                        /* tentin poistonappi */
+                                        currentExamIndex={currentExamIndex}
+                                        setCurrentExamIndex={setCurrentExamIndex}
+                                        currentDatabaseExamIdChanged={currentDatabaseExamIdChanged}
+                                    />
                                 </h2>
-                                <DeleteExamDialog
-                                    /* tentin poistonappi */
-                                    currentExamIndex={currentExamIndex}
-                                    setCurrentExamIndex={setCurrentExamIndex}
-                                    currentDatabaseExamIdChanged={currentDatabaseExamIdChanged}
-                                />
                                 {state[currentExamIndex].kysymykset
                                     .map((card, cardIndex) =>
                                         <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
@@ -150,24 +154,58 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                                         muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                                     }}>
                                                     </TextField>
-                                                    <DeleteCardDialog
-                                                        /* kysymyksen poistonappi */
-                                                        currentExamIndex={currentExamIndex}
-                                                        cardIndex={cardIndex}
-                                                        examIndex={currentExamIndex}
-                                                        kysymys_id={card.id}
-                                                    />
-                                                    <span>{card.aihe}</span>
-                                                    <TextField style={{ minWidth: "3%" }}
+                                                    <IconButton key={uuid()} style={{ float: "right" }} label="delete"
+                                                        color="primary" onClick={() => {
+                                                            poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)
+                                                            let addRow = [{
+                                                                id: card.id,
+                                                                lause: card.lause,
+                                                                aihe: card.aihe
+                                                            }]
+                                                            setRows([...rows, ...addRow])
+                                                        }}>
+                                                        <DeleteIcon />
+                                                    </IconButton >
+                                                    {lisaaAihe.includes(card.id) ?
+                                                        <TextField
+                                                            type="text"
+                                                            defaultValue={""}
+                                                            inputRef={textInput}
+                                                            onBlur={(event) => {
+                                                                if (event.target.value) {
+                                                                    lisaaKysymykselleUusiAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet, setKaikkiAiheet)
+                                                                    console.log("Ja eikun uusi aihe " + event.target.value + " talteen!")
+                                                                    setLisaaAihe([])
+                                                                } else {
+                                                                    setLisaaAihe([])
+                                                                }
+                                                            }}>
+
+                                                        </TextField>
+                                                        :
+                                                        <span>{card.aihe}</span>
+                                                    }
+                                                    <TextField style={{ minWidth: "2%" }}
                                                         value={''}
                                                         select
-                                                        onChange={(event) => { muutaKysymyksenAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet) }}
+                                                        onChange={(event) => {
+                                                            if (event.target.value) {
+                                                                muutaKysymyksenAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet)
+                                                            } else {
+                                                                setLisaaAihe(lisaaAihe => [...lisaaAihe, card.id])
+                                                                setTimeout(() => { textInput.current.focus() }, 100)
+                                                            }
+                                                        }}
                                                         InputProps={{ disableUnderline: true }}>
                                                         {kaikkiAiheet.map((option) => (
                                                             <MenuItem key={uuid()} value={option.id}>
                                                                 {option.aihe}
                                                             </MenuItem>
                                                         ))}
+                                                        <MenuItem>
+                                                            ...lisää aihe
+                                                        </MenuItem>
+                                                        Focus TextField
                                                     </TextField><br />
                                                     <div style={{ paddingTop: "30px" }} className={classes.root}>
                                                         <GridList cellHeight={150} style={{ width: "100%" }}>
@@ -350,9 +388,12 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                         }>
                                         <Icon>add_circle</Icon>
                                     </IconButton>
+                                    <IconButton style={{ float: "right" }} label="delete" color="secondary">
+                                        <DeleteIcon />
+                                    </IconButton>
                                 </div>
                                 <Card style={{ marginTop: "10px" }} className={classes.root}>
-                                    <div style={{ height: 460, width: '100%' }}>
+                                    <div style={{ height: 500, width: '100%' }}>
                                         <DataGrid columns={columns} rows={rows} pageSize={7} checkboxSelection
                                             onSelectionModelChange={(newSelection) => {
                                                 setDataGridSelection(newSelection.selectionModel)

@@ -13,13 +13,13 @@ import Skeleton from '@material-ui/lab/Skeleton'
 import ImageIcon from '@material-ui/icons/Image'
 import CloseIcon from '@material-ui/icons/Close'
 import { strings } from './Locale'
-import { fetchUser, fetchData, valintaMuuttui } from './axiosreqs'
+import { fetchData, valintaMuuttui } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 import { store } from './store.js'
 import { MainContext } from './globalContext.js'
 import { idToIndex } from './helpers'
 
-function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, setCurrentExamId, currentExamIndex, setCurrentExamIndex }) {
+function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, setCurrentExamIndex, kaikkiKysymykset, rows, setRows }) {
 
     const { globalShowAllCardImages, globalShowAllChoiseImages } = useContext(MainContext)
     const [showAllCardImages, setShowAllCardImages] = globalShowAllCardImages
@@ -42,13 +42,20 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
 
 
     useEffect(() => {           // tekee tämän kun Useriin tullaan
-        if (!currentUser) {     // hakee käyttäjän jos currentUser vielä "", eli eka kierros
-            fetchUser(setCurrentUser, setCurrentUserName)   // asettaa currentUserin arvoksi kirjautuneen käyttäjän
-        } else {                // toisella kierroksella haetaan käyttäjän data
             fetchData(currentUser, dispatch, false) // admin_sivulla? --> true/false
-        }
-    }, [currentUser])           // tekee toisen kierroksen kun käyttäjän arvo asetettu
+    }, [currentUser])           
 
+    const kysymysLista = (currentExamIndex) => {
+        let lista = kaikkiKysymykset
+        state[currentExamIndex].kysymykset.map((item, kysymysIndex) => {
+            lista.map((listaItem, listaId) => {
+                if (listaItem.id === item.id) {
+                    lista.splice(listaId, 1)
+                }
+            })
+        })
+        return (lista)
+    }
 
     return (
         <>
@@ -200,6 +207,7 @@ function App({ currentUser, setCurrentUser, setCurrentUserName, currentExamId, s
                                     <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
                                         setCurrentExamIndex(examIndex)
                                         setCurrentExamId(exam.id)
+                                        setRows(kysymysLista(examIndex))
                                     }}>
                                         {exam.nimi}
                                     </ExamButton>
