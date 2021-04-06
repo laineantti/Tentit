@@ -40,10 +40,11 @@ const useStyles = makeStyles((theme) => ({
         justifyContent: 'space-around',
         overflow: 'hidden',
         backgroundColor: theme.palette.background.paper,
+        width: "490px",
     },
     gridList: {
-        width: 500,
-        height: 470,
+        width: "480px",
+        height: "470px",
     },
     icon: {
         color: 'rgba(255, 255, 255, 0.54)',
@@ -201,7 +202,8 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                 <DialogActions>
                     <Typography>Sivu {(offset / limit) + 1}/{Math.ceil(fullCount / limit) + 1}</Typography>
                     <Button disabled={offset > 0 ? false : true} autoFocus onClick={() => {
-                        setOffset(offset - limit)
+                        let tempOffset = (offset - limit)
+                        setOffset(tempOffset)
                         getTileData()
                         console.log("Edellinen: limit : " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".")
                     }} color="default">
@@ -210,7 +212,8 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                         }
                     </Button>
                     <Button disabled={offset < fullCount ? false : true} autoFocus onClick={() => {
-                        setOffset(offset + limit)
+                        let tempOffset = (offset + limit)
+                        setOffset(tempOffset)
                         getTileData()
                         console.log("Seuraava: limit " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".")
 
