@@ -1,4 +1,4 @@
-import { React, useState, useContext } from 'react'
+import { React, useState, useContext, useEffect } from 'react'
 import { withStyles, makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -113,6 +113,11 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
         setImageLoaded([])
     }
 
+    useEffect(() => {
+        getTileData()
+        /* console.log("limit : " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".") */
+    }, [offset, limit])
+
     const handleClickOpen = () => {
         setOpen(true)
     }
@@ -200,22 +205,18 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                     </div>
                 </DialogContent>
                 <DialogActions>
-                    <Typography>Sivu {(offset / limit) + 1}/{Math.ceil(fullCount / limit) + 1}</Typography>
+                    <Typography>Sivu {(offset / limit) + 1}/{Math.ceil(fullCount / limit)}</Typography>
                     <Button disabled={offset > 0 ? false : true} autoFocus onClick={() => {
                         let tempOffset = (offset - limit)
                         setOffset(tempOffset)
-                        getTileData()
-                        console.log("Edellinen: limit : " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".")
                     }} color="default">
                         {
                             ("Edellinen")
                         }
                     </Button>
-                    <Button disabled={offset < fullCount ? false : true} autoFocus onClick={() => {
+                    <Button disabled={offset < (fullCount - limit) ? false : true} autoFocus onClick={() => {
                         let tempOffset = (offset + limit)
                         setOffset(tempOffset)
-                        getTileData()
-                        console.log("Seuraava: limit " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".")
 
                     }} color="default">
                         {
