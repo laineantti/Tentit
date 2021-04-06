@@ -389,7 +389,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                         <Icon>add_circle</Icon>
                                     </IconButton>
                                     <IconButton style={{ float: "right" }} label="delete" color="secondary">
-                                        <DeleteIcon />
+                                        <DeleteIcon/>
                                     </IconButton>
                                 </div>
                                 <Card style={{ marginTop: "10px" }} className={classes.root}>
