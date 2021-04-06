@@ -118,10 +118,17 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
     }, [offset, limit, fullCount])
 
     const handleClickOpen = () => {
+        resetImageSelector()
         setOpen(true)
     }
+
     const handleClose = () => {
         setOpen(false)
+    }
+
+    const resetImageSelector = () => {
+        setSelectedImages([])
+        setOffset(0)
     }
 
     const onkoKuvaValittu = (id) => {
@@ -192,6 +199,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                                                 style={{ color: "white" }}
                                                 color="primary"
                                                 inputProps={{ 'aria-label': 'secondary checkbox' }}
+                                                checked={onkoKuvaValittu(tile.id)}
                                                 onClick={() => {
                                                     onkoKuvaValittu(tile.id) ? poistaValinta(tile.id) : asetaValinta(tile.id);
                                                 }}
