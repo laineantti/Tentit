@@ -89,34 +89,33 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
     const [fullCount, setFullCount] = useState(0)
     const classes = useStyles()
 
-    const getTileData = async () => {
-        // hakee kuvat serveriltä ja muuntaa tietokannasta
-        // saadun taulun material-ui:n tileData-muotoon
-        let kuvat = []
-        let kuvatMuunnettu = []
-        kuvat = await fetchImage(limit, offset)
-        if (fullCount === 0) {
-            setFullCount(kuvat[0].full_count)
-        }
-        if (kuvat.length > 0) {
-            for (const kuva of kuvat) {
-                kuvatMuunnettu.push({
-                    id: kuva.id,
-                    img: kuva.tiedostonimi,
-                    title: kuva.tiedostonimi,
-                    author: 'tentit-app',
-                    cols: 2,
-                })
-            }
-        }
-        setTileData(kuvatMuunnettu)
-        setImageLoaded([])
-    }
-
     useEffect(() => {
+        const getTileData = async () => {
+            // hakee kuvat serveriltä ja muuntaa tietokannasta
+            // saadun taulun material-ui:n tileData-muotoon
+            let kuvat = []
+            let kuvatMuunnettu = []
+            kuvat = await fetchImage(limit, offset)
+            if (fullCount === 0) {
+                setFullCount(kuvat[0].full_count)
+            }
+            if (kuvat.length > 0) {
+                for (const kuva of kuvat) {
+                    kuvatMuunnettu.push({
+                        id: kuva.id,
+                        img: kuva.tiedostonimi,
+                        title: kuva.tiedostonimi,
+                        author: 'tentit-app',
+                        cols: 2,
+                    })
+                }
+            }
+            setTileData(kuvatMuunnettu)
+            setImageLoaded([])
+        }
         getTileData()
         /* console.log("limit : " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".") */
-    }, [offset, limit])
+    }, [offset, limit, fullCount])
 
     const handleClickOpen = () => {
         setOpen(true)
@@ -155,7 +154,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
     return (
         <div>
             <IconButton style={{ float: "left" }} label="delete" color="primary"
-                onClick={() => { handleClickOpen(); getTileData(); }}>
+                onClick={() => { handleClickOpen() }}>
                 <ImageSearch />
             </IconButton >
             <Dialog classes={{ paper: classes.dialogPaper }} fullWidth={true} maxWidth={'sm'} onClose={handleClose}
