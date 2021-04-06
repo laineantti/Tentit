@@ -556,9 +556,10 @@ app.post('/lisaa_aihe/:kysymys_id',(req, response, next) => {
         (err, res) => {
           if (err) {
             return next(err)
-          }    
-          db.query("INSERT INTO aiheiden_joukko (kysymys_id,aihe_id) values ($1,$2)",[req.params.kysymys_id,res.rows[0].id],
-          (err) => {
+          } 
+          db.query("UPDATE aiheiden_joukko SET aihe_id = $2 WHERE kysymys_id = $1",
+          [req.params.kysymys_id, res.rows[0].id],
+          (err) => {   
             if (err) {
               return next(err)
             }

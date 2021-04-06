@@ -32,6 +32,7 @@ import {
     muutaTentti,
     muutaKysymys,
     muutaKysymyksenAihe,
+    lisaaKysymykselleUusiAihe,
     muutaVaihtoehto,
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos
@@ -77,7 +78,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
         fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         kysymysJaAihe(setKaikkiKysymykset)
         haeAiheet(setKaikkiAiheet)
-    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex, rows, newImageId])
+    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex, rows, newImageId,lisaaAihe])
 
     const [examName, setExamName] = useState(hakuId(state, currentExamId, currentExamIndex, setCurrentExamIndex))
 
@@ -159,7 +160,11 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                                     <IconButton key={uuid()} style={{ float: "right" }} label="delete"
                                                         color="primary" onClick={() => {
                                                             poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)
-                                                            let addRow = kaikkiKysymykset.filter((kysymys) => kysymys.id === card.id)
+                                                            let addRow = [{
+                                                                id: card.id,
+                                                                lause: card.lause,
+                                                                aihe: card.aihe
+                                                            }]
                                                             setRows([...rows, ...addRow])
                                                         }}>
                                                         <DeleteIcon />
@@ -171,7 +176,9 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                                             inputRef={textInput}
                                                             onBlur={(event) =>{
                                                                 if (event.target.value) {
-                                                                    console.log("Ja eikun uusi aihe talteen!")
+                                                                    lisaaKysymykselleUusiAihe(dispatch, currentExamIndex, event.target.value, card.id, cardIndex, kaikkiAiheet, setKaikkiAiheet)
+                                                                    console.log("Ja eikun uusi aihe "+event.target.value+" talteen!")
+                                                                    setLisaaAihe([])
                                                                 } else {
                                                                     setLisaaAihe([])
                                                                 }
@@ -190,7 +197,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                                             } else {
                                                                 setLisaaAihe(lisaaAihe => [...lisaaAihe, card.id])
                                                                 setTimeout(()=> {textInput.current.focus()},100)
-                                                            }
+                                                            }                                                            
                                                         }}
                                                         InputProps={{ disableUnderline: true }}>
                                                         {kaikkiAiheet.map((option) => (
@@ -383,6 +390,9 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                         }
                                         }>
                                         <Icon>add_circle</Icon>
+                                    </IconButton>
+                                    <IconButton style={{ float: "right" }} label="delete" color="secondary">
+                                        <DeleteIcon/>
                                     </IconButton>
                                 </div>
                                 <Card style={{ marginTop: "10px" }} className={classes.root}>
