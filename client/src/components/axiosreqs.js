@@ -19,8 +19,9 @@ switch (environment) {
         throw default_error
 }
 
-const fetchUser = async (setCurrentUser, setCurrentUserName) => {
-    let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
+const fetchUser = async (setCurrentUser, setCurrentUserName, paluuarvo) => {
+    // let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
+    let headers = { headers: { Authorization: `bearer ${paluuarvo}` }, }
     try {
         let userData = await axios.get(path + "kayttaja/", headers)
         if (userData.data.id) {
@@ -444,6 +445,30 @@ const muutaKysymyksenAihe = async (dispatch, currentExamIndex, value, id, cardIn
     }) 
 }
 
+const lisaaKysymykselleUusiAihe = async (dispatch, currentExamIndex, value, id, cardIndex, kaikkiAiheet, setKaikkiAiheet) => {
+    let body = {
+        aihe: value,
+    }
+    try {
+        let aihe = await axios({
+            method: 'post',
+            url: `${path}lisaa_aihe/${id}`,
+            data: body,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        let uusiAihe = {
+            id: aihe.data,
+            aihe: body.aihe
+        }
+        setKaikkiAiheet([...kaikkiAiheet, uusiAihe])
+    } catch (exception) {
+        console.log(exception)
+    }
+    dispatch({
+        type: "card_aihe_changed",
+        data: { examIndex: currentExamIndex, cardIndex: cardIndex, newCardAihe: body.aihe }
+    }) 
+}
 
 const muutaVaihtoehto = async (dispatch, currentExamIndex, value, vaihtoehto_id, cardIndex, listItemIndex) => {
     try {
@@ -558,6 +583,7 @@ export {
     muutaTentti,
     muutaKysymys,
     muutaKysymyksenAihe,
+    lisaaKysymykselleUusiAihe,
     muutaVaihtoehto,
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos,
