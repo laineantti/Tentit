@@ -1,16 +1,21 @@
 import { React, useState, useEffect, useRef, useContext } from 'react'
-import { poistaKysymys } from './axiosreqs'
-import { store } from './store.js'
-import { withStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import MuiDialogTitle from '@material-ui/core/DialogTitle'
 import MuiDialogContent from '@material-ui/core/DialogContent'
 import MuiDialogActions from '@material-ui/core/DialogActions'
+import MuiDialogTitle from '@material-ui/core/DialogTitle'
+import { withStyles } from '@material-ui/core/styles'
 import IconButton from '@material-ui/core/IconButton'
-import CloseIcon from '@material-ui/icons/Close'
 import Typography from '@material-ui/core/Typography'
+import WarningIcon from '@material-ui/icons/Warning'
 import DeleteIcon from '@material-ui/icons/Delete'
+import ListItem from '@material-ui/core/ListItem'
+import CloseIcon from '@material-ui/icons/Close'
+import Dialog from '@material-ui/core/Dialog'
+import Button from '@material-ui/core/Button'
+import { poistaKysymys } from './axiosreqs'
+import List from '@material-ui/core/List'
+import Grid from '@material-ui/core/Grid'
+import { store } from './store.js'
+import uuid from 'react-uuid'
 
 const styles = (theme) => ({
     root: {
@@ -241,15 +246,17 @@ export default function DeleteCardDialog({ currentExamIndex, dataGridSelection, 
                         } else {
                             if (liitos) {
                                 let tentti_id_string = ""
-                                tiedot.liitokset.tentti_id.forEach((value, i) => {
-                                    tentti_id_string += value
-                                    if (i === tiedot.liitokset.tentti_id.length - 2) {
-                                        tentti_id_string += " ja "
-                                    } else if (i + 1 !== tiedot.liitokset.tentti_id.length) {
-                                        tentti_id_string += ", "
-                                    }
-                                })
-                                poistoviesti = "Kysymystä ei poistettu, koska muut käyttävät tenttejä (" + tentti_id_string + ") joissa kysymys on osana."
+                                if (tiedot.liitokset.tentti_id > 0) {
+                                    tiedot.liitokset.tentti_id.forEach((value, i) => {
+                                        tentti_id_string += value
+                                        if (i === tiedot.liitokset.tentti_id.length - 2) {
+                                            tentti_id_string += " ja "
+                                        } else if (i + 1 !== tiedot.liitokset.tentti_id.length) {
+                                            tentti_id_string += ", "
+                                        }
+                                    })
+                                    poistoviesti = "Kysymystä ei poistettu, koska muut käyttävät tenttejä (" + tentti_id_string + ") joissa kysymys on osana."
+                                }
                             } else {
                                 poistoviesti = "Kysymystä ei voitu juuri nyt poistaa. Yritä myöhemmin uudelleen."
                             }
@@ -293,13 +300,24 @@ export default function DeleteCardDialog({ currentExamIndex, dataGridSelection, 
                 <DeleteIcon />
             </IconButton >
             <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
-                <DialogTitle id="customized-dialog-title" onClose={handleClose}>Valittujen kysymysten poistaminen</DialogTitle>
+                <DialogTitle id="customized-dialog-title" onClose={handleClose}>Poista useita kysymyksiä</DialogTitle>
                 <DialogContent dividers>
-                    <Typography gutterBottom>{
-                        (cardDeleteResult.length === 0) ?
-                            `Haluatko varmasti poistaa kysymykset ${dataGridSelection.map(selection => selection)}?`
-                            : cardDeleteResult.map((result, i) => <>{result}<hr /></>)
-                    }</Typography>
+                    <Grid container spacing={1}>
+                        <Grid item xs={1}>
+                            <WarningIcon />
+                        </Grid>
+                        <Grid item xs={11}>
+                            <Typography component={'span'} gutterBottom>{
+                                (cardDeleteResult.length === 0) ?
+                                    `Oletko varma, että haluat poistaa pysyvästi nämä valitsemasi ${dataGridSelection.length} kysymystä? Niiden palauttaminen jälkikäteen ei ole mahdollista! Ota myös huomioon, että kysymykset poistuvat jokaisesta tentistä missä niitä tällä hetkellä käytetään!`
+                                    : <List>
+                                        {cardDeleteResult.map((result, i) =>
+                                            <ListItem key={uuid()}>Kysymys {dataGridSelection[i]} ({result})</ListItem>
+                                        )}
+                                    </List>
+                            }</Typography>
+                        </Grid>
+                    </Grid>
                 </DialogContent>
                 <DialogActions>
                     <Button autoFocus onClick={() => {
@@ -315,9 +333,9 @@ export default function DeleteCardDialog({ currentExamIndex, dataGridSelection, 
                         {
                             deleting ?
                                 force ?
-                                    ("POISTA LOPULLISESTI") :
-                                    ("Poista")
-                                : ("ok")
+                                    ("Poista pysyvästi!")
+                                    : ("Kyllä")
+                                : ("Ok")
                         }
                     </Button>
                     <Button autoFocus onClick={() => {
@@ -325,7 +343,7 @@ export default function DeleteCardDialog({ currentExamIndex, dataGridSelection, 
 
                     }} color="default">
                         {
-                            ("Peruuta")
+                            ("Ei")
                         }
                     </Button>
                 </DialogActions>
