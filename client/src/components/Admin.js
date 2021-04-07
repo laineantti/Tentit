@@ -39,8 +39,8 @@ import {
 } from './axiosreqs'
 import CodeComponent from './CodeComponent'
 import ImageSelector from './ImageSelector'
-import { idToIndex, hakuId } from './helpers'
-import { findLastIndex } from 'lodash'
+import { hakuId } from './helpers'
+
 
 function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, setCurrentExamIndex, kaikkiKysymykset, setKaikkiKysymykset, rows, setRows }) {
 
@@ -78,14 +78,14 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
         fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         kysymysJaAihe(setKaikkiKysymykset)
         haeAiheet(setKaikkiAiheet)
-    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex, rows, newImageId,lisaaAihe])
+    }, [currentUser, setKaikkiKysymykset, dispatch, newExamId, newCardId, newChoiseId, currentExamIndex, rows, newImageId])
 
     const [examName, setExamName] = useState(hakuId(state, currentExamId, currentExamIndex, setCurrentExamIndex))
 
     const kysymysLista = (currentExamIndex) => {
         let lista = kaikkiKysymykset
-        state[currentExamIndex].kysymykset.map((item, kysymysIndex) => {
-            lista.map((listaItem, listaId) => {
+        state[currentExamIndex].kysymykset.forEach((item, kysymysIndex) => {
+            lista.forEach((listaItem, listaId) => {
                 if (listaItem.id === item.id) {
                     lista.splice(listaId, 1)
                 }
@@ -106,7 +106,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                 <CssBaseline />
                 <Container key="container1_admin" style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
                     component="main">
-                    {idToIndex(state, currentExamId, setCurrentExamIndex)}
+                    {/* {idToIndex(state, currentExamId, setCurrentExamIndex)} */}
                     {currentExamIndex >= 0
                         && state
                         && state[currentExamIndex]
@@ -378,7 +378,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                         onClick={() => {
                                             if (dataGridSelection.length > 0) {
                                                 console.log(dataGridSelection)
-                                                dataGridSelection.map((item, kysymysIndex) => {
+                                                dataGridSelection.forEach((item, kysymysIndex) => {
                                                     setNewCardId(lisaaKysymysTenttiin(item, state[currentExamIndex].id))
                                                 })
                                                 setRows(rows.filter((row) => !dataGridSelection.includes(row.id)))

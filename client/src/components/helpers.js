@@ -38,22 +38,23 @@ const hakuId = (state,currentExamId,currentExamIndex,setCurrentExamIndex) => {
 }
 
 const idToIndex = (state,currentExamId,setCurrentExamIndex) => {
-  let viesti = ""
+  let laskuri = 0
   setCurrentExamIndex(-1)
   if (currentExamId!==-1){
       state.map((exam,index)=>{
           if(exam.id===currentExamId){
               setCurrentExamIndex(index)
-              viesti="ExamIndex löytyi!"
-          } else {
-              viesti="ExamId:tä vastaavaa indexiä ei ole!"
-          }              
+              laskuri++
+          }            
       })
   } else {
       setCurrentExamIndex(-1)
-      viesti="Id:tä ei ole"
   }
-  console.log(viesti)
+  if (laskuri > 0) {
+    console.log("ExamIndex löytyi!")
+  } else {
+    console.log("Indexiä ei löydy!")
+  }
 }
 
   export {

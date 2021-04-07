@@ -42,12 +42,12 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
 
     useEffect(() => {           // tekee tämän kun Useriin tullaan
             fetchData(currentUser, dispatch, false) // admin_sivulla? --> true/false
-    }, [currentUser])           
+    }, [currentUser, dispatch])           
 
     const kysymysLista = (currentExamIndex) => {
         let lista = kaikkiKysymykset
-        state[currentExamIndex].kysymykset.map((item, kysymysIndex) => {
-            lista.map((listaItem, listaId) => {
+        state[currentExamIndex].kysymykset.forEach((item, kysymysIndex) => {
+            lista.forEach((listaItem, listaId) => {
                 if (listaItem.id === item.id) {
                     lista.splice(listaId, 1)
                 }
@@ -55,6 +55,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
         })
         return (lista)
     }
+
 
     return (
         <>
