@@ -388,9 +388,13 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                         }>
                                         <Icon>add_circle</Icon>
                                     </IconButton>
-                                    <IconButton style={{ float: "right" }} label="delete" color="secondary">
-                                        <DeleteIcon/>
-                                    </IconButton>
+                                    <DeleteCardDialog
+                                        currentExamIndex={currentExamIndex}
+                                        dataGridSelection={dataGridSelection}
+                                        setDataGridSelection={setDataGridSelection}
+                                        setRows={setRows}
+                                        rows={rows}
+                                    />
                                 </div>
                                 <Card style={{ marginTop: "10px" }} className={classes.root}>
                                     <div style={{ height: 500, width: '100%' }}>

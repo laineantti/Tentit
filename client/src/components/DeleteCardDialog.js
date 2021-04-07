@@ -52,9 +52,9 @@ const DialogActions = withStyles((theme) => ({
     },
 }))(MuiDialogActions)
 
-export default function DeleteCardDialog({ currentExamIndex, cardIndex, examIndex, kysymys_id }) {
+export default function DeleteCardDialog({ currentExamIndex, dataGridSelection, setDataGridSelection, setRows, rows }) {
     const { state, dispatch } = useContext(store)
-    const [cardDeleteResult, setCardDeleteResult] = useState("")
+    const [cardDeleteResult, setCardDeleteResult] = useState([])
     const [deleting, setDeleting] = useState(true)
     const [force, setForce] = useState(false)
     const _isMounted = useRef(true)
@@ -67,7 +67,14 @@ export default function DeleteCardDialog({ currentExamIndex, cardIndex, examInde
         }
     }, [])
 
-    async function kysymyksenPoistoLogiikka(voimalla) {
+    const getCardIndex = (card_id) => {
+        state[currentExamIndex].kysymykset.forEach((kysymys, i) => {
+            if (state[currentExamIndex].kysymykset[i].id === card_id)
+                return i
+        })
+    }
+
+    async function kysymyksenPoistoLogiikka(voimalla, kysymys_id, cardIndex, examIndex) {
         try {
             await poistaKysymys(dispatch, kysymys_id, cardIndex, examIndex, voimalla)
                 .then(tiedot => {
@@ -229,6 +236,8 @@ export default function DeleteCardDialog({ currentExamIndex, cardIndex, examInde
                         let poistoviesti = ""
                         if (tiedot.poistettu) {
                             poistoviesti = "Kysymys poistettiin onnistuneesti."
+                            setDataGridSelection([])
+                            paivitaDataGrid()
                         } else {
                             if (liitos) {
                                 let tentti_id_string = ""
@@ -240,17 +249,17 @@ export default function DeleteCardDialog({ currentExamIndex, cardIndex, examInde
                                         tentti_id_string += ", "
                                     }
                                 })
-                                poistoviesti = "Kysymystä ei poistettu, koska muut käyttävät tenttejä (" + tentti_id_string + ") joissa kysymys on osana. Voit siitä huolimatta halutessasi poistaa sen LOPULLISESTI."
+                                poistoviesti = "Kysymystä ei poistettu, koska muut käyttävät tenttejä (" + tentti_id_string + ") joissa kysymys on osana."
                             } else {
                                 poistoviesti = "Kysymystä ei voitu juuri nyt poistaa. Yritä myöhemmin uudelleen."
                             }
                         }
                         if (force === false) {
-                            setCardDeleteResult(kayttaja_string + " " + kurssi_id_string
-                                + " " + vaihtoehto_id_string + " " + kuva_id_string + " " + aihe_id_string + " " + poistoviesti)
+                            setCardDeleteResult(cardDeleteResult => [...cardDeleteResult, kayttaja_string + " " + kurssi_id_string
+                                + " " + vaihtoehto_id_string + " " + kuva_id_string + " " + aihe_id_string + " " + poistoviesti])
                             setForce(true)
                         } else {
-                            setCardDeleteResult(poistoviesti)
+                            setCardDeleteResult(cardDeleteResult => [...cardDeleteResult, poistoviesti])
                             setForce(false)
                             setDeleting(false)
                         }
@@ -262,7 +271,7 @@ export default function DeleteCardDialog({ currentExamIndex, cardIndex, examInde
     }
 
     const handleClickOpen = () => {
-        setCardDeleteResult("")
+        setCardDeleteResult([])
         setDeleting(true)
         setForce(false)
         setOpen(true)
@@ -271,32 +280,36 @@ export default function DeleteCardDialog({ currentExamIndex, cardIndex, examInde
         setOpen(false)
     }
 
+    const paivitaDataGrid = () => {
+        setRows(rows.filter((row) => !dataGridSelection.includes(row.id)))
+        setDataGridSelection([])
+    }
+
     return (
         <>
-            <IconButton label="delete" color="primary"
+            <IconButton style={{ float: "right" }} label="delete" color="secondary"
+                disabled={(dataGridSelection.length > 0) ? false : true}
                 onClick={handleClickOpen}>
                 <DeleteIcon />
             </IconButton >
             <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
-                <DialogTitle id="customized-dialog-title" onClose={handleClose}>Kysymyksen poistaminen</DialogTitle>
+                <DialogTitle id="customized-dialog-title" onClose={handleClose}>Valittujen kysymysten poistaminen</DialogTitle>
                 <DialogContent dividers>
                     <Typography gutterBottom>{
-                        (cardDeleteResult === "") ?
-                            `Haluatko varmasti poistaa kysymyksen ${state[currentExamIndex].kysymykset[cardIndex].lause
-                                .substring(0, 10) + (state[currentExamIndex].kysymykset[cardIndex].lause.length > 10 ? "... " : "")}?` :
-                            cardDeleteResult
+                        (cardDeleteResult.length === 0) ?
+                            `Haluatko varmasti poistaa kysymykset ${dataGridSelection.map(selection => selection)}?`
+                            : cardDeleteResult.map((result, i) => <>{result}<hr /></>)
                     }</Typography>
                 </DialogContent>
                 <DialogActions>
                     <Button autoFocus onClick={() => {
                         if (deleting) {
-                            kysymyksenPoistoLogiikka(force)
+                            dataGridSelection.forEach(selection => {
+                                kysymyksenPoistoLogiikka(force, selection, getCardIndex(selection), currentExamIndex)
+                            })
                         } else {
                             handleClose()
                         }
-                        // deleting ?
-                        //     tentinPoistoLogiikka(force)
-                        //     : handleClose()
                     }
                     } color={deleting ? "secondary" : "default"}>
                         {
