@@ -90,6 +90,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
     const classes = useStyles()
 
     useEffect(() => {
+        let unmounted = false
         const getTileData = async () => {
             // hakee kuvat serveriltä ja muuntaa tietokannasta
             // saadun taulun material-ui:n tileData-muotoon
@@ -97,7 +98,9 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
             let kuvatMuunnettu = []
             kuvat = await fetchImage(limit, offset)
             if (fullCount === 0) {
-                setFullCount(kuvat[0].full_count)
+                if (!unmounted) {
+                    setFullCount(kuvat[0].full_count)
+                }
             }
             if (kuvat.length > 0) {
                 for (const kuva of kuvat) {
@@ -110,11 +113,16 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                     })
                 }
             }
-            setTileData(kuvatMuunnettu) // syyllinen unmounted-varoitukseen...
-            setImageLoaded([])
+            if (!unmounted) {
+                setTileData(kuvatMuunnettu)
+                setImageLoaded([])
+            }
         }
         getTileData()
         /* console.log("limit : " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".") */
+        return () => {
+            unmounted = true
+        }
     }, [offset, limit, fullCount])
 
     const handleClickOpen = () => {
