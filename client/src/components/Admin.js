@@ -79,7 +79,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
         fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         kysymysJaAihe(setKaikkiKysymykset)
         haeAiheet(setKaikkiAiheet)
-    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex, rows, newImageId, lisaaAihe])
+    }, [currentUser, newExamId, newCardId, newChoiseId, currentExamIndex, rows, newImageId])
 
     const [examName, setExamName] = useState(hakuId(state, currentExamId, currentExamIndex, setCurrentExamIndex))
 

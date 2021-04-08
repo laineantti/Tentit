@@ -110,7 +110,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                     })
                 }
             }
-            setTileData(kuvatMuunnettu)
+            setTileData(kuvatMuunnettu) // syyllinen unmounted-varoitukseen...
             setImageLoaded([])
         }
         getTileData()

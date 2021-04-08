@@ -338,14 +338,15 @@ export default function DeleteCardDialog({ currentExamIndex, dataGridSelection, 
                                 : ("Ok")
                         }
                     </Button>
-                    <Button autoFocus onClick={() => {
-                        handleClose()
+                    {deleting &&
+                        <Button autoFocus onClick={() => {
+                            handleClose()
 
-                    }} color="default">
-                        {
-                            ("Ei")
-                        }
-                    </Button>
+                        }} color="default">
+                            {
+                                ("Ei")
+                            }
+                        </Button>}
                 </DialogActions>
             </Dialog>
         </>
