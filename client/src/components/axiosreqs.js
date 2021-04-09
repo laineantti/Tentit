@@ -64,14 +64,11 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
         let tentit_string = ""
         if (admin_sivulla) { // admin_sivulla? --> true/false
             if (adminOikeus) {
-                console.log("Admin-sivulla voit muokata kaikkia tenttejä.")
                 tentit_string = path + "tentti"
             } else {
-                console.log("Admin-sivulla voit muokata vain luomiasi tenttejä.")
                 tentit_string = path + "oikeus_muokata_tenttia/" + currentUser
             }
         } else {
-            console.log("User-sivulla voit nähdä vain tilaamiasi tenttejä. Luomasi tentit näet vain Admin-sivulla (et täällä!).")
             tentit_string = path + "kayttajan_tentit/" + currentUser
         }
         let tentit_data = await axios.get(tentit_string, headers)
@@ -128,12 +125,12 @@ const fetchData = async (currentUser, dispatch, admin_sivulla) => { // admin_siv
     }
 }
 
-const fetchImage = async () => {
+const fetchImage = async (maara, poikkeama) => {
     let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
     try {
         // taulukko näyttää tältä:
         // [{ id: '1', tiedostonimi: 'abc123.jpg'}]
-        let response = await axios.get(path + "kuva", headers)
+        let response = await axios.get(path + "kuva/" + maara + "/" + poikkeama, headers)
         if (response.data[0].id) {
             return response.data
         }
@@ -154,7 +151,7 @@ const logoutUser = (dispatch) => {
 const kysymysJaAihe = async (setKaikkiKysymykset) => {
     let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
     try {
-        let result = await axios.get(path + "kysymys_aihe", headers) 
+        let result = await axios.get(path + "kysymys_aihe", headers)
         setKaikkiKysymykset(result.data)
     } catch (exception) {
         console.log("Virhe tietokantahaussa!")
@@ -164,7 +161,7 @@ const kysymysJaAihe = async (setKaikkiKysymykset) => {
 const haeAiheet = async (setKaikkiAiheet) => {
     let headers = { headers: { Authorization: `bearer ${autentikoitu()}` }, }
     try {
-        let result = await axios.get(path + "aihe", headers) 
+        let result = await axios.get(path + "aihe", headers)
         setKaikkiAiheet(result.data)
     } catch (exception) {
         console.log("Virhe tietokantahaussa!")
@@ -210,7 +207,7 @@ const lisaaKysymys = async (currentDatabaseExamIdChanged, dispatch, currentExamI
     dispatch({ type: "add_card", data: { examIndex: currentExamIndex } })
 }
 
-const lisaaKysymysTenttiin = async(item,currentExamIndex) => {
+const lisaaKysymysTenttiin = async (item, currentExamIndex) => {
     try {
         console.log(path + "lisaa_kysymys_tenttiin/" + item + "/" + currentExamIndex)
         let response = await axios({
@@ -442,7 +439,7 @@ const muutaKysymyksenAihe = async (dispatch, currentExamIndex, value, id, cardIn
     dispatch({
         type: "card_aihe_changed",
         data: { examIndex: currentExamIndex, cardIndex: cardIndex, newCardAihe: newCardAihe }
-    }) 
+    })
 }
 
 const lisaaKysymykselleUusiAihe = async (dispatch, currentExamIndex, value, id, cardIndex, kaikkiAiheet, setKaikkiAiheet) => {
@@ -544,7 +541,6 @@ const poistaTentti = async (dispatch, currentExamIndex, tentti_id, voimalla) => 
             headers: { 'Authorization': `bearer ${autentikoitu()}` }
         })
         tiedot_poistettavasta_tentista = result.data
-        /* console.log(tiedot_poistettavasta_tentista) */
         if (tiedot_poistettavasta_tentista.poistettu) {
             console.log("Tentti_id " + tentti_id + ", poistettu!")
             dispatch(
@@ -558,6 +554,34 @@ const poistaTentti = async (dispatch, currentExamIndex, tentti_id, voimalla) => 
             console.log("Tentti_id " + tentti_id + ", poistaminen epäonnistui liitoksien takia!")
         }
         return tiedot_poistettavasta_tentista
+    } catch (exception) {
+        console.log(exception)
+    }
+}
+
+const poistaKysymys = async (dispatch, kysymys_id, cardIndex, examIndex, voimalla) => {
+    let tiedot_poistettavasta_kysymyksesta = null
+    try {
+        let result = await axios({
+            method: 'delete',
+            url: `${path}poista_kysymys/${kysymys_id}/${voimalla}`,
+            headers: { 'Authorization': `bearer ${autentikoitu()}` }
+        })
+        tiedot_poistettavasta_kysymyksesta = result.data
+        if (tiedot_poistettavasta_kysymyksesta.poistettu) {
+            console.log("Kysymys_id " + kysymys_id + ", poistettu!")
+            dispatch(
+                {
+                    type: "card_deleted", data: {
+                        cardIndex: cardIndex,
+                        examIndex: examIndex
+                    }
+                }
+            )
+        } else {
+            console.log("Kysymys_id " + kysymys_id + ", poistaminen epäonnistui liitoksien takia!")
+        }
+        return tiedot_poistettavasta_kysymyksesta
     } catch (exception) {
         console.log(exception)
     }
@@ -588,4 +612,5 @@ export {
     poistaKysymyksenLiitos,
     poistaVaihtoehdonLiitos,
     poistaTentti,
+    poistaKysymys
 }

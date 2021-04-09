@@ -1,4 +1,4 @@
-import { React, useState, useContext } from 'react'
+import { React, useState, useContext, useEffect } from 'react'
 import { withStyles, makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -16,6 +16,7 @@ import Checkbox from '@material-ui/core/Checkbox'
 import Skeleton from '@material-ui/lab/Skeleton'
 import { fetchImage, liitaKuvaKysymykseen, liitaKuvaVaihtoehtoon, } from './axiosreqs'
 import { store } from './store.js'
+import uuid from 'react-uuid'
 
 // Dialog
 const styles = (theme) => ({
@@ -39,10 +40,11 @@ const useStyles = makeStyles((theme) => ({
         justifyContent: 'space-around',
         overflow: 'hidden',
         backgroundColor: theme.palette.background.paper,
+        width: "490px",
     },
     gridList: {
-        width: '100% !important',
-        height: '100% !important',
+        width: "480px",
+        height: "470px",
     },
     icon: {
         color: 'rgba(255, 255, 255, 0.54)',
@@ -82,32 +84,59 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
     const [tileData, setTileData] = useState([])
     const [imageLoaded, setImageLoaded] = useState([])
     const [selectedImages, setSelectedImages] = useState([])
+    const [limit/* , setLimit */] = useState(6)
+    const [offset, setOffset] = useState(0)
+    const [fullCount, setFullCount] = useState(0)
     const classes = useStyles()
 
-    const getTileData = async () => {
-        // hakee kuvat serveriltä ja muuntaa tietokannasta
-        // saadun taulun material-ui:n tileData-muotoon
-        let kuvat = []
-        let kuvatMuunnettu = []
-        kuvat = await fetchImage()
-        for (const kuva of kuvat) {
-            kuvatMuunnettu.push({
-                id: kuva.id,
-                img: kuva.tiedostonimi,
-                title: kuva.tiedostonimi,
-                author: 'tentit-app',
-                cols: 2,
-            })
+    useEffect(() => {
+        let unmounted = false
+        const getTileData = async () => {
+            // hakee kuvat serveriltä ja muuntaa tietokannasta
+            // saadun taulun material-ui:n tileData-muotoon
+            let kuvat = []
+            let kuvatMuunnettu = []
+            kuvat = await fetchImage(limit, offset)
+            if (fullCount === 0) {
+                if (!unmounted) {
+                    setFullCount(kuvat[0].full_count)
+                }
+            }
+            if (kuvat.length > 0) {
+                for (const kuva of kuvat) {
+                    kuvatMuunnettu.push({
+                        id: kuva.id,
+                        img: kuva.tiedostonimi,
+                        title: kuva.tiedostonimi,
+                        author: 'tentit-app',
+                        cols: 2,
+                    })
+                }
+            }
+            if (!unmounted) {
+                setTileData(kuvatMuunnettu)
+                setImageLoaded([])
+            }
         }
-        setTileData(kuvatMuunnettu)
-        setImageLoaded([])
-    }
+        getTileData()
+        /* console.log("limit : " + limit + ". offset: " + offset + ". fullCount: " + fullCount + ".") */
+        return () => {
+            unmounted = true
+        }
+    }, [offset, limit, fullCount])
 
     const handleClickOpen = () => {
+        resetImageSelector()
         setOpen(true)
     }
+
     const handleClose = () => {
         setOpen(false)
+    }
+
+    const resetImageSelector = () => {
+        setSelectedImages([])
+        setOffset(0)
     }
 
     const onkoKuvaValittu = (id) => {
@@ -124,7 +153,6 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
 
     const asetaValinta = (id) => {
         setSelectedImages(selectedImages => [...selectedImages, id])
-        console.log(selectedImages)
     }
 
     const poistaValinta = (id) => {
@@ -141,10 +169,10 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
     return (
         <div>
             <IconButton style={{ float: "left" }} label="delete" color="primary"
-                onClick={() => { handleClickOpen(); getTileData(); }}>
+                onClick={() => { handleClickOpen() }}>
                 <ImageSearch />
             </IconButton >
-            <Dialog classes={{ paper: classes.dialogPaper }} fullWidth={true} maxWidth={'xl'} onClose={handleClose}
+            <Dialog classes={{ paper: classes.dialogPaper }} fullWidth={true} maxWidth={'sm'} onClose={handleClose}
                 aria-labelledby="customized-dialog-title" open={open}>
                 <DialogTitle id="customized-dialog-title" onClose={handleClose}>
                     Kuvan lisääminen {
@@ -154,11 +182,11 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                     }.
 
                 </DialogTitle>
-                <DialogContent style={{ display: "flex", justifyContent: "center" }} dividers>
+                <DialogContent dividers>
                     <div className={classes.root}>
-                        <GridList cellHeight={150} className={classes.gridList}>
+                        <GridList cellHeight={150} className={classes.gridList} cols={4}>
                             {tileData.map((tile) => (
-                                <GridListTile key={tile.id} style={{ width: "240px", maxHeight: "150" }}>
+                                <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }} cols={tile.cols || 1}>
                                     <a href={"//localhost:4000/uploads/" + tile.img} target="_blank" rel="noreferrer">
                                         <img style={{ width: "100%", height: "100%", objectFit: "cover", display: imageLoaded.includes(tile.id) ? "block" : "none" }}
                                             src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
@@ -179,6 +207,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                                                 style={{ color: "white" }}
                                                 color="primary"
                                                 inputProps={{ 'aria-label': 'secondary checkbox' }}
+                                                checked={onkoKuvaValittu(tile.id)}
                                                 onClick={() => {
                                                     onkoKuvaValittu(tile.id) ? poistaValinta(tile.id) : asetaValinta(tile.id);
                                                 }}
@@ -191,8 +220,25 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                     </div>
                 </DialogContent>
                 <DialogActions>
+                    <Typography>Sivu {(offset / limit) + 1}/{Math.ceil(fullCount / limit)}</Typography>
+                    <Button disabled={offset > 0 ? false : true} autoFocus onClick={() => {
+                        let tempOffset = (offset - limit)
+                        setOffset(tempOffset)
+                    }} color="default">
+                        {
+                            ("Edellinen")
+                        }
+                    </Button>
+                    <Button disabled={offset < (fullCount - limit) ? false : true} autoFocus onClick={() => {
+                        let tempOffset = (offset + limit)
+                        setOffset(tempOffset)
+
+                    }} color="default">
+                        {
+                            ("Seuraava")
+                        }
+                    </Button>
                     <Button autoFocus onClick={() => {
-                        console.log(selectedImages)
                         let kysymys_id = state[examIndex].kysymykset[cardIndex].id
                         if (sijainti === "kysymys") {
                             setNewImageId(liitaKuvaKysymykseen(dispatch, examIndex, cardIndex, selectedImages, kysymys_id))
@@ -217,7 +263,7 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                         }
                     </Button>
                 </DialogActions>
-            </Dialog>
+            </Dialog >
         </div >
     )
 }

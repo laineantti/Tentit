@@ -1,4 +1,4 @@
-import { React, useState, useContext } from 'react'
+import { React, useState, useEffect, useRef, useContext } from 'react'
 import { poistaTentti } from './axiosreqs'
 import { store } from './store.js'
 import { withStyles } from '@material-ui/core/styles'
@@ -57,153 +57,159 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
     const [examDeleteResult, setExamDeleteResult] = useState("")
     const [deleting, setDeleting] = useState(true)
     const [force, setForce] = useState(false)
+    const _isMounted = useRef(true)
 
     const [open, setOpen] = useState(false)
+
+    useEffect(() => {
+        return () => {
+            _isMounted.current = false;
+        }
+    }, [])
 
     async function tentinPoistoLogiikka(voimalla) {
         try {
             await poistaTentti(dispatch, currentExamIndex, currentDatabaseExamIdChanged, voimalla)
                 .then(tiedot => {
-                    console.log(tiedot)
+                    if (_isMounted.current === true) {
+                        // Tieto kayttaja-liitoksista mihin tentti on liitettynä.
+                        let kayttaja_string = ""
+                        let kayttaja_id_luoja_string = ""
+                        let kayttaja_id_tilaaja_string = ""
+                        let kayttaja_id_vastaaja_string = ""
+                        let liitos = false
 
-                    // Tieto kayttaja-liitoksista mihin tentti on liitettynä.
-                    let kayttaja_string = ""
-                    let kayttaja_id_luoja_string = ""
-                    let kayttaja_id_tilaaja_string = ""
-                    let kayttaja_id_vastaaja_string = ""
-                    let liitos = false
+                        // tentin luoja:
+                        if (!tiedot.poistettu && tiedot.liitokset.kayttaja_id_luoja.length > 0) {
+                            liitos = true
+                            let loppuosa = " luoma."
+                            if (tiedot.liitokset.kayttaja_id_luoja.length === 1) {
+                                kayttaja_id_luoja_string = "Tämä tentti on käyttäjän " +
+                                    tiedot.liitokset.kayttaja_id_luoja[0] + loppuosa
+                            } else {
+                                kayttaja_id_luoja_string = "Tätä tenttiä on muokannut käyttäjät "
+                                tiedot.liitokset.kayttaja_id_luoja.forEach((value, i) => {
+                                    if (i === tiedot.liitokset.kayttaja_id_luoja.length - 1) {
+                                        kayttaja_id_luoja_string += value + loppuosa
+                                    } else if (i === tiedot.liitokset.kayttaja_id_luoja.length - 2) {
+                                        kayttaja_id_luoja_string += value + " ja "
+                                    } else {
+                                        kayttaja_id_luoja_string += value + ", "
+                                    }
+                                })
+                            }
+                            kayttaja_string += kayttaja_id_luoja_string
+                        }
+                        // tentin tilaaja:
+                        if (!tiedot.poistettu && tiedot.liitokset.kayttaja_id_tilaaja.length > 0) {
+                            liitos = true
+                            let loppuosa = "."
+                            if (tiedot.liitokset.kayttaja_id_tilaaja.length === 1) {
+                                kayttaja_id_tilaaja_string = "Tentin on tilannut käyttäjä " +
+                                    tiedot.liitokset.kayttaja_id_tilaaja[0] + loppuosa
+                            } else {
+                                kayttaja_id_tilaaja_string = "Tentin on tilannut käyttäjät "
+                                tiedot.liitokset.kayttaja_id_tilaaja.forEach((value, i) => {
+                                    if (i === tiedot.liitokset.kayttaja_id_tilaaja.length - 1) {
+                                        kayttaja_id_tilaaja_string += value + loppuosa
+                                    } else if (i === tiedot.liitokset.kayttaja_id_tilaaja.length - 2) {
+                                        kayttaja_id_tilaaja_string += value + " ja "
+                                    } else {
+                                        kayttaja_id_tilaaja_string += value + ", "
+                                    }
+                                })
+                            }
+                            kayttaja_string += " " + kayttaja_id_tilaaja_string
+                        }
+                        // tentin vastaaja:
+                        if (!tiedot.poistettu && tiedot.liitokset.kayttaja_id_vastaaja.length > 0) {
+                            liitos = true
+                            let loppuosa = "."
+                            if (tiedot.liitokset.kayttaja_id_vastaaja.length === 1) {
+                                kayttaja_id_vastaaja_string = "Tenttiin on vastannut käyttäjä " +
+                                    tiedot.liitokset.kayttaja_id_vastaaja[0] + loppuosa
+                            } else {
+                                kayttaja_id_vastaaja_string = "Tenttiin on vastannut käyttäjät "
+                                tiedot.liitokset.kayttaja_id_vastaaja.forEach((value, i) => {
+                                    if (i === tiedot.liitokset.kayttaja_id_vastaaja.length - 1) {
+                                        kayttaja_id_vastaaja_string += value + loppuosa
+                                    } else if (i === tiedot.liitokset.kayttaja_id_vastaaja.length - 2) {
+                                        kayttaja_id_vastaaja_string += value + " ja "
+                                    } else {
+                                        kayttaja_id_vastaaja_string += value + ", "
+                                    }
+                                })
+                            }
+                            kayttaja_string += " " + kayttaja_id_vastaaja_string
+                        }
 
-                    // tentin luoja:
-                    if (!tiedot.poistettu && tiedot.liitokset.kayttaja_id_luoja.length > 0) {
-                        liitos = true
-                        let loppuosa = " luoma."
-                        if (tiedot.liitokset.kayttaja_id_luoja.length === 1) {
-                            kayttaja_id_luoja_string = "Tämä tentti on käyttäjän " +
-                                tiedot.liitokset.kayttaja_id_luoja[0] + loppuosa
-                        } else {
-                            kayttaja_id_luoja_string = "Tätä tenttiä on muokannut käyttäjät "
-                            tiedot.liitokset.kayttaja_id_luoja.forEach((value, i) => {
-                                if (i === tiedot.liitokset.kayttaja_id_luoja.length - 1) {
-                                    kayttaja_id_luoja_string += value + loppuosa
-                                } else if (i === tiedot.liitokset.kayttaja_id_luoja.length - 2) {
-                                    kayttaja_id_luoja_string += value + " ja "
-                                } else {
-                                    kayttaja_id_luoja_string += value + ", "
-                                }
-                            })
-                        }
-                        kayttaja_string += kayttaja_id_luoja_string
-                    }
-                    // tentin tilaaja:
-                    if (!tiedot.poistettu && tiedot.liitokset.kayttaja_id_tilaaja.length > 0) {
-                        liitos = true
-                        let loppuosa = "."
-                        if (tiedot.liitokset.kayttaja_id_tilaaja.length === 1) {
-                            kayttaja_id_tilaaja_string = "Tentin on tilannut käyttäjä " +
-                                tiedot.liitokset.kayttaja_id_tilaaja[0] + loppuosa
-                        } else {
-                            kayttaja_id_tilaaja_string = "Tentin on tilannut käyttäjät "
-                            tiedot.liitokset.kayttaja_id_tilaaja.forEach((value, i) => {
-                                if (i === tiedot.liitokset.kayttaja_id_tilaaja.length - 1) {
-                                    kayttaja_id_tilaaja_string += value + loppuosa
-                                } else if (i === tiedot.liitokset.kayttaja_id_tilaaja.length - 2) {
-                                    kayttaja_id_tilaaja_string += value + " ja "
-                                } else {
-                                    kayttaja_id_tilaaja_string += value + ", "
-                                }
-                            })
-                        }
-                        kayttaja_string += " " + kayttaja_id_tilaaja_string
-                    }
-                    // tentin vastaaja:
-                    if (!tiedot.poistettu && tiedot.liitokset.kayttaja_id_vastaaja.length > 0) {
-                        liitos = true
-                        let loppuosa = "."
-                        if (tiedot.liitokset.kayttaja_id_vastaaja.length === 1) {
-                            kayttaja_id_vastaaja_string = "Tenttiin on vastannut käyttäjä " +
-                                tiedot.liitokset.kayttaja_id_vastaaja[0] + loppuosa
-                        } else {
-                            kayttaja_id_vastaaja_string = "Tenttiin on vastannut käyttäjät "
-                            tiedot.liitokset.kayttaja_id_vastaaja.forEach((value, i) => {
-                                if (i === tiedot.liitokset.kayttaja_id_vastaaja.length - 1) {
-                                    kayttaja_id_vastaaja_string += value + loppuosa
-                                } else if (i === tiedot.liitokset.kayttaja_id_vastaaja.length - 2) {
-                                    kayttaja_id_vastaaja_string += value + " ja "
-                                } else {
-                                    kayttaja_id_vastaaja_string += value + ", "
-                                }
-                            })
-                        }
-                        kayttaja_string += " " + kayttaja_id_vastaaja_string
-                    }
-
-                    // Tieto kursseista mihin tentti on liitettynä.
-                    let kurssi_id_string = ""
-                    if (!tiedot.poistettu && tiedot.liitokset.kurssi_id.length > 0) {
-                        liitos = true
-                        if (tiedot.liitokset.kurssi_id.length === 1) {
-                            kurssi_id_string = "Tentti on liitetty kurssiin " +
-                                tiedot.liitokset.kurssi_id[0] + "."
-                        } else {
-                            kurssi_id_string = "Tentti on liitetty kursseihin "
-                            tiedot.liitokset.kurssi_id.forEach((value, i) => {
-                                if (i === tiedot.liitokset.kurssi_id.length - 1) {
-                                    kurssi_id_string += value + "."
-                                } else if (i === tiedot.liitokset.kurssi_id.length - 2) {
-                                    kurssi_id_string += value + " ja "
-                                } else {
-                                    kurssi_id_string += value + ", "
-                                }
-                            })
-                        }
-                    } /* else {
+                        // Tieto kursseista mihin tentti on liitettynä.
+                        let kurssi_id_string = ""
+                        if (!tiedot.poistettu && tiedot.liitokset.kurssi_id.length > 0) {
+                            liitos = true
+                            if (tiedot.liitokset.kurssi_id.length === 1) {
+                                kurssi_id_string = "Tentti on liitetty kurssiin " +
+                                    tiedot.liitokset.kurssi_id[0] + "."
+                            } else {
+                                kurssi_id_string = "Tentti on liitetty kursseihin "
+                                tiedot.liitokset.kurssi_id.forEach((value, i) => {
+                                    if (i === tiedot.liitokset.kurssi_id.length - 1) {
+                                        kurssi_id_string += value + "."
+                                    } else if (i === tiedot.liitokset.kurssi_id.length - 2) {
+                                        kurssi_id_string += value + " ja "
+                                    } else {
+                                        kurssi_id_string += value + ", "
+                                    }
+                                })
+                            }
+                        } /* else {
                         kurssi_id_string = "Tentti ei ole millään kurssilla."
                     } */
-                    // Tieto kysymyksistä mihin tentti on liitettynä.
-                    let kysymys_id_string = ""
-                    if (tiedot.liitokset.kysymys_id.length > 0) {
-                        liitos = true
-                        if (tiedot.liitokset.kysymys_id.length === 1) {
-                            kysymys_id_string = "Se on liitetty kysymykseen " +
-                                tiedot.liitokset.kysymys_id[0] + "."
-                        } else {
-                            kysymys_id_string = "Se on liitetty kysymyksiin "
-                            tiedot.liitokset.kysymys_id.forEach((value, i) => {
-                                if (i === tiedot.liitokset.kysymys_id.length - 1) {
-                                    kysymys_id_string += value + "."
-                                } else if (i === tiedot.liitokset.kysymys_id.length - 2) {
-                                    kysymys_id_string += value + " ja "
-                                } else {
-                                    kysymys_id_string += value + ", "
-                                }
-                            })
-                        }
-                    } /* else {
+                        // Tieto kysymyksistä mihin tentti on liitettynä.
+                        let kysymys_id_string = ""
+                        if (tiedot.liitokset.kysymys_id.length > 0) {
+                            liitos = true
+                            if (tiedot.liitokset.kysymys_id.length === 1) {
+                                kysymys_id_string = "Se on liitetty kysymykseen " +
+                                    tiedot.liitokset.kysymys_id[0] + "."
+                            } else {
+                                kysymys_id_string = "Se on liitetty kysymyksiin "
+                                tiedot.liitokset.kysymys_id.forEach((value, i) => {
+                                    if (i === tiedot.liitokset.kysymys_id.length - 1) {
+                                        kysymys_id_string += value + "."
+                                    } else if (i === tiedot.liitokset.kysymys_id.length - 2) {
+                                        kysymys_id_string += value + " ja "
+                                    } else {
+                                        kysymys_id_string += value + ", "
+                                    }
+                                })
+                            }
+                        } /* else {
                         kysymys_id_string = "Siihen ei ole liitetty yhtään kysymystä."
                     } */
-                    // tarkistetaan onko oikeasti poistettu
-                    let poistoviesti = ""
-                    if (tiedot.poistettu) {
-                        poistoviesti = "Tentti poistettiin onnistuneesti."
-                        // kun tentti on poistettu, asetetaan ja välitetään Admin-sivulla 
-                        // valituksi tentiksi -1 (= tenttiä ei valittuna)
-                        setCurrentExamIndex(-1)
-                    } else {
-                        if (liitos) {
-                            poistoviesti = "Tenttiä ei poistettu, koska muut käyttävät sitä. Voit siitä huolimatta halutessasi poistaa sen LOPULLISESTI."
+                        // tarkistetaan onko oikeasti poistettu
+                        let poistoviesti = ""
+                        if (tiedot.poistettu) {
+                            poistoviesti = "Tentti poistettiin onnistuneesti."
+                            // kun tentti on poistettu, asetetaan ja välitetään Admin-sivulla 
+                            // valituksi tentiksi -1 (= tenttiä ei valittuna)
+                            setCurrentExamIndex(-1)
                         } else {
-                            poistoviesti = "Tenttiä ei voitu juuri nyt poistaa. Yritä myöhemmin uudelleen."
+                            if (liitos) {
+                                poistoviesti = "Tenttiä ei poistettu, koska muut käyttävät sitä. Voit siitä huolimatta halutessasi poistaa sen LOPULLISESTI."
+                            } else {
+                                poistoviesti = "Tenttiä ei voitu juuri nyt poistaa. Yritä myöhemmin uudelleen."
+                            }
                         }
-                    }
-
-                    if (force === false) {
-                        setExamDeleteResult(kayttaja_string + " " + kurssi_id_string
-                            + " " + kysymys_id_string + " " + poistoviesti)
-                        setForce(true)
-                    } else {
-                        setExamDeleteResult(poistoviesti)
-                        setForce(false)
-                        setDeleting(false)
+                        if (force === false) {
+                            setExamDeleteResult(kayttaja_string + " " + kurssi_id_string
+                                + " " + kysymys_id_string + " " + poistoviesti)
+                            setForce(true)
+                        } else {
+                            setExamDeleteResult(poistoviesti)
+                            setForce(false)
+                            setDeleting(false)
+                        }
                     }
                 })
         } catch (err) {
@@ -249,8 +255,8 @@ export default function DeleteExamDialog({ currentExamIndex, setCurrentExamIndex
                         // deleting ?
                         //     tentinPoistoLogiikka(force)
                         //     : handleClose()
-                         }
-                    } color={deleting?"secondary":"default"}>
+                    }
+                    } color={deleting ? "secondary" : "default"}>
                         {
                             deleting ?
                                 force ?
