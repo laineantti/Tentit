@@ -28,32 +28,26 @@ const autentikoitu = () => {
   return loggedUser;
 }
 
-const hakuId = (state,currentExamId,currentExamIndex,setCurrentExamIndex) => { 
-  idToIndex(state,currentExamId,setCurrentExamIndex)
-  if (currentExamIndex === -1 || !state[currentExamIndex]){
+const hakuId = (state,currentExamId,currentExamIndex) => { 
+  let paluu=idToIndex(state,currentExamId)
+  if (paluu === -1 || !state[currentExamIndex]){
       return ""
   } else {
       return state[currentExamIndex].nimi
   }      
 }
 
-const idToIndex = (state,currentExamId,setCurrentExamIndex) => {
-  let viesti = ""
-  setCurrentExamIndex(-1)
+const idToIndex = (state,currentExamId) => {
+  let paluu = -1
   if (currentExamId!==-1){
       state.map((exam,index)=>{
           if(exam.id===currentExamId){
-              setCurrentExamIndex(index)
-              viesti="ExamIndex löytyi!"
-          } else {
-              viesti="ExamId:tä vastaavaa indexiä ei ole!"
-          }              
+              paluu=index
+          }            
       })
-  } else {
-      setCurrentExamIndex(-1)
-      viesti="Id:tä ei ole"
   }
-  console.log(viesti)
+  console.log("CurrentExamIndex "+paluu)
+  return paluu
 }
 
   export {
