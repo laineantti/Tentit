@@ -4,7 +4,7 @@ import EditIcon from '@material-ui/icons/Edit'
 import { Link } from 'react-router-dom';
 import { useStyles, MenuButton } from './Style'
 import { strings } from './Locale'
-import { React, useState, useContext, useEffect } from 'react'
+import { React, useState, useContext } from 'react'
 import { logoutUser } from './axiosreqs'
 import { store } from './store.js'
 
@@ -20,7 +20,7 @@ export function NavBar({
     kaikkiKysymykset, rows, setRows
 }) {
     const classes = useStyles()
-    const { state, dispatch } = useContext(store) 
+    const { dispatch } = useContext(store) 
     const [anchorEl, setAnchorEl] = useState(null);
     const isOpen = Boolean(anchorEl);
     const handleMenu = (event) => {
@@ -30,7 +30,9 @@ export function NavBar({
         setAnchorEl(null);
     };
 
-    strings.setLanguage(strings.getInterfaceLanguage())
+    // strings.setLanguage(strings.getInterfaceLanguage())
+    // console.log("Browser language in Settings: " + strings.getInterfaceLanguage())
+    // console.log("React App language: " + strings.getLanguage())
 
         return (
             <>
