@@ -14,6 +14,7 @@ import Skeleton from '@material-ui/lab/Skeleton'
 import ImageIcon from '@material-ui/icons/Image'
 import CloseIcon from '@material-ui/icons/Close'
 import DeleteIcon from '@material-ui/icons/Delete'
+import { green,blue } from '@material-ui/core/colors';
 import DeleteExamDialog from './DeleteExamDialog'
 import DeleteCardDialog from './DeleteCardDialog'
 import { DataGrid } from '@material-ui/data-grid';
@@ -79,7 +80,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
         fetchData(currentUser, dispatch, true) // admin_sivulla? --> true/false
         kysymysJaAihe(setKaikkiKysymykset)
         haeAiheet(setKaikkiAiheet)
-    }, [currentUser, setKaikkiKysymykset, dispatch, newExamId, newCardId, newChoiseId, currentExamIndex, rows, newImageId])
+    }, [/* currentUser, setKaikkiKysymykset, dispatch, */ newExamId, newChoiseId, currentExamIndex, rows, newImageId])
 
     const [examName, setExamName] = useState(hakuId(state, currentExamId, currentExamIndex))
 
@@ -101,7 +102,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
 
     useEffect(() => {
         setCurrentExamIndex(idToIndex(state, currentExamId))
-    }, [state, currentExamId])
+    }, [state])
 
     let textInput = useRef(null)
 
@@ -371,7 +372,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                     }
 
                     <div style={{ width: '100%', textAlign: 'center' }}>
-                        <IconButton
+                        <IconButton style = {{color: (dataGridSelection.length > 0) && "#3f51b5"}}  
                             onClick={() => {
                                 if (dataGridSelection.length > 0) {
                                     console.log(dataGridSelection)

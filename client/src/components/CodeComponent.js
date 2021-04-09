@@ -25,21 +25,21 @@ const CodeComponent = ({questionString, background}) => {
         let code = questionString.substring(codePos+5)
         let question = questionString.slice(0,codePos-1)
         return (
-            <>
+            <span>
                 {question}
                 <SyntaxHighlighter language="javascript" style={bs} wrapLongLines={true}
                 showLineNumbers={true}>
                     {code}
                 </SyntaxHighlighter>
-            </>
+            </span>
         )
     } else {
         return (
-            <>
+            <span>
             {window.location.pathname!=="/admin" ?
                 questionString 
             :""}
-            </>
+            </span>
         )
     }
 }
