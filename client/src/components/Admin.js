@@ -113,13 +113,13 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
             && state[currentExamIndex].kysymykset
             && examName
             ?
-            <Box key={uuid()}>
+            <Box>
                 <CssBaseline />
-                <Container key={uuid()} style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
+                <Container style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
                     component="main">
 
-                    <h2 key={uuid()}>
-                        <TextField key={uuid()} type="text" style={{ width: "85%" }} value={examName} id={state[currentExamIndex].id}
+                    <h2>
+                        <TextField type="text" style={{ width: "85%" }} value={examName} id={state[currentExamIndex].id}
                             onChange={(event) => {
                                 setExamName(event.target.value)
                             }}
@@ -131,7 +131,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                 muutaTentti(dispatch, currentExamIndex, state[currentExamIndex].id, examName)
                             }}> {/* Logiikka tehty, mutta heittää [object Promise] */}
                         </TextField> {/* {"(luoja_id: " + haeTentinLuojanId(state[currentExamIndex].id) + ")"} */}
-                        <DeleteExamDialog key={uuid()}
+                        <DeleteExamDialog
                             /* tentin poistonappi */
                             currentExamIndex={currentExamIndex}
                             setCurrentExamIndex={setCurrentExamIndex}
@@ -145,20 +145,20 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                     {state[currentExamIndex].kysymykset
                         .map((card, cardIndex) =>
                             <Card style={{ marginTop: "10px" }} key={uuid()} className={classes.root}>
-                                <CardContent key={uuid()} style={{ width: "100%" }} className={classes.content}>
-                                    <List key={uuid()}>
-                                        <CodeComponent key={uuid()} style={{ width: "100%" }} questionString={card.lause} background="darkBlue" />
-                                        <ImageSelector key={uuid()}
+                                <CardContent style={{ width: "100%" }} className={classes.content}>
+                                    <List>
+                                        <CodeComponent style={{ width: "100%" }} questionString={card.lause} background="darkBlue" />
+                                        <ImageSelector
                                             examIndex={currentExamIndex}
                                             cardIndex={cardIndex}
                                             sijainti="kysymys"
                                             setNewImageId={setNewImageId}
                                         />
-                                        <TextField key={uuid()} multiline type="text" style={{ minWidth: "93%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
+                                        <TextField multiline type="text" style={{ minWidth: "93%" }} defaultValue={card.lause} id={card.id} onBlur={(event) => {
                                             muutaKysymys(dispatch, currentExamIndex, event.target.value, card.id, cardIndex)
                                         }}>
                                         </TextField>
-                                        <IconButton key={uuid()} style={{ float: "right" }} label="delete"
+                                        <IconButton style={{ float: "right" }} label="delete"
                                             color="primary" onClick={() => {
                                                 poistaKysymyksenLiitos(dispatch, currentExamIndex, card.id, cardIndex, state[currentExamIndex].id)
                                                 let addRow = [{
@@ -171,7 +171,7 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                             <DeleteIcon />
                                         </IconButton >
                                         {lisaaAihe.includes(card.id) ?
-                                            <TextField key={uuid()}
+                                            <TextField
                                                 type="text"
                                                 defaultValue={""}
                                                 inputRef={textInput}
@@ -187,9 +187,9 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
 
                                             </TextField>
                                             :
-                                            <span key={uuid()}>{card.aihe}</span>
+                                            <span>{card.aihe}</span>
                                         }
-                                        <TextField key={uuid()} style={{ minWidth: "2%" }}
+                                        <TextField style={{ minWidth: "2%" }}
                                             value={''}
                                             select
                                             onChange={(event) => {
@@ -206,14 +206,14 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                                     {option.aihe}
                                                 </MenuItem>
                                             ))}
-                                            <MenuItem key={uuid()}>
+                                            <MenuItem>
                                                 ...lisää aihe
                                             </MenuItem>
                                             Focus TextField
                                         </TextField><br />
                                         <div style={{ paddingTop: "30px" }} className={classes.root}>
                                             <GridList cellHeight={150} style={{ width: "100%" }}>
-                                                <GridListTile key={uuid()} cols={2} style={{ height: 'auto' }}>
+                                                <GridListTile cols={2} style={{ height: 'auto' }}>
                                                     <ListSubheader component="div" style={{ width: "100%" }}>
                                                         {card.kuvat.length > 2 &&
                                                             <IconButton style={{ float: "right" }} aria-label="expand"
@@ -250,12 +250,10 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                                         {!imageLoaded.includes(tile.id) ?
                                                             <Skeleton variant="rect" width={512} height={512} />
                                                             : <GridListTileBar
-                                                                title={<>
-                                                                    {<span>id: {tile.id}</span>}
-                                                                </>}
+                                                                title={<span>id: {tile.id}</span>}
                                                                 subtitle={tile.tiedostonimi}
                                                                 actionIcon={
-                                                                    <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
+                                                                    <IconButton style={{ color: "white", float: "right" }} label="delete"
                                                                         color="primary" onClick={() =>
                                                                             setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "kysymys", tile.id, card.id, tileIndex))
                                                                         }>
@@ -269,9 +267,9 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                         </div>
                                         {card.vaihtoehdot.map((listItem, listItemIndex) => (
                                             <Fragment key={uuid()}>
-                                                <ListItem key={uuid()}><CodeComponent key={uuid()} style={{ width: "100%" }} questionString={listItem.vaihtoehto} /></ListItem>
-                                                <ListItem key={uuid()}>
-                                                    <ImageSelector key={uuid()}
+                                                <ListItem ><CodeComponent style={{ width: "100%" }} questionString={listItem.vaihtoehto} /></ListItem>
+                                                <ListItem >
+                                                    <ImageSelector
                                                         examIndex={currentExamIndex}
                                                         cardIndex={cardIndex}
                                                         listItemIndex={listItemIndex}
@@ -295,10 +293,10 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                                         <DeleteIcon />
                                                     </IconButton >
                                                 </ListItem>
-                                                <ListItem key={uuid()}>
+                                                <ListItem >
                                                     <div style={{ paddingLeft: "45px", width: "100%" }} className={classes.root}>
                                                         <GridList cellHeight={150} style={{ width: "100%" }} className={classes.gridList}>
-                                                            <GridListTile key={uuid()} cols={2} style={{ height: 'auto' }}>
+                                                            <GridListTile cols={2} style={{ height: 'auto' }}>
                                                                 <ListSubheader component="div" style={{ width: "100%" }}>
                                                                     {listItem.kuvat.length > 2 &&
                                                                         <IconButton style={{ float: "right" }} aria-label="expand"
@@ -335,12 +333,10 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                                                                     {!imageLoaded.includes(tile.id) ?
                                                                         <Skeleton variant="rect" width={512} height={512} />
                                                                         : <GridListTileBar
-                                                                            title={<>
-                                                                                {<span>id: {tile.id}</span>}
-                                                                            </>}
+                                                                            title={<span>id: {tile.id}</span>}
                                                                             subtitle={tile.tiedostonimi}
                                                                             actionIcon={
-                                                                                <IconButton key={uuid()} style={{ color: "white", float: "right" }} label="delete"
+                                                                                <IconButton style={{ color: "white", float: "right" }} label="delete"
                                                                                     color="primary" onClick={() =>
                                                                                         setNewImageId(poistaKuvanLiitos(dispatch, currentExamIndex, cardIndex, "vaihtoehto", tile.id, card.id, tileIndex, listItem.id, listItemIndex))
                                                                                     }>
@@ -413,12 +409,12 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                 </Container>
             </Box >
             :
-            <Box key={uuid()}>
-                <CssBaseline key={uuid()} />
-                <Container key={uuid()} style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
+            <Box>
+                <CssBaseline />
+                <Container style={{ marginTop: "80px", marginBottom: "15px" }} maxWidth="lg"
                     component="main">
                     {Object.values(state).map((exam, examIndex) =>
-                        <ExamButton style={{ marginTop: "10px" }} key={uuid()} name={exam.nimi} onClick={() => {
+                        <ExamButton key={uuid()} style={{ marginTop: "10px" }} name={exam.nimi} onClick={() => {
                             setCurrentExamIndex(examIndex)
                             if (exam.id) {
                                 setCurrentDatabaseExamIdChanged(exam.id)
@@ -432,10 +428,10 @@ function App({ currentUser, currentExamId, setCurrentExamId, currentExamIndex, s
                             {exam.nimi}
                         </ExamButton>
                     )}
-                    <IconButton key={uuid()} onClick={() => {
+                    <IconButton onClick={() => {
                         setNewExamId(lisaaTentti(dispatch, currentUser))
                     }}>
-                        <Icon key={uuid()}> add_circle</Icon>
+                        <Icon> add_circle</Icon>
                     </IconButton>
                 </Container>
             </Box >)
