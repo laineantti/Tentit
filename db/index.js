@@ -2,7 +2,10 @@ const { Pool } = require('pg')
 
 if (process.env.HEROKU) {
   connectInfo = {
-    connectionString: process.env.DATABASE_URL
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
   }
 } else {
   connectInfo = {
