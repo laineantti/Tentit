@@ -7,7 +7,7 @@ let environment = process.env.NODE_ENV || 'development'
 
 switch (environment) {
     case 'production':
-        path = 'https://tentti-fullstack.herokuapp.com/'
+        path = 'http://tentti-fullstack.herokuapp.com/'
         break
     case 'development':
         path = 'http://localhost:4000/'
