@@ -18,6 +18,8 @@ const isAuthenticated = (request, response, next) => {
     const ignored_routes = [
         '/register',
         '/login',
+        '/uploads',
+        '/uploads_thumbnails',
     ]
 
     if (!ignored_routes.includes(request.path)) {

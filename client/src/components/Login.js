@@ -8,8 +8,6 @@ import FormControl from '@material-ui/core/FormControl'
 import { strings } from './Locale'
 import axios from 'axios'
 
-
-
 var path = null
 var default_error = new Error("Environment not properly set!")
 let environment = process.env.NODE_ENV || 'development'

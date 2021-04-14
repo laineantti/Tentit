@@ -18,6 +18,24 @@ import { fetchImage, liitaKuvaKysymykseen, liitaKuvaVaihtoehtoon, } from './axio
 import { store } from './store.js'
 import uuid from 'react-uuid'
 
+var path = null
+var default_error = new Error("Environment not properly set!")
+let environment = process.env.NODE_ENV || 'development'
+
+switch (environment) {
+    case 'production':
+        path = 'https://tentti-fullstack.herokuapp.com/'
+        break
+    case 'development':
+        path = 'http://localhost:4000/'
+        break
+    case 'test':
+        path = 'http://localhost:4000/'
+        break
+    default:
+        throw default_error
+}
+
 // Dialog 
 const styles = (theme) => ({
     root: {
@@ -187,9 +205,9 @@ export default function ImageSelector({ examIndex, cardIndex, listItemIndex, sij
                         <GridList cellHeight={150} className={classes.gridList} cols={4}>
                             {tileData.map((tile) => (
                                 <GridListTile key={uuid()} style={{ width: "240px", maxHeight: "150" }} cols={tile.cols || 1}>
-                                    <a href={"//localhost:4000/uploads/" + tile.img} target="_blank" rel="noreferrer">
+                                    <a href={path+"uploads/" + tile.img} target="_blank" rel="noreferrer">
                                         <img style={{ width: "100%", height: "100%", objectFit: "cover", display: imageLoaded.includes(tile.id) ? "block" : "none" }}
-                                            src={"//localhost:4000/uploads_thumbnails/thumbnail_" + tile.img}
+                                            src={path+"uploads_thumbnails/thumbnail_" + tile.img}
                                             alt={tile.title}
                                             /* loading="lazy" */
                                             onLoad={() => {
