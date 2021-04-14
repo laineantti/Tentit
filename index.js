@@ -30,7 +30,7 @@ if (!process.env.HEROKU) {
 
 } else {
   con_string = process.env.DATABASE_URL
-  appOrigin = 'http://tentti-fullstack.herokuapp.com/'
+  appOrigin = 'https://tentti-fullstack.herokuapp.com/'
   console.log("front:", appOrigin)
 }
 
