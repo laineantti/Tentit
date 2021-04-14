@@ -100,10 +100,10 @@ export const Routes = () => {
                 <>
                 <NavBarLogin />
                 <Switch>
-                    <Route exact path="/register">
+                    <Route exact path="*">
                         <Register />
                     </Route>
-                    <Route exact path="*">
+                    <Route exact path="/login">
                         <Login kirjautunut={kirjautunut} setKirjautunut={setKirjautunut}/>
                     </Route>
                     {/* <Route exact path="/login">
