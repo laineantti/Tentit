@@ -119,7 +119,7 @@ const Register = () => {
                         />
                     </FormControl>
                 </Grid>
-                <Grid style={{ padding: "20px" }} container item xs={12} spacing={3}>
+                {/* <Grid style={{ padding: "20px" }} container item xs={12} spacing={3}>
                     <FormControl component="fieldset">
                         <FormLabel component="legend">{strings.rooli}</FormLabel>
                         <RadioGroup aria-label="rooli" name="rooli1" value={tempRooli} onChange={handleRadioButtons}>
@@ -127,7 +127,7 @@ const Register = () => {
                             <FormControlLabel value="admin" control={<Radio />} label={strings.yllapitaja} />
                         </RadioGroup>
                     </FormControl>
-                </Grid>
+                </Grid> */}
                 <Grid style={{ padding: "20px" }} container item xs={12} spacing={3}>
                     <Button name="rekisteroidy_nappi" onClick={addUser} type="submit"
                         className="btn btn-lg btn-primary btn-block" variant="contained" color="primary">

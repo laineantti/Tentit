@@ -20,7 +20,7 @@ const isAuthenticated = (request, response, next) => {
         '/login',
     ]
 
-    if (request.method === 'GET' && !ignored_routes.includes(request.path)) {
+    if (!ignored_routes.includes(request.path)) {
         const token = getTokenFrom(request);
 
         if (!token) {
@@ -41,10 +41,8 @@ const isAuthenticated = (request, response, next) => {
         }
         console.log("autentikoitu")
         response.authentication = { userId: decodedToken.id }
-        next()
-    } else {
-        next()
     }
+    next()
 }
 
 module.exports = isAuthenticated;
