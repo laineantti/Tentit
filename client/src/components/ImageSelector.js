@@ -18,7 +18,7 @@ import { fetchImage, liitaKuvaKysymykseen, liitaKuvaVaihtoehtoon, } from './axio
 import { store } from './store.js'
 import uuid from 'react-uuid'
 
-// Dialog
+// Dialog 
 const styles = (theme) => ({
     root: {
         margin: 0,
