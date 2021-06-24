@@ -1,6 +1,8 @@
 ## Tentit
 Create tests or quizzes. Offering possibility to create questions with choices. Mark one or multiple choices as right answer. Use public question/choice bank. Students and teachers can create accounts and login in. Teachers can check how the exam went. Questions and choices support text with images and code snippets. Content can be shared publicly or privately. Support for multiple languages and dark theme.
 
+![Tentit software](https://github.com/laineantti/Tentit/blob/master/cover.png?raw=true)
+
 ## Available Scripts
 
 In the client directory (./client/), you can run:
